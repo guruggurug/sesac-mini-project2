@@ -8,7 +8,14 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="index.css">
+    
+    <!-- Static CSS 연결 -->
+    <link rel="stylesheet" href="/static/css/index.css">
+    
+    <!-- HTMX CDN -->
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <!-- Plotly CDN (차트 시각화용) -->
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 </head>
 <body>
     <div class="mobile-container" id="app">
@@ -31,35 +38,62 @@
             <!-- Input Form Section -->
             <section class="card form-card">
                 <h2 class="section-title">📥 내 포트폴리오 입력</h2>
-                <form id="portfolio-form" class="portfolio-form">
+                
+                <!-- HTMX Form 설정 -->
+                <form id="portfolio-form" 
+                      class="portfolio-form"
+                      hx-post="/portfolio/optimize"
+                      hx-target="#results-area"
+                      hx-indicator="#loading-spinner">
+                    
+                    <!-- 위험 선호도 선택 -->
+                    <div class="form-group" style="margin-bottom: 10px;">
+                        <label for="risk-priority">투자 성향 / 위험 우선순위</label>
+                        <select id="risk-priority" name="risk_priority" style="background: rgba(17,24,39,0.8); color: white; padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); font-size: 0.85rem;">
+                            <option value="balanced" selected>균형형 (Balanced)</option>
+                            <option value="min_loss">손실 최소화 (Min Loss)</option>
+                            <option value="esg_focused">ESG 중시 (ESG Focused)</option>
+                        </select>
+                    </div>
+
+                    <!-- 삼성전자 입력 -->
                     <div class="form-row">
                         <div class="form-group">
                             <label for="samsung-shares">삼성전자 보유 수량</label>
-                            <input type="number" id="samsung-shares" placeholder="0" min="0" required>
+                            <input type="number" id="samsung-shares" name="samsung_qty" placeholder="0" min="0" required>
                         </div>
                         <div class="form-group">
                             <label for="samsung-price">삼성전자 평단가 (원)</label>
-                            <input type="number" id="samsung-price" placeholder="0" min="0" required>
+                            <input type="number" id="samsung-price" name="samsung_price" placeholder="0" min="0" required>
                         </div>
                     </div>
+
+                    <!-- SK하이닉스 입력 -->
                     <div class="form-row">
                         <div class="form-group">
                             <label for="hynix-shares">SK하이닉스 보유 수량</label>
-                            <input type="number" id="hynix-shares" placeholder="0" min="0" required>
+                            <input type="number" id="hynix-shares" name="sk_qty" placeholder="0" min="0" required>
                         </div>
                         <div class="form-group">
                             <label for="hynix-price">SK하이닉스 평단가 (원)</label>
-                            <input type="number" id="hynix-price" placeholder="0" min="0" required>
+                            <input type="number" id="hynix-price" name="sk_price" placeholder="0" min="0" required>
                         </div>
                     </div>
+
                     <button type="submit" class="btn-primary" id="btn-submit">포트폴리오 진단하기</button>
                 </form>
             </section>
 
-            <!-- Results Section (Hidden initially or showing placeholder) -->
+            <!-- Results Section -->
             <section class="results-container" id="results-area">
-                <!-- Status Placeholders -->
-                <div class="empty-state" id="empty-state">
+                <!-- HTMX 로딩 스피너 -->
+                <div id="loading-spinner" class="htmx-indicator loading-state card" style="display: none;">
+                    <div class="spinner"></div>
+                    <p>포트폴리오 분석 및 최적화 중...</p>
+                </div>
+
+                <!-- 초기 안내 상태 -->
+                <div class="empty-state card" id="empty-state">
                     <div class="empty-icon">📊</div>
                     <p>포트폴리오 정보를 입력하고 진단하기 버튼을 눌러주세요.</p>
                 </div>
@@ -72,6 +106,5 @@
             <p class="copyright">&copy; 2026 Semiconductor Value Investing Navigation MVP</p>
         </footer>
     </div>
-    <script src="index.js"></script>
 </body>
 </html>

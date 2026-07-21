@@ -1,0 +1,76 @@
+<!-- components/risk_result.html -->
+
+<!-- 비중 비교 카드 -->
+<div class="card result-card">
+    <h3 class="section-title">📊 포트폴리오 비중 비교</h3>
+    <div class="comparison-row">
+        <!-- 현재 비중 -->
+        <div class="comp-box">
+            <span class="comp-label">현재 비중</span>
+            <div class="comp-bar-container">
+                <div class="comp-bar sam-bar" style="width: {{ (data.current_weights['005930'] * 100) | round(1) }}%">
+                    삼성 {{ (data.current_weights['005930'] * 100) | round(1) }}%
+                </div>
+                <div class="comp-bar hyn-bar" style="width: {{ (data.current_weights['000660'] * 100) | round(1) }}%">
+                    하이닉스 {{ (data.current_weights['000660'] * 100) | round(1) }}%
+                </div>
+            </div>
+        </div>
+        <!-- 추천 비중 -->
+        <div class="comp-box" style="margin-top: 15px;">
+            <span class="comp-label">추천 비중 (예상 위험 감소율: {{ (data.risk_reduction_rate * 100) | round(1) }}% ↓)</span>
+            <div class="comp-bar-container">
+                <div class="comp-bar sam-bar" style="width: {{ (data.recommended_weights['005930'] * 100) | round(1) }}%">
+                    삼성 {{ (data.recommended_weights['005930'] * 100) | round(1) }}%
+                </div>
+                <div class="comp-bar hyn-bar" style="width: {{ (data.recommended_weights['000660'] * 100) | round(1) }}%">
+                    하이닉스 {{ (data.recommended_weights['000660'] * 100) | round(1) }}%
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 개별 위험 지표 표 -->
+<div class="card result-card">
+    <h3 class="section-title">⚠️ 개별 위험 지표</h3>
+    <table class="risk-table">
+        <thead>
+            <tr>
+                <th>종목</th>
+                <th>하방위험(CVaR)</th>
+                <th>ESG 위험</th>
+                <th>위험 수준</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>삼성전자</td>
+                <td>{{ (data.company_risks['005930'].downside_risk * 100) | round(1) }}%</td>
+                <td>{{ data.company_risks['005930'].esg_risk }}</td>
+                <td><span class="data-badge badge-sample">{{ data.company_risks['005930'].risk_level }}</span></td>
+            </tr>
+            <tr>
+                <td>SK하이닉스</td>
+                <td>{{ (data.company_risks['000660'].downside_risk * 100) | round(1) }}%</td>
+                <td>{{ data.company_risks['000660'].esg_risk }}</td>
+                <td><span class="data-badge badge-sample">{{ data.company_risks['000660'].risk_level }}</span></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- 삼성전자 범위 불일치 예외 처리 -->
+    {% if data.company_risks['005930'].scope_mismatch %}
+        <p style="font-size: 0.75rem; color: #ef4444; margin-top: 10px;">
+            ⚠️ 삼성전자는 연결 전체 데이터가 사용되어 DS 부문 한정 미적용(범위 불일치) 상태입니다.
+        </p>
+    {% endif %}
+</div>
+
+<!-- 포트폴리오 처방전 -->
+<div class="card result-card">
+    <h3 class="section-title">📝 포트폴리오 처방전</h3>
+    {% for item in data.explanation %}
+        <p class="explanation-text" style="margin-bottom: 6px;">• {{ item }}</p>
+    {% endfor %}
+</div>
