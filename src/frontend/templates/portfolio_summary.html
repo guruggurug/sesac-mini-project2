@@ -1,0 +1,201 @@
+<!DOCTYPE html><html class="light" lang="ko" style=""><head><meta charset="utf-8"><meta content="width=device-width, initial-scale=1.0" name="viewport"><link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=block" rel="stylesheet"><script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script><script id="tailwind-config">try{try{
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "brand-primary": "#964B00", /* Camel Brown */
+                    "brand-surface": "#FAF8F5", /* Warm Cream */
+                    "brand-border": "#E8E2D9", /* Light Warm Beige */
+                    "on-surface-variant": "#6D5F53",
+                    "on-surface": "#2C2621",
+                    "on-background": "#2C2621",
+                    "tertiary": "#006d37",
+                    "surface-bright": "#fcf9f8",
+                    "outline-variant": "#E8E2D9",
+                    "background": "#FAF8F5",
+                    "surface": "#FAF8F5",
+                    "nav-active-bg": "#F5E8DD",
+                    "primary": "#964B00",
+                    "primary-container": "#964B00"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "1rem",
+                    "2xl": "1.5rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "stack-lg": "24px",
+                    "container-padding": "24px",
+                    "stack-md": "12px",
+                    "gutter": "16px",
+                    "stack-sm": "4px",
+                    "base": "8px",
+                    "margin-mobile": "20px"
+            },
+            "fontFamily": {
+                    "headline-md": ["Hanken Grotesk"],
+                    "label-md": ["Hanken Grotesk"],
+                    "headline-lg": ["Hanken Grotesk"],
+                    "body-lg": ["Hanken Grotesk"],
+                    "label-sm": ["Hanken Grotesk"],
+                    "headline-lg-mobile": ["Hanken Grotesk"],
+                    "body-md": ["Hanken Grotesk"]
+            },
+            "fontSize": {
+                    "headline-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                    "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "body-lg": ["18px", {"lineHeight": "26px", "fontWeight": "400"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                    "headline-lg-mobile": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    }catch(_e){}}catch(_e){}</script><meta charset="utf-8"></head><body class="bg-brand-surface text-on-surface">
+<!-- Top App Bar -->
+<header class="fixed top-0 left-0 w-full z-50 flex items-center justify-between px-margin-mobile h-16 bg-[#FAF8F5] border-b border-[#E5DEC9]"><div class="flex items-center gap-4">
+<button class="material-symbols-outlined text-[#964B00] text-[24px]">arrow_back</button>
+<h1 class="font-bold text-[18px] leading-[24px] text-[#2A1800]">Chip Buddy</h1>
+</div>
+<div class="flex items-center"><div class="flex items-center gap-4"><div class="flex items-center gap-2"><span class="material-symbols-outlined text-[#964B00]">notifications</span><span class="material-symbols-outlined text-[#964B00]">account_circle</span></div></div></div></header><div class="fixed top-16 left-0 w-full z-40 bg-[#FAF8F5] border-b border-[#E5DEC9]">
+<div class="flex h-12">
+<button class="flex-1 flex items-center justify-center text-[#8A8A8A] text-label-md font-medium">
+진단 결과
+</button>
+<button class="flex-1 flex flex-col items-center justify-center text-[#964B00] text-label-md font-bold relative"><span class="">포트폴리오</span><div class="absolute bottom-0 w-full h-[2px] bg-[#964B00]"></div></button>
+</div>
+</div>
+<main class="mt-28 px-margin-mobile safe-air pb-32">
+<!-- Welcome Section -->
+<section class="py-stack-lg">
+<div class="flex items-center gap-2 mb-stack-sm">
+<span class="px-3 py-1 bg-brand-primary/10 text-brand-primary rounded-full text-label-sm font-semibold">균형투자형</span>
+</div>
+<h2 class="font-bold text-[20px] text-[#2A1800]">나의 포트폴리오 요약</h2>
+<p class="font-normal text-[14px] text-[#4A4746] mt-1">안정적인 수익과 위험 분산을 지향합니다.</p>
+</section>
+<!-- Bento Grid Portfolio Stats -->
+<div class="grid grid-cols-2 gap-4 mb-stack-lg">
+<div class="col-span-2 p-stack-lg bg-white border border-[#E5DEC9] rounded-2xl shadow-sm">
+<p class="font-medium text-[12px] text-[#7A7571] mb-1">총 자산 평가액</p>
+<div class="flex items-baseline gap-2">
+<span class="text-headline-lg font-bold text-brand-primary">19,207,500</span>
+<span class="text-body-lg text-on-surface-variant">원</span>
+</div>
+<div class="mt-4 flex items-center gap-2 text-[#E53E3E] font-semibold">
+<span class="material-symbols-outlined text-[18px]">trending_up</span>
+<span class="text-label-md">+4.2% (820,000원)</span>
+</div>
+</div>
+<!-- Asset Cards -->
+<div class="p-4 bg-white border border-[#E5DEC9] rounded-2xl shadow-sm flex flex-col justify-between">
+<div>
+<div class="flex justify-between items-start mb-2">
+<span class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center">
+<img class="w-5 h-5 opacity-80" data-alt="A minimalist tech corporate logo for Samsung Electronics, clean sans-serif typography, subtle blue professional tones, high-end financial app aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCZyahlOjrx6vJ_ROfLiyz8NStyESx7FEym9jXGihnOCgvFZNdO-K21SyVXWzdA_84Aivsen2-O7j8zUPj-vadoNVNeym9De79UtQ38s4tfO4Z6ootT5ERjHUBBfYaEKog20Ufp3fAW0S---VhblwmRjqf3qwXHWMYHy5vXHN5tcPrr_ja_kQsEfjn1iNMovKFrOQ0sJWyqmaaNXvk-a-PhnOQrniV5Cpz6IWquli8PZlgd6RA5Y68To0pJ8IAzhnHH3Vhy1iMxizA">
+</span>
+<span class="text-label-sm text-on-surface-variant">삼성전자</span>
+</div>
+<p class="text-headline-md text-brand-primary">150주</p>
+<p class="text-label-sm text-on-surface-variant">72,500원</p>
+</div>
+<div class="mt-4 h-1.5 w-full bg-brand-primary/10 rounded-full overflow-hidden">
+<div class="h-full bg-brand-primary rounded-full" style="width: 65%;"></div>
+</div>
+</div>
+<div class="p-4 bg-white border border-[#E5DEC9] rounded-2xl shadow-sm flex flex-col justify-between">
+<div>
+<div class="flex justify-between items-start mb-2">
+<span class="w-8 h-8 rounded-lg bg-red-50 flex items-center justify-center">
+<img class="w-5 h-5 opacity-80" data-alt="A minimalist tech corporate logo for SK Hynix, clean sans-serif typography, professional orange and red tones, high-end financial app aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAGhutCZRSmepbkXhx9bbkgnI1njiRejGC3gi3Vx8n-zP84Ssj5PSNV-259onBgaCq1fPmHW4vOT4EGTHbpefI37qfYpqRCA_glOaoTY3JGFLMlFWTJe-moo4rmcr-1TeDIQh9dpGsuxJYGEmPxVzI7-OnqkYtQL7Og93h5CV9e96Jt-4H5xzbU9rULxT1wIHlvITaji-F4Iws2akKj6_nsweVlbXSlUtJ4WDW3uSz0tIsaJTd4L1tuJtocFGnlrBCAwSM_Vud46EM">
+</span>
+<span class="text-label-sm text-on-surface-variant">SK하이닉스</span>
+</div>
+<p class="text-headline-md text-brand-primary">45주</p>
+<p class="text-label-sm text-on-surface-variant">185,200원</p>
+</div>
+<div class="mt-4 h-1.5 w-full bg-brand-primary/10 rounded-full overflow-hidden">
+<div class="h-full bg-brand-primary/40 rounded-full" style="width: 35%;"></div>
+</div>
+</div>
+</div>
+<!-- Risk Level Chart Area -->
+<section class="mb-stack-lg p-stack-lg bg-white border border-[#E5DEC9] rounded-2xl shadow-sm overflow-hidden relative">
+<div class="relative z-10">
+<h3 class="font-bold text-[16px] text-[#2A1800] mb-4">자산 구성비</h3>
+<div class="flex items-center justify-center py-4">
+<div class="relative w-40 h-40">
+<div class="absolute inset-0 rounded-full border-[16px] border-brand-primary/5"></div>
+<div class="absolute inset-0 rounded-full border-[16px] border-brand-primary border-t-transparent border-l-transparent" style="transform: rotate(45deg);"></div>
+<div class="absolute inset-0 flex flex-col items-center justify-center">
+<span class="text-label-sm text-on-surface-variant">안전</span>
+<span class="text-headline-md text-brand-primary">72%</span>
+</div>
+</div>
+</div>
+<div class="space-y-3 mt-4">
+<div class="flex justify-between items-center text-label-md">
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-brand-primary"></div>
+<span class="text-on-surface">삼성전자</span>
+</div>
+<span class="font-bold">10,875,000원</span>
+</div>
+<div class="flex justify-between items-center text-label-md">
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-brand-primary/40"></div>
+<span class="text-on-surface">SK하이닉스</span>
+</div>
+<span class="font-bold">8,332,500원</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Action Button -->
+<div class="mt-8">
+<button class="w-full h-14 bg-brand-primary text-white rounded-xl font-bold text-body-lg shadow-lg shadow-brand-primary/20 active:scale-[0.98] transition-transform flex items-center justify-center gap-2">
+<span class="material-symbols-outlined">edit</span>
+                포트폴리오 수정하기
+            </button>
+</div>
+</main>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 left-0 right-0 max-w-[390px] mx-auto bg-[#FAF8F5] border-t border-[#E5DEC9] z-50 h-16 grid grid-cols-4 items-center">
+<!-- Tab 1: 홈 -->
+<button class="flex flex-col items-center justify-center gap-1 text-[#8A8A8A]">
+<span class="material-symbols-outlined text-[24px]">home</span>
+<span class="text-[10px] font-bold">홈</span>
+</button>
+<!-- Tab 2: 진단/최적화 (Active) -->
+<button class="flex flex-col items-center justify-center">
+<div class="bg-[#F5E8DD] rounded-full px-4 py-1 flex flex-col items-center text-[#964B00]">
+<span class="material-symbols-outlined text-[24px]">analytics</span>
+<span class="text-[10px] font-bold">진단/최적화</span>
+</div>
+</button>
+<!-- Tab 3: 이슈 분석 -->
+<button class="flex flex-col items-center justify-center gap-1 text-[#8A8A8A]">
+<span class="material-symbols-outlined text-[24px]">layers</span>
+<span class="text-[10px] font-bold">이슈 분석</span>
+</button>
+<!-- Tab 4: 설정 -->
+<button class="flex flex-col items-center justify-center gap-1 text-[#8A8A8A]">
+<span class="material-symbols-outlined text-[24px]">settings</span>
+<span class="text-[10px] font-bold">설정</span>
+</button>
+</nav>
+<script class="">
+        // Simple touch interaction for cards
+        document.querySelectorAll('.p-4').forEach(card => {
+            card.addEventListener('touchstart', () => {
+                card.classList.add('bg-brand-primary/5');
+            });
+            card.addEventListener('touchend', () => {
+                card.classList.remove('bg-brand-</script>
+
+</body></html>
