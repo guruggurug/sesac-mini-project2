@@ -220,11 +220,13 @@
 - **Role**: Integration
 - **Owner**: Team Lead / Codex
 - **Task ID**: `INT-01`, `COMMON-RT-02`, `COMMON-RT-03`
-- **Status**: `in_progress`
+- **Status**: `done`
 - **Completed**:
   - 로컬 변경의 staged/unstaged 상태와 삭제 대상을 점검하고 `reviewed → processed` 마이그레이션에 따른 삭제임을 확인.
   - 삭제된 `data/reviewed/*`를 참조하던 환경 설정 예시를 `data/processed/*`로 정렬.
   - 원격 브랜치의 선행 커밋과 로컬 변경의 동기화 순서를 확인.
+  - 자동 검증 파이프라인, 실시간 API 계약, 프로젝트 문서를 세 개의 논리적 커밋으로 분리.
+  - 원격 선행 커밋을 rebase로 반영하고 `origin/feature/ui-railway`에 push 완료.
 - **Modified files**:
   - `.env.example`
   - `env.example`
@@ -233,9 +235,9 @@
   - 전체 pytest 회귀 테스트
   - Git whitespace 검사
 - **Validation results**:
-  - 전체 pytest 회귀 테스트 통과.
+  - 커밋 전과 rebase 후 전체 pytest 회귀 테스트 통과.
   - `git diff --check` 통과.
 - **Remaining**:
-  - 인덱스 정리, 검증, 논리적 커밋, 원격 동기화 및 push.
+  - 프로젝트 작업 상태상 `COMMON-RT-02` 역할별 승인과 Realtime & Daily Sync 구현은 계속 진행 필요.
 - **Blockers**: 없음.
-- **Next task**: 전체 테스트 통과 후 체크포인트 커밋을 생성하고 원격 브랜치와 동기화.
+- **Next task**: `COMMON-RT-02` 역할별 승인을 완료하고 Realtime & Daily Sync 역할 구현 착수.
