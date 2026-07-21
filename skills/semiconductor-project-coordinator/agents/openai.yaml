@@ -1,0 +1,3 @@
+interface:
+  display_name: "Semiconductor Project Coordinator"
+  short_description: "Coordinates roles, progress, schemas, and GitHub workflow for the semiconductor MVP."
