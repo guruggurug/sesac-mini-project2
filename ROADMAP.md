@@ -18,42 +18,42 @@
 
 ## Day 1 Tasks
 - [x] COMMON-01: Repository Setup (팀 리드)
-- [ ] COMMON-02: Shared Schema Definition (팀 리드) - *Review 진행 중*
-- [ ] COMMON-03: Sample Data Preparation (Backend) - *Review 진행 중*
-- [ ] BE-01: FastAPI Skeleton
-- [ ] FE-01: Stitch UI Drafts
-- [ ] DATA-A-01: ESG Indicator Definition
-- [ ] DATA-A-02: Official Report Collection
-- [ ] DATA-B-01: Price Data Validation
-- [ ] DATA-B-02: Downside Risk Functions
-- [ ] BE-02: Data Loader and Validation
-- [ ] FE-02: Frontend Skeleton
-- [ ] FE-03: Mock Data Integration
-- [ ] BE-03: Mock API
+- [x] COMMON-02: Shared Schema Definition (팀 리드)
+- [x] COMMON-03: Sample Data Preparation (Backend)
+- [x] BE-01: FastAPI Skeleton
+- [x] FE-01: Stitch UI Drafts
+- [x] DATA-A-01: ESG Indicator Definition
+- [x] DATA-A-02: Official Report Collection
+- [x] DATA-B-01: Price Data Validation
+- [x] DATA-B-02: Downside Risk Functions
+- [x] BE-02: Data Loader and Validation
+- [x] FE-02: Frontend Skeleton
+- [x] FE-03: Mock Data Integration
+- [x] BE-03: Mock API
 
 ## Day 2 Tasks
-- [ ] DATA-A-03: ESG Value Review
-- [ ] DATA-A-04: Event Dataset
-- [ ] DATA-B-03: Optimization Engine
-- [ ] DATA-B-04: Event Reaction Function
-- [ ] DATA-A-05: Final Data Quality Review
-- [ ] DATA-B-05: Real Data Integration
-- [ ] DATA-B-06: Sensitivity Check
-- [ ] BE-04: Real Data Integration
-- [ ] BE-05: Model Integration
-- [ ] BE-06: Fallback and Contract Tests
-- [ ] FE-04: Real API Integration
-- [ ] FE-05: Issues and Event Analysis
-- [ ] FE-06: Mobile and State Testing
+- [x] DATA-A-03: ESG Value Review
+- [x] DATA-A-04: Event Dataset
+- [x] DATA-B-03: Optimization Engine
+- [x] DATA-B-04: Event Reaction Function
+- [x] DATA-A-05: Final Data Quality Review
+- [x] DATA-B-05: Real Data Integration
+- [x] DATA-B-06: Sensitivity Check
+- [x] BE-04: Real Data Integration
+- [x] BE-05: Model Integration
+- [x] BE-06: Fallback and Contract Tests
+- [x] FE-04: Real API Integration
+- [x] FE-05: Issues and Event Analysis
+- [x] FE-06: Mobile and State Testing
 - [ ] INT-01: End-to-End Test
-- [ ] INT-02: Data and Model Review
+- [x] INT-02: Data and Model Review
 - [ ] INT-03: Demo Preparation
 
 ## Integration Checkpoints
-- **CHECKPOINT-01 (Day 1 시작)**: Initial Parallel-Work Readiness (공통 스키마 및 샘플 데이터 합의)
-- **CHECKPOINT-02 (Day 1 종료)**: Mock-Based End-to-End Verification (Mock API 기반 프론트-백 연동 완료)
-- **CHECKPOINT-03 (Day 2 중간)**: Real Data & Model Integration (실제 데이터 및 최적화 엔진 백엔드 통합 완료)
-- **CHECKPOINT-04 (Day 2 종료)**: Final Production QA & Demo Ready (E2E 테스트, 예외/폴백 처리 완료 및 최종 데모 검증 완료)
+- **CHECKPOINT-01 (Day 1 시작)**: Initial Parallel-Work Readiness (공통 스키마 및 샘플 데이터 합의) - *완료*
+- **CHECKPOINT-02 (Day 1 종료)**: Mock-Based End-to-End Verification (Mock API 기반 프론트-백 연동 완료) - *완료*
+- **CHECKPOINT-03 (Day 2 중간)**: Real Data & Model Integration (실제 데이터 및 최적화 엔진 백엔드 통합 완료) - *완료*
+- **CHECKPOINT-04 (Day 2 종료)**: Final Production QA & Demo Ready (E2E 테스트, 예외/폴백 처리 완료 및 최종 데모 검증 완료) - *진행 중*
 
 ## Priority
 

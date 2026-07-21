@@ -2,7 +2,7 @@
 
 ## 0. 문서 목적
 
-이 문서는 「반도체 가치투자 내비게이션」 2일 MVP에서 **데이터 B 조원**이 무엇을, 어떤 순서로, 왜 해야 하는지 정리한 실행 가이드다.
+이 문서는 「칩버디 (Chip Buddy)」 2일 MVP에서 **데이터 B 조원**이 무엇을, 어떤 순서로, 왜 해야 하는지 정리한 실행 가이드다.
 
 데이터 B의 핵심 역할은 다음과 같다.
 
@@ -1022,6 +1022,6 @@ ESG와 CVaR의 단위를 맞춘 뒤 결합한다.
 # 16. 참고 문서
 
 - `deep-research-report_korean-semiconductor-revised.md`
-- `데이터분석정의서_반도체가치투자내비게이션_2일4인핵심기능.docx`
+- `데이터분석정의서_칩버디_2일4인핵심기능.docx`
 - `semiconductor_navigation_2day_4person_execution_plan_v2.md`
 
