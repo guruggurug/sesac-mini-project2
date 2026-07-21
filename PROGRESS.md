@@ -2,9 +2,9 @@
 
 ## 1. Current Status
 
-- Project phase: Realtime Market & Daily Issue Sync Implementation
+- Project phase: Realtime Market & Daily Issue Sync Contract Review
 - Overall status: `in_progress`
-- Last updated: 2026-07-22 03:41 KST
+- Last updated: 2026-07-22 03:54 KST
 - Current integration checkpoint: `CHECKPOINT-05`
 - Data mode: `validated` (Fallback: `sample`)
 - Root progress owner: Team Lead
@@ -114,10 +114,10 @@
 | Task ID | Task | Status | Dependency |
 |---|---|---|---|
 | COMMON-RT-01 | Realtime and Daily Sync Requirements Definition | `done` | Team Lead decision |
-| COMMON-RT-02 | Market, Portfolio Summary and Sync API Contract Review | `done` | Data A, Data B, Backend, Frontend approval completed |
+| COMMON-RT-02 | Market, Portfolio Summary and Sync API Contract Review | `review` | Data A review and Data B, Backend, Frontend explicit approval required |
 | COMMON-RT-03 | Human Review Removal and Automated Validation Contract Migration | `done` | Team Lead realtime pipeline decision |
 | BE-RT-00 | ESG Schema Validator and Sample Contract Compatibility Recovery | `done` | Updated ESG·event schemas |
-| INT-RT-01 | Market·Portfolio·Daily Sync End-to-End Test | `todo` | Realtime role implementations |
+| INT-RT-01 | Market·Portfolio·Daily Sync End-to-End Test | `todo` | COMMON-RT-02 and Realtime role implementations |
 
 ---
 
@@ -278,12 +278,12 @@ schemas/api/examples/sync-status-response.example.json
 
 | Reviewer | Review Focus | Result | Notes |
 |---|---|---|---|
-| Data A | raw→candidate→자동 검증→processed 경계와 출처 보존 | `approved` | candidate/source/event-source 스키마, SHA-256, 중복 규칙과 원자적 발행 경계 확인 |
-| Data B | 자동 검증 통과 이벤트 이후 ESG·추천 비중 재계산 트리거 | `approved` | scoring 입력 변경 조건 명시, validated 점수 누락 시 명시적 실패 확인 |
-| Backend | 가격 캐시·동기화 잠금·상태 전이·오류 구현 가능성 | `approved` | JSON Schema·상태 전이·503·fallback stale 계약 구현 가능 확인 |
-| Frontend | 폴링·기준 시각·지연/폴백·동기화 상태 표현 가능성 | `approved` | 폴링 간격·시각·상태·경고·수동 동기화 필드로 UI 구현 가능 확인 |
+| Data A | raw→candidate→자동 검증→processed 경계와 출처 보존 | `review` | 보완 산출물은 있으나 unavailable 18행, Backend 발행 게이트와 Data B 교차 검토가 남음 |
+| Data B | 자동 검증 통과 이벤트 이후 ESG·추천 비중 재계산 트리거 | `pending` | 역할 로그에 COMMON-RT-02 검토·승인 기록 없음 |
+| Backend | 가격 캐시·동기화 잠금·상태 전이·오류 구현 가능성 | `pending` | 역할 로그에 COMMON-RT-02 검토가 Remaining으로 기록됨 |
+| Frontend | 폴링·기준 시각·지연/폴백·동기화 상태 표현 가능성 | `pending` | 역할 로그에 Realtime 계약 검토·승인 기록 없음 |
 
-`COMMON-RT-02`는 계약과 자동 검증을 완료하고 Data A, Data B, Backend, Frontend 승인을 받아 `done` 상태다.
+`COMMON-RT-02`는 계약 초안과 자동 검증은 통과했지만 역할별 명시적 승인이 완료되지 않아 `review` 상태다.
 
 ---
 
@@ -291,14 +291,15 @@ schemas/api/examples/sync-status-response.example.json
 
 | Blocker ID | Related Task | Description | Owner | Required Action | Status |
 |---|---|---|---|---|---|
+| RT-B01 | COMMON-RT-02 | Data A 보완 검토와 Data B·Backend·Frontend의 명시적 계약 승인이 필요 | Team Lead / All Roles | 역할별 로그에 검토 결과와 승인 기록 | `review` |
 | RT-B02 | DATA-B-RT-01 | Data B 동적 ESG·최적화 변경이 현재 브랜치에 미동기화 | Data B | 작업 완료 후 통합 브랜치 동기화 | `in_progress` |
 
 ---
 
 ## 9. Immediate Next Actions
 
-1. 승인된 `COMMON-RT-02` 계약을 기준으로 역할별 Realtime & Daily Sync 구현을 착수한다.
-2. Data B의 동적 ESG·최적화 변경을 현재 통합 브랜치에 동기화한다.
+1. Data A, Data B, Backend, Frontend가 `COMMON-RT-02` 계약을 각 역할 로그에서 검토하고 명시적으로 승인한다.
+2. Data A 잔여 데이터 조건과 Data B·Backend·Frontend 구현 관점의 계약 쟁점을 반영한다.
 3. 기존 `INT-01`과 신규 `INT-RT-01`의 E2E 범위를 통합한다.
 
 ---

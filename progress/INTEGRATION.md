@@ -8,7 +8,7 @@
 | INT-02 | Data and Model Review | `done` | 실데이터 스키마 및 최적화 엔진 안정성 검수 완료 | - |
 | INT-03 | Demo Preparation | `todo` | 투자 성향/보유 정보 입력에 따른 재계산 데모 구성 | INT-01 완료 대기 |
 | COMMON-RT-01 | Realtime and Daily Sync Requirements Definition | `done` | PRD·Plan·ROADMAP 요구사항 확정 | - |
-| COMMON-RT-02 | Market, Portfolio Summary and Sync API Contract Review | `done` | 계약 문서·JSON Schema·예시·계약 테스트와 전 역할 승인 완료 | - |
+| COMMON-RT-02 | Market, Portfolio Summary and Sync API Contract Review | `review` | 계약 문서·JSON Schema·예시·계약 테스트 완료 | 전 역할 명시적 승인 필요 |
 | COMMON-RT-03 | Human Review Removal and Automated Validation Contract Migration | `done` | processed/validated 자동 검증 계약·데이터·소비 코드 전환 | - |
 | BE-RT-00 | ESG Schema Validator and Sample Contract Compatibility Recovery | `done` | processed/sample 검증과 ESG API 로딩 복구 | - |
 | INT-RT-01 | Market·Portfolio·Daily Sync End-to-End Test | `todo` | 실시간 시장·자산 평가와 이슈 동기화 E2E | 역할별 구현 대기 |
@@ -17,6 +17,7 @@
 
 | Blocker ID | Related Task | Description | Owner | Required Action | Status |
 |---|---|---|---|---|---|
+| RT-B01 | COMMON-RT-02 | Data A 보완 검토와 Data B·Backend·Frontend의 명시적 계약 승인 필요 | Team Lead / All Roles | 각 역할 로그에 검토·승인 기록 | `review` |
 | RT-B02 | DATA-B-RT-01 | Data B 동적 ESG·최적화 변경 미동기화 | Data B | 완료 후 통합 브랜치 동기화 | `in_progress` |
 
 ## Work Log
@@ -268,3 +269,31 @@
 - **Remaining**: 승인된 계약에 따른 역할별 Realtime & Daily Sync 구현.
 - **Blockers**: 없음.
 - **Next task**: Data B 변경을 동기화하고 `BE-RT-01`, `DATA-A-RT-01`부터 역할 구현 착수.
+
+### 2026-07-22 03:54 — COMMON-RT-02 Premature Approval Correction
+
+- **Role**: Integration / Team Lead
+- **Owner**: Team Lead / Codex
+- **Task ID**: `COMMON-RT-02`
+- **Status**: `review`
+- **Completed**:
+  - 계약 테스트 통과와 역할별 승인을 구분해 승인 근거를 재감사.
+  - Data A 역할 로그가 `review`, Data B·Backend·Frontend 역할 로그에 COMMON-RT-02 명시적 승인이 없음을 확인.
+  - 루트 진행표와 로드맵의 성급한 `done/approved` 표시를 `review/pending`으로 교정.
+  - fallback stale 스키마, 재계산 조건 문서와 계약 테스트 보완은 유효하므로 유지.
+- **Modified files**:
+  - `PROGRESS.md`
+  - `ROADMAP.md`
+  - `schemas/api/README.md`
+  - `progress/INTEGRATION.md`
+- **Validation commands**:
+  - `pytest src/backend/tests/test_realtime_api_contracts.py -q`
+  - `git diff --check`
+- **Validation results**:
+  - Realtime API 계약 테스트 `12 passed`.
+  - `git diff --check` 통과.
+- **Remaining**:
+  - Data A 보완 조건 확인 및 담당자 승인.
+  - Data B, Backend, Frontend 역할별 계약 검토와 명시적 승인.
+- **Blockers**: `RT-B01` 복원.
+- **Next task**: 각 역할이 자기 진행 로그에 COMMON-RT-02 검토 결과를 기록한 뒤 팀 리드가 최종 승인 여부를 재판정.
