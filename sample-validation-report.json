@@ -1,0 +1,7 @@
+{
+  "esg_headers_match_required": true,
+  "event_headers_match_required": true,
+  "price_headers_match_required": true,
+  "optimization_result_schema_valid": true,
+  "optimization_result_errors": []
+}

@@ -1,0 +1,255 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.local/schemas/api/portfolio-optimize-response.schema.json",
+  "title": "Portfolio Optimize Response",
+  "description": "삼성전자와 SK하이닉스 포트폴리오 최적화 응답 스키마",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "current_weights",
+    "recommended_weights",
+    "current_total_risk",
+    "optimized_total_risk",
+    "risk_reduction_rate",
+    "company_risks",
+    "explanation",
+    "data_status",
+    "generated_at",
+    "warnings"
+  ],
+  "properties": {
+    "current_weights": {
+      "$ref": "#/$defs/weights"
+    },
+    "recommended_weights": {
+      "$ref": "#/$defs/weights"
+    },
+    "current_total_risk": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "optimized_total_risk": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "risk_reduction_rate": {
+      "type": "number",
+      "minimum": -1,
+      "maximum": 1
+    },
+    "company_risks": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "005930",
+        "000660"
+      ],
+      "properties": {
+        "005930": {
+          "$ref": "#/$defs/companyRisk"
+        },
+        "000660": {
+          "$ref": "#/$defs/companyRisk"
+        }
+      }
+    },
+    "explanation": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 3,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 300
+      }
+    },
+    "data_status": {
+      "type": "string",
+      "enum": [
+        "sample",
+        "reviewed",
+        "fallback"
+      ]
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "warnings": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 500
+      }
+    },
+    "model_metadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "cvar_confidence_level": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "exclusiveMaximum": 1
+        },
+        "minimum_weight": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "maximum_weight": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "grid_step": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 1
+        },
+        "risk_priority": {
+          "type": "string",
+          "enum": [
+            "conservative",
+            "balanced",
+            "esg_focused"
+          ]
+        },
+        "price_period_start": {
+          "type": "string",
+          "format": "date"
+        },
+        "price_period_end": {
+          "type": "string",
+          "format": "date"
+        }
+      },
+      "required": [
+        "cvar_confidence_level",
+        "minimum_weight",
+        "maximum_weight",
+        "grid_step",
+        "risk_priority"
+      ]
+    }
+  },
+  "$defs": {
+    "weights": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "005930",
+        "000660"
+      ],
+      "properties": {
+        "005930": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "000660": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        }
+      }
+    },
+    "companyRisk": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "esg_risk",
+        "downside_risk",
+        "total_risk",
+        "risk_level",
+        "data_confidence"
+      ],
+      "properties": {
+        "esg_risk": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "downside_risk": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "total_risk": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "risk_level": {
+          "type": "string",
+          "enum": [
+            "low",
+            "medium",
+            "high",
+            "unavailable"
+          ]
+        },
+        "data_confidence": {
+          "type": "string",
+          "enum": [
+            "high",
+            "medium",
+            "low"
+          ]
+        }
+      }
+    }
+  },
+  "examples": [
+    {
+      "current_weights": {
+        "005930": 0.48,
+        "000660": 0.52
+      },
+      "recommended_weights": {
+        "005930": 0.58,
+        "000660": 0.42
+      },
+      "current_total_risk": 0.55,
+      "optimized_total_risk": 0.48,
+      "risk_reduction_rate": 0.127,
+      "company_risks": {
+        "005930": {
+          "esg_risk": 0.42,
+          "downside_risk": 0.38,
+          "total_risk": 0.4,
+          "risk_level": "medium",
+          "data_confidence": "high"
+        },
+        "000660": {
+          "esg_risk": 0.55,
+          "downside_risk": 0.47,
+          "total_risk": 0.51,
+          "risk_level": "high",
+          "data_confidence": "medium"
+        }
+      },
+      "explanation": [
+        "현재 삼성전자 비중이 위험 기준에서 낮아 추천 비중이 증가했습니다.",
+        "두 기업의 ESG 위험과 가격 하방위험을 함께 반영했습니다."
+      ],
+      "data_status": "sample",
+      "generated_at": "2026-07-21T10:00:00+09:00",
+      "warnings": [
+        "이 결과는 기대수익률 예측이 아닙니다.",
+        "두 종목 모두 반도체 산업에 속해 산업 집중위험이 유지됩니다."
+      ],
+      "model_metadata": {
+        "cvar_confidence_level": 0.95,
+        "minimum_weight": 0.2,
+        "maximum_weight": 0.8,
+        "grid_step": 0.01,
+        "risk_priority": "balanced",
+        "price_period_start": "2023-07-01",
+        "price_period_end": "2026-07-20"
+      }
+    }
+  ]
+}

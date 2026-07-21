@@ -1,0 +1,219 @@
+# ============================================
+# Operating system files
+# ============================================
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# ============================================
+# Editors and IDEs
+# ============================================
+.vscode/
+.idea/
+*.swp
+*.swo
+*.tmp
+*.temp
+*~
+.history/
+
+# Keep shared editor settings only when intentionally added
+!.vscode/extensions.json
+!.vscode/settings.example.json
+
+# ============================================
+# Environment variables and secrets
+# ============================================
+.env
+.env.*
+!.env.example
+
+secrets/
+credentials/
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+
+# Google / cloud credentials
+service-account*.json
+google-credentials*.json
+application_default_credentials.json
+
+# ============================================
+# Python
+# ============================================
+__pycache__/
+*.py[cod]
+*$py.class
+
+.venv/
+venv/
+env/
+ENV/
+
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+
+.ipynb_checkpoints/
+
+build/
+dist/
+*.egg-info/
+.eggs/
+wheels/
+pip-wheel-metadata/
+
+# ============================================
+# Node.js / frontend
+# ============================================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+dist/
+build/
+.next/
+.nuxt/
+.svelte-kit/
+.vite/
+coverage/
+
+# Package manager caches
+.npm/
+.pnpm-store/
+.yarn/cache/
+.yarn/unplugged/
+
+# ============================================
+# Logs and runtime files
+# ============================================
+*.log
+logs/
+*.pid
+*.pid.lock
+
+# ============================================
+# Test and automation artifacts
+# ============================================
+test-results/
+playwright-report/
+blob-report/
+cypress/videos/
+cypress/screenshots/
+
+# ============================================
+# Data handling
+# ============================================
+# Keep reviewed/sample datasets only when explicitly approved for Git.
+# Ignore raw, licensed, private, and temporary datasets by default.
+
+data/raw/*
+!data/raw/.gitkeep
+
+data/external/*
+!data/external/.gitkeep
+
+data/private/*
+!data/private/.gitkeep
+
+data/tmp/*
+!data/tmp/.gitkeep
+
+data/cache/*
+!data/cache/.gitkeep
+
+data/snapshots/local/*
+!data/snapshots/local/.gitkeep
+
+# Licensed or redistribution-restricted materials
+data/licensed/
+data/external/licensed/
+
+# Large source documents and archives
+*.zip
+*.tar
+*.tar.gz
+*.7z
+*.rar
+
+# Optional: large local report files
+data/raw/reports/*.pdf
+data/raw/reports/*.xlsx
+data/raw/reports/*.xls
+
+# ============================================
+# Model and analysis outputs
+# ============================================
+notebooks/archived/
+artifacts/tmp/
+artifacts/demo/private/
+artifacts/reports/generated/
+artifacts/screenshots/local/
+
+# Temporary processed outputs
+data/processed/tmp/
+data/processed/cache/
+
+# ============================================
+# Google Stitch exports
+# ============================================
+stitch-export/tmp/
+stitch-export/raw/generated-assets/
+stitch-export/raw/node_modules/
+stitch-export/raw/dist/
+
+# Keep approved exports and documentation under version control
+!stitch-export/approved/
+!stitch-export/README.md
+
+# ============================================
+# Antigravity / agent temporary work
+# ============================================
+.antigravity/
+.agent-cache/
+agent-temp/
+tmp/
+temp/
+
+# ============================================
+# Docker and local infrastructure
+# ============================================
+docker-data/
+.local/
+.cache/
+
+# ============================================
+# Database files
+# ============================================
+*.db
+*.sqlite
+*.sqlite3
+
+# ============================================
+# Local backups
+# ============================================
+*.bak
+*.backup
+*.old
+*.orig
+
+# ============================================
+# Generated API and frontend files
+# ============================================
+src/backend/openapi.generated.json
+src/frontend/src/generated/
+src/shared/generated/
+
+# ============================================
+# Miscellaneous
+# ============================================
+*.lock.tmp

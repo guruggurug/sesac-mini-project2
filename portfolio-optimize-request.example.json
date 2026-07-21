@@ -1,0 +1,22 @@
+{
+  "holdings": [
+    {
+      "ticker": "005930",
+      "quantity": 70,
+      "average_price": 70000,
+      "buy_reason": "장기 보유"
+    },
+    {
+      "ticker": "000660",
+      "quantity": 30,
+      "average_price": 180000,
+      "buy_reason": "반도체 업황 회복 기대"
+    }
+  ],
+  "risk_priority": "balanced",
+  "current_prices": {
+    "005930": 78000,
+    "000660": 195000
+  },
+  "data_mode": "sample"
+}

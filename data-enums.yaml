@@ -1,0 +1,126 @@
+# Shared enumerations for data, API, modeling, and UI layers.
+# This file is a single source of truth for allowed status values.
+
+project:
+  companies:
+    - company_id: "005930"
+      company_name: "삼성전자"
+    - company_id: "000660"
+      company_name: "SK하이닉스"
+
+availability:
+  - available
+  - unavailable
+
+data_confidence:
+  - high
+  - medium
+  - low
+
+review_status:
+  - pending
+  - needs_review
+  - approved
+  - rejected
+
+event_status:
+  - rumor
+  - reported
+  - confirmed
+  - sanctioned
+  - resolved
+
+data_status:
+  - sample
+  - reviewed
+  - fallback
+
+business_scope:
+  - DS
+  - semiconductor
+  - domestic_site
+  - consolidated
+  - unknown
+
+geography:
+  - Korea
+  - global
+  - mixed
+  - unknown
+
+source_type:
+  - government
+  - regulator
+  - company_report
+  - company_disclosure
+  - company_press_release
+  - exchange
+  - court
+  - news
+  - research
+  - other
+
+assurance:
+  - third_party_assured
+  - internally_verified
+  - not_assured
+  - unknown
+
+risk_direction:
+  - higher_is_worse
+  - higher_is_better
+  - event_based
+  - qualitative
+
+event_date_type:
+  - occurrence_date
+  - official_disclosure_date
+  - authority_announcement_date
+  - first_public_report_date
+  - sanction_date
+  - resolution_date
+
+event_category:
+  - greenhouse_gas_energy
+  - water
+  - hazardous_chemicals
+  - waste_circularity
+  - occupational_safety
+  - human_capital_labor
+  - supply_chain_human_rights
+  - product_quality
+  - cybersecurity
+  - board_independence
+  - accounting_disclosure
+  - fair_trade_compliance
+  - export_control
+  - technology_protection
+  - other
+
+risk_level:
+  - low
+  - medium
+  - high
+  - unavailable
+
+trend:
+  - improving
+  - stable
+  - worsening
+  - unavailable
+
+risk_priority:
+  - conservative
+  - balanced
+  - esg_focused
+
+task_status:
+  - todo
+  - in_progress
+  - blocked
+  - review
+  - done
+
+boolean_values:
+  - true
+  - false

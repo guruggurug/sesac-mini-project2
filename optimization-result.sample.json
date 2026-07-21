@@ -1,0 +1,50 @@
+{
+  "current_weights": {
+    "005930": 0.483,
+    "000660": 0.517
+  },
+  "recommended_weights": {
+    "005930": 0.58,
+    "000660": 0.42
+  },
+  "current_total_risk": 0.55,
+  "optimized_total_risk": 0.48,
+  "risk_reduction_rate": 0.127,
+  "company_risks": {
+    "005930": {
+      "esg_risk": 0.42,
+      "downside_risk": 0.38,
+      "total_risk": 0.4,
+      "risk_level": "medium",
+      "data_confidence": "high"
+    },
+    "000660": {
+      "esg_risk": 0.55,
+      "downside_risk": 0.47,
+      "total_risk": 0.51,
+      "risk_level": "high",
+      "data_confidence": "medium"
+    }
+  },
+  "explanation": [
+    "현재 포트폴리오는 SK하이닉스 비중이 상대적으로 높아 하방위험의 영향을 더 크게 받습니다.",
+    "삼성전자의 ESG 관리위험과 가격 하방위험이 상대적으로 낮아 추천 비중이 증가했습니다.",
+    "현재 비중과의 차이가 과도하지 않도록 턴오버 페널티를 반영했습니다."
+  ],
+  "data_status": "sample",
+  "generated_at": "2026-07-21T10:00:00+09:00",
+  "warnings": [
+    "이 결과는 기대수익률 예측이 아닙니다.",
+    "두 종목 모두 반도체 산업에 속해 산업 집중위험이 유지됩니다.",
+    "현재 샘플 데이터를 사용하고 있습니다."
+  ],
+  "model_metadata": {
+    "cvar_confidence_level": 0.95,
+    "minimum_weight": 0.2,
+    "maximum_weight": 0.8,
+    "grid_step": 0.01,
+    "risk_priority": "balanced",
+    "price_period_start": "2023-07-01",
+    "price_period_end": "2026-07-20"
+  }
+}

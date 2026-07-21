@@ -1,0 +1,171 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.local/schemas/data/stock-prices.schema.json",
+  "title": "Stock Prices CSV Row",
+  "description": "삼성전자와 SK하이닉스 일별 주가 CSV의 행 단위 검증 스키마",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "date",
+    "company_id",
+    "company_name",
+    "ticker",
+    "open",
+    "high",
+    "low",
+    "close",
+    "volume",
+    "adjusted_close",
+    "currency",
+    "source_type",
+    "source_url",
+    "data_status",
+    "note"
+  ],
+  "properties": {
+    "date": {
+      "type": "string",
+      "format": "date"
+    },
+    "company_id": {
+      "type": "string",
+      "enum": [
+        "005930",
+        "000660"
+      ]
+    },
+    "company_name": {
+      "type": "string",
+      "enum": [
+        "삼성전자",
+        "SK하이닉스"
+      ]
+    },
+    "ticker": {
+      "type": "string",
+      "enum": [
+        "005930",
+        "000660"
+      ]
+    },
+    "open": {
+      "type": "number",
+      "exclusiveMinimum": 0
+    },
+    "high": {
+      "type": "number",
+      "exclusiveMinimum": 0
+    },
+    "low": {
+      "type": "number",
+      "exclusiveMinimum": 0
+    },
+    "close": {
+      "type": "number",
+      "exclusiveMinimum": 0
+    },
+    "volume": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "adjusted_close": {
+      "oneOf": [
+        {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "currency": {
+      "type": "string",
+      "const": "KRW"
+    },
+    "source_type": {
+      "type": "string",
+      "enum": [
+        "exchange",
+        "government",
+        "company_disclosure",
+        "research",
+        "other"
+      ]
+    },
+    "source_url": {
+      "type": "string",
+      "format": "uri"
+    },
+    "data_status": {
+      "type": "string",
+      "enum": [
+        "sample",
+        "reviewed",
+        "fallback"
+      ]
+    },
+    "note": {
+      "type": "string"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "company_id": {
+            "const": "005930"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "company_name": {
+            "const": "삼성전자"
+          },
+          "ticker": {
+            "const": "005930"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "company_id": {
+            "const": "000660"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "company_name": {
+            "const": "SK하이닉스"
+          },
+          "ticker": {
+            "const": "000660"
+          }
+        }
+      }
+    }
+  ],
+  "examples": [
+    {
+      "date": "2024-01-02",
+      "company_id": "005930",
+      "company_name": "삼성전자",
+      "ticker": "005930",
+      "open": 78500,
+      "high": 79800,
+      "low": 78200,
+      "close": 79600,
+      "volume": 17142847,
+      "adjusted_close": 79600,
+      "currency": "KRW",
+      "source_type": "exchange",
+      "source_url": "https://example.com/prices",
+      "data_status": "sample",
+      "note": "샘플 데이터"
+    }
+  ]
+}
