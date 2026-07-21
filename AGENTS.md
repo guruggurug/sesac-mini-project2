@@ -2,7 +2,7 @@
 
 ## 1. Purpose
 
-This file defines the mandatory rules for all human contributors and AI coding agents working on the **Semiconductor Value Investing Navigation MVP**.
+This file defines the mandatory rules for all human contributors and AI coding agents working on the **Chip Buddy MVP**.
 
 The project goal is to build a two-day MVP that compares Samsung Electronics and SK hynix using:
 

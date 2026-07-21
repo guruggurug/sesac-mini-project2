@@ -86,32 +86,41 @@ def generate_korean_explanations(
     current_weights: Dict[str, float],
     recommended_weights: Dict[str, float],
     company_risks: Dict[str, Any],
-    risk_priority: str
+    risk_priority: str,
+    knowledge_stage: str = "beginner"
 ) -> List[str]:
-    """Generate 1-3 Korean rule-based explanation sentences for recommended portfolio weights."""
+    """Generate 1-3 Korean rule-based explanation sentences based on knowledge stage and recommended weights."""
     explanations = []
 
     sam_diff = recommended_weights[TICKER_SAMSUNG] - current_weights[TICKER_SAMSUNG]
 
+    # 기본 비중 조절 설명
     if abs(sam_diff) < 0.02:
         explanations.append("현재 보유 비중이 종합 위험 관점에서 최적 수준에 근접해 유지 전략을 추천합니다.")
     elif sam_diff > 0:
         explanations.append(
-            f"삼성전자의 가격 하방위험과 ESG 위험도가 상대적으로 우수하여 보유 비중을 {round(current_weights[TICKER_SAMSUNG]*100, 1)}%에서 {round(recommended_weights[TICKER_SAMSUNG]*100, 1)}%로 상향 조정을 추천합니다."
+            f"삼성전자의 리스크 요인이 상대적으로 작아, 보유 비중을 {round(current_weights[TICKER_SAMSUNG]*100, 1)}%에서 {round(recommended_weights[TICKER_SAMSUNG]*100, 1)}%로 상향 조정을 추천합니다."
         )
     else:
         explanations.append(
-            f"SK하이닉스의 하방위험 대비 삼성전자 비중 과다를 조정하여, 삼성전자 추천 비중을 {round(recommended_weights[TICKER_SAMSUNG]*100, 1)}%로 비중 조정을 추천합니다."
+            f"SK하이닉스 대비 삼성전자의 위험 노출을 줄이기 위해, 삼성전자 추천 비중을 {round(recommended_weights[TICKER_SAMSUNG]*100, 1)}%로 비중 조정을 추천합니다."
         )
 
-    if risk_priority == "conservative":
-        explanations.append("손실 최소화 기조에 따라 과거 가격 하방위험(CVaR 95%)을 최우선으로 반영했습니다.")
-    elif risk_priority == "esg_focused":
-        explanations.append("ESG 중시 기조에 따라 기업의 ESG 관리위험도 점수에 높은 가중치를 부여했습니다.")
+    # knowledge_stage별 설명 분기
+    if knowledge_stage == "beginner":
+        # 초보자 수준: 어려운 용어 배제, 쉬운 위험 증감 설명
+        explanations.append("포트폴리오의 극단적 가격 급락 위험을 줄이는데 집중한 비중입니다.")
+        explanations.append("기업의 착한 경영(ESG) 관련 벌금이나 제재 등의 부정적인 영향도 함께 줄이도록 설계되었습니다.")
+    elif knowledge_stage == "information_seeker":
+        # 탐색자 수준: 점수 원인 및 공식 뉴스 연계
+        explanations.append("공식 보고서 및 최근 뉴스 분석 결과, ESG 지표의 논란성 이슈가 비중 최적화에 반영되었습니다.")
+        explanations.append("사건 분석 기준일에 따른 두 반도체 기업의 주가 충격 반응과 회복력을 종합 반영한 결과입니다.")
     else:
-        explanations.append("가격 하방위험과 ESG 관리위험을 균형 있게 고려하여 포트폴리오 위험을 최적화했습니다.")
-
-    explanations.append("과도한 매매 비용 및 리밸런싱 부담을 줄이기 위해 턴오버 페널티를 안정적으로 반영했습니다.")
+        # 가치 투자 초보 수준 (value_beginner): 세부 지표, 신뢰도 등 전문 정보 제공
+        sam_esg = company_risks[TICKER_SAMSUNG]["esg_risk"]
+        sk_esg = company_risks[TICKER_SK]["esg_risk"]
+        explanations.append(f"삼성전자 ESG 위험도({sam_esg}) 및 SK하이닉스 ESG 위험도({sk_esg})를 기반으로 산정되었습니다.")
+        explanations.append("95% 신뢰수준의 Historical CVaR과 개별 기업의 3개년 시계열 주가 종속성을 반영한 세부 진단 결과입니다.")
 
     return explanations[:3]
 
@@ -125,27 +134,27 @@ def optimize_portfolio(
     min_weight: float = 0.20,
     max_weight: float = 0.80,
     grid_step: float = 0.01,
-    cvar_confidence: float = 0.95
+    cvar_confidence: float = 0.95,
+    turnover_weight: Optional[float] = None,
+    downside_weight: float = 0.7,
+    esg_weight: float = 0.3,
+    knowledge_stage: str = "beginner"
 ) -> Dict[str, Any]:
     """
     Run 1% grid search portfolio optimization over 20%-80% weight bounds.
-
-    Args:
-        holdings: Current holdings list e.g. [{'ticker': '005930', 'quantity': 70, 'average_price': 70000}, ...]
-        price_data: Stock price CSV path or DataFrame
-        esg_input: ESG risk scores input
-        risk_priority: 'conservative', 'balanced', or 'esg_focused'
-        data_mode: 'sample', 'reviewed', or 'fallback'
-        min_weight: Minimum weight constraint (default 0.20)
-        max_weight: Maximum weight constraint (default 0.80)
-        grid_step: Grid step increment (default 0.01)
-        cvar_confidence: Historical CVaR confidence level (default 0.95)
-
-    Returns:
-        Dict[str, Any]: Optimization result dictionary matching portfolio-optimize-response.schema.json
+    Supports either historical weight profiles or specific customization weights.
     """
-    if risk_priority not in RISK_PRIORITY_WEIGHTS:
-        raise ValueError(f"유효하지 않은 risk_priority입니다: {risk_priority}. ('conservative', 'balanced', 'esg_focused' 중 선택)")
+    if turnover_weight is None and risk_priority not in RISK_PRIORITY_WEIGHTS:
+        # 가중치 직접 주입이 안 되었고, risk_priority가 기존에 정의된 셋이 아니라면 프로필 매핑 매칭해 봄
+        profile_to_priority = {
+            "strategy_preserving": "conservative",
+            "balanced_adjustment": "balanced",
+            "risk_priority_adjustment": "esg_focused"
+        }
+        if risk_priority in profile_to_priority:
+            pass
+        else:
+            raise ValueError(f"유효하지 않은 risk_priority입니다: {risk_priority}")
 
     # 1. Parse current weights from holdings
     current_val = {}
@@ -182,8 +191,19 @@ def optimize_portfolio(
     
     weights_grid = np.round(weights_grid, 4)
 
-    policy = RISK_PRIORITY_WEIGHTS[risk_priority]
-    alpha, beta, gamma = policy["alpha"], policy["beta"], policy["gamma"]
+    if turnover_weight is not None:
+        alpha = downside_weight
+        beta = esg_weight
+        gamma = turnover_weight
+    else:
+        profile_to_priority = {
+            "strategy_preserving": "conservative",
+            "balanced_adjustment": "balanced",
+            "risk_priority_adjustment": "esg_focused"
+        }
+        mapped_priority = profile_to_priority.get(risk_priority, risk_priority)
+        policy = RISK_PRIORITY_WEIGHTS.get(mapped_priority, RISK_PRIORITY_WEIGHTS["balanced"])
+        alpha, beta, gamma = policy["alpha"], policy["beta"], policy["gamma"]
 
     # Pre-calculate candidate portfolio return series and raw CVaR for normalization
     raw_cvars = []
@@ -261,7 +281,7 @@ def optimize_portfolio(
     }
 
     explanations = generate_korean_explanations(
-        current_weights, recommended_weights, company_risks, risk_priority
+        current_weights, recommended_weights, company_risks, risk_priority, knowledge_stage
     )
 
     warnings = [

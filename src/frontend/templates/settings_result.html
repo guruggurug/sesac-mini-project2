@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>칩버디 (Chip Buddy) - 설정 완료 (3단계)</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/index.css">
+    <style>
+        .wizard-progress {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .progress-step {
+            flex: 1;
+            text-align: center;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            border-bottom: 3px solid var(--border-color);
+            padding-bottom: 6px;
+            font-weight: 500;
+        }
+        .progress-step.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+            font-weight: 600;
+        }
+        .settings-summary-card {
+            background: rgba(30, 41, 59, 0.4);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 18px;
+            margin-bottom: 15px;
+        }
+        .summary-section {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding-bottom: 12px;
+            margin-bottom: 12px;
+        }
+        .summary-section:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+            margin-bottom: 0;
+        }
+        .summary-label {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 4px;
+            display: block;
+        }
+        .summary-value {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+        .summary-text {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-top: 4px;
+            line-height: 1.4;
+        }
+        .btn-wizard-next {
+            width: 100%;
+            height: 48px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-decoration: none;
+        }
+        .btn-wizard-prev {
+            width: 100%;
+            height: 48px;
+            background: transparent;
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-decoration: none;
+            margin-top: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="mobile-container" id="app">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="logo-area">
+                <span class="logo-icon">⚡</span>
+                <h1 class="logo-title">Chip Buddy</h1>
+            </div>
+            <span class="data-badge badge-sample">Setup Mode</span>
+        </header>
+
+        <!-- Main Wizard Content -->
+        <main class="app-main">
+            <!-- Progress Bar -->
+            <div class="wizard-progress">
+                <div class="progress-step">1. 매수 판단 방식</div>
+                <div class="progress-step">2. 포트폴리오 조정 기준</div>
+                <div class="progress-step active">3. 설정 완료</div>
+            </div>
+
+            <section class="info-banner" style="margin-top: 10px; text-align: center; padding: 20px 15px;">
+                <span style="font-size: 2.2rem; display: block; margin-bottom: 8px;">⚙️</span>
+                <h2 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 6px; color: var(--text-primary);">포트폴리오 분석 기준을 설정했어요</h2>
+                <p style="font-size: 0.75rem; color: var(--text-secondary); line-height: 1.4;">
+                    선택하신 조건에 맞춰 포트폴리오 설명 방식과 조정 페널티 가중치가 구성되었습니다.
+                </p>
+            </section>
+
+            <div class="settings-summary-card">
+                <!-- 설명 설명 수준 -->
+                <div class="summary-section">
+                    <span class="summary-label">분석 설명 수준</span>
+                    <span class="summary-value">
+                        {% if knowledge_stage == 'beginner' %}
+                            정보 이해 단계 · 쉬운 요약형
+                        {% elif knowledge_stage == 'information_seeker' %}
+                            정보 이해 단계 · 정보 탐색형
+                        {% else %}
+                            정보 이해 단계 · 상세 가치 분석형
+                        {% endif %}
+                    </span>
+                    <p class="summary-text">
+                        {% if knowledge_stage == 'beginner' %}
+                            어려운 투자 전문 용어를 최소화하고, 핵심 리스크 증감 의미 위주로 편안한 설명을 제공합니다.
+                        {% elif knowledge_stage == 'information_seeker' %}
+                            위험 점수의 변동 요인을 주요 사건(뉴스, 실적 등) 공식자료와 연계하여 근거 중심으로 보여줍니다.
+                        {% else %}
+                            E, S, G 개별 세부 지표 현황과 Historical CVaR 기준의 정밀한 연산 수치 및 상세 데이터를 제시합니다.
+                        {% endif %}
+                    </p>
+                </div>
+
+                <!-- 포트폴리오 조정 기준 -->
+                <div class="summary-section">
+                    <span class="summary-label">적용된 조정 기준</span>
+                    <span class="summary-value" style="color: #60a5fa;">
+                        {% if rebalancing_profile == 'strategy_preserving' %}
+                            현재 전략 유지형
+                        {% elif rebalancing_profile == 'balanced_adjustment' %}
+                            필요 조정형 (기본형)
+                        {% else %}
+                            위험 우선 조정형
+                        {% endif %}
+                    </span>
+                    <p class="summary-text" style="margin-top: 8px;">
+                        {% if rebalancing_profile == 'strategy_preserving' %}
+                            기존 매수 판단과 장기 보유 계획을 존중합니다. 위험이 조금 낮아진다는 이유만으로 추천 비중이 크게 바뀌지 않도록 보수적으로 작동합니다.
+                        {% elif rebalancing_profile == 'balanced_adjustment' %}
+                            현재 투자 판단을 존중하되, 위험 차이가 의미 있는 경우 적정 수준으로 추천 비중을 균형 있게 조정합니다.
+                        {% else %}
+                            기존 비중 유지보다 새롭게 계산된 하방위험 및 ESG 관리위험의 위험 감소 효과를 가장 적극적으로 반영합니다.
+                        {% endif %}
+                    </p>
+                    <div style="background: rgba(15, 23, 42, 0.4); border-radius: 8px; padding: 10px; margin-top: 10px; font-size: 0.7rem; line-height: 1.4; border: 1px solid rgba(255,255,255,0.03);">
+                        <div style="color: #10b981; margin-bottom: 2px;">🟢 <strong>얻는 점:</strong> 
+                            {% if rebalancing_profile == 'strategy_preserving' %}
+                                불필요한 잦은 거래 억제, 단기 충격 휩쓸림 감소
+                            {% elif rebalancing_profile == 'balanced_adjustment' %}
+                                과도하게 치우치지 않는 절충된 비중 배분
+                            {% else %}
+                                계산된 종합 포트폴리오 위험 감소율 최대화
+                            {% endif %}
+                        </div>
+                        <div style="color: #f87171;">🔴 <strong>감수할 점:</strong> 
+                            {% if rebalancing_profile == 'strategy_preserving' %}
+                                포트폴리오 위험 발생 시 대응이 상대적으로 지연됨
+                            {% elif rebalancing_profile == 'balanced_adjustment' %}
+                                특정 단일 리스크의 한계적 최소화 효과는 보장 안 됨
+                            {% else %}
+                                추천 비중의 변경 폭이 크고 실제 매매 부담 증가
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <a href="/portfolio/setup" class="btn-wizard-next">내 포트폴리오 입력하기</a>
+            <a href="/rebalancing-profile" class="btn-wizard-prev">조정 기준 다시 선택하기</a>
+
+            <section class="disclaimer" style="margin-top: 18px; font-size: 0.65rem; line-height: 1.4; color: var(--text-muted); text-align: center;">
+                ⚠️ 이 설정은 전문적인 투자 성향 진단 결과가 아닙니다. 추천 비중은 위험 분석을 위한 참고값이며 실제 매매 시 발생하는 거래비용, 세금과 시장 상황은 반영하지 않을 수 있습니다.
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="app-footer">
+            <p class="copyright">&copy; 2026 Chip Buddy MVP</p>
+        </footer>
+    </div>
+</body>
+</html>

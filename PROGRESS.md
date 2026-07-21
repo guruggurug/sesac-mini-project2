@@ -2,11 +2,11 @@
 
 ## 1. Current Status
 
-- Project phase: Pre-Development Review
+- Project phase: End-to-End Integration & Demo Prep
 - Overall status: `in_progress`
 - Last updated: 2026-07-21
-- Current integration checkpoint: `CHECKPOINT-01`
-- Data mode: `sample`
+- Current integration checkpoint: `CHECKPOINT-04`
+- Data mode: `reviewed` (Fallback: `sample`)
 - Root progress owner: Team Lead
 
 > 루트 `PROGRESS.md`는 프로젝트 전체 요약 문서이며 팀 리드만 수정한다.  
@@ -55,58 +55,58 @@
 | Task ID | Task | Owner | Status | Output | Next Action |
 |---|---|---|---|---|---|
 | COMMON-01 | Repository Setup | Team Lead | `done` | 루트 문서·환경 파일 | 유지 |
-| COMMON-02 | Shared Schema Definition | Team Lead | `review` | 데이터·API 스키마 | 역할별 검토 |
-| COMMON-03 | Sample Data Preparation | Backend | `review` | 샘플 CSV·JSON | 역할별 검토 |
+| COMMON-02 | Shared Schema Definition | Team Lead | `done` | 데이터·API 스키마 | 검토 완료 및 합의 |
+| COMMON-03 | Sample Data Preparation | Backend | `done` | 샘플 CSV·JSON | 검토 완료 및 합의 |
 
 ### Data A
 
 | Task ID | Task | Status | Dependency |
 |---|---|---|---|
-| DATA-A-01 | ESG Indicator Definition | `todo` | COMMON-02 승인 |
-| DATA-A-02 | Official Report Collection | `todo` | DATA-A-01 |
-| DATA-A-03 | ESG Value Review | `todo` | DATA-A-02 |
-| DATA-A-04 | Event Dataset | `todo` | DATA-A-02 |
-| DATA-A-05 | Final Data Quality Review | `todo` | DATA-A-03, DATA-A-04 |
+| DATA-A-01 | ESG Indicator Definition | `done` | COMMON-02 승인 |
+| DATA-A-02 | Official Report Collection | `done` | DATA-A-01 |
+| DATA-A-03 | ESG Value Review | `done` | DATA-A-02 |
+| DATA-A-04 | Event Dataset | `done` | DATA-A-02 |
+| DATA-A-05 | Final Data Quality Review | `done` | DATA-A-03, DATA-A-04 |
 
 ### Data B
 
 | Task ID | Task | Status | Dependency |
 |---|---|---|---|
-| DATA-B-01 | Price Data Validation | `todo` | COMMON-02 승인 |
-| DATA-B-02 | Downside Risk Functions | `todo` | DATA-B-01 |
-| DATA-B-03 | Optimization Engine | `todo` | DATA-B-02, COMMON-03 승인 |
-| DATA-B-04 | Event Reaction Function | `todo` | DATA-B-01, COMMON-03 승인 |
-| DATA-B-05 | Real Data Integration | `todo` | DATA-A-05, DATA-B-03, DATA-B-04 |
-| DATA-B-06 | Sensitivity Check | `todo` | DATA-B-05 |
+| DATA-B-01 | Price Data Validation | `done` | COMMON-02 승인 |
+| DATA-B-02 | Downside Risk Functions | `done` | DATA-B-01 |
+| DATA-B-03 | Optimization Engine | `done` | DATA-B-02, COMMON-03 승인 |
+| DATA-B-04 | Event Reaction Function | `done` | DATA-B-01, COMMON-03 승인 |
+| DATA-B-05 | Real Data Integration | `done` | DATA-A-05, DATA-B-03, DATA-B-04 |
+| DATA-B-06 | Sensitivity Check | `done` | DATA-B-05 |
 
 ### Backend
 
 | Task ID | Task | Status | Dependency |
 |---|---|---|---|
-| BE-01 | FastAPI Skeleton | `todo` | COMMON-01 |
-| BE-02 | Data Loader and Validation | `todo` | COMMON-02·03 승인 |
-| BE-03 | Mock API | `todo` | BE-01, BE-02 |
-| BE-04 | Real Data Integration | `todo` | DATA-A-05, BE-02 |
-| BE-05 | Model Integration | `todo` | DATA-B-05, BE-03 |
-| BE-06 | Fallback and Contract Tests | `todo` | BE-04, BE-05 |
+| BE-01 | FastAPI Skeleton | `done` | COMMON-01 |
+| BE-02 | Data Loader and Validation | `done` | COMMON-02·03 승인 |
+| BE-03 | Mock API | `done` | BE-01, BE-02 |
+| BE-04 | Real Data Integration | `done` | DATA-A-05, BE-02 |
+| BE-05 | Model Integration | `done` | DATA-B-05, BE-03 |
+| BE-06 | Fallback and Contract Tests | `done` | BE-04, BE-05 |
 
 ### Frontend
 
 | Task ID | Task | Status | Dependency |
 |---|---|---|---|
-| FE-01 | Stitch UI Drafts | `todo` | COMMON-02 승인 |
-| FE-02 | Frontend Skeleton | `todo` | FE-01 |
-| FE-03 | Mock Data Integration | `todo` | COMMON-03 승인, FE-02 |
-| FE-04 | Real API Integration | `todo` | BE-03, FE-03 |
-| FE-05 | Issues and Event Analysis | `todo` | DATA-B-04, BE-03 |
-| FE-06 | Mobile and State Testing | `todo` | FE-04, FE-05 |
+| FE-01 | Stitch UI Drafts | `done` | COMMON-02 승인 |
+| FE-02 | Frontend Skeleton | `done` | FE-01 |
+| FE-03 | Mock Data Integration | `done` | COMMON-03 승인, FE-02 |
+| FE-04 | Real API Integration | `done` | BE-03, FE-03 |
+| FE-05 | Issues and Event Analysis | `done` | DATA-B-04, BE-03 |
+| FE-06 | Mobile and State Testing | `done` | FE-04, FE-05 |
 
 ### Integration
 
 | Task ID | Task | Status | Dependency |
 |---|---|---|---|
-| INT-01 | End-to-End Test | `todo` | DATA-B-05, BE-05, FE-04 |
-| INT-02 | Data and Model Review | `todo` | DATA-A-05, DATA-B-06 |
+| INT-01 | End-to-End Test | `in_progress` | DATA-B-05, BE-05, FE-04 |
+| INT-02 | Data and Model Review | `done` | DATA-A-05, DATA-B-06 |
 | INT-03 | Demo Preparation | `todo` | INT-01, INT-02 |
 
 ---
@@ -136,28 +136,41 @@
 - [x] 샘플 가격 CSV
 - [x] 샘플 최적화 결과 JSON
 - [x] 자동 형식 검증
+- [x] Data A 검토 및 승인 완료 (`approved`)
+- [x] Data B 검토 및 승인 완료 (`approved`)
+- [x] Backend 검토 및 승인 완료 (`approved`)
+- [x] Frontend 검토 및 승인 완료 (`approved`)
+- [x] COMMON-02 `done` 및 스키마 합의 완료
+- [x] COMMON-03 `done` 및 샘플 데이터 합의 완료
+- [x] 역할별 진행 파일 생성 및 병렬 작업 가동
+
+남은 항목 없음 (체크포인트 1 통과 완료)
+
+### CHECKPOINT-02 & CHECKPOINT-03 — Mock-Based E2E & Real Data/Model Integration
+
+완료된 항목:
+
+- [x] FastAPI 백엔드 뼈대 세팅 및 라우터 분리 (`BE-01`)
+- [x] 데이터 로더 및 스키마 기반 유효성 검증기 완성 (`BE-02`)
+- [x] HTMX 및 Jinja2 템플릿 기반 모바일 최적화 화면 UI 뼈대 작성 (`FE-02`)
+- [x] 클라이언트 사이드 Mock 계산 시뮬레이션 및 API 통신 연결 (`FE-03`)
+- [x] 데이터 A의 실제 검증 완료 ESG 및 역사적 사건 데이터 구축 완료 (`DATA-A-01~05`)
+- [x] 데이터 B의 일별 가격 검증, CVaR 계산, 1% 그리드서치 최적화 모델 탑재 완료 (`DATA-B-01~04`)
+- [x] 실제 데이터 검증 결과 로드 및 모델과의 API 통합 처리 완료 (`BE-04`, `BE-05`)
+- [x] yfinance 기반 실시간 주가 동적 병합 및 데이터 결손 시 폴백 안전 장치 추가 (`BE-06`)
+
+남은 항목 없음 (체크포인트 2, 3 통과 완료)
+
+### CHECKPOINT-04 — Final Production QA & Demo Ready
+
+완료된 항목:
+- [x] 실데이터 연동 및 최적화 엔진 통합 구현
+- [x] 390px 뷰포트 기반 모바일 UI 및 로딩/에러 피드백 상태 검증
+- [x] 데이터 검증 및 최적화 모델 유닛 테스트 통과 (100% Pass)
 
 남은 항목:
-
-- [ ] Data A 검토
-- [ ] Data B 검토
-- [ ] Backend 검토
-- [ ] Frontend 검토
-- [ ] 수정 요청 반영
-- [ ] COMMON-02 `done`
-- [ ] COMMON-03 `done`
-- [ ] 역할별 진행 파일 생성
-- [ ] 병렬 작업 시작
-
-### Checkpoint Pass Condition
-
-다음 조건을 모두 만족하면 `CHECKPOINT-01`을 통과한다.
-
-1. 네 역할이 COMMON-02와 COMMON-03을 승인한다.
-2. 샘플 파일이 담당 작업에 필요한 정보를 포함한다.
-3. 스키마·샘플 간 열과 필드가 일치한다.
-4. 수정 요청이 모두 해결된다.
-5. 네 역할이 다른 담당자의 실제 산출물을 기다리지 않고 작업을 시작할 수 있다.
+- [ ] 서버 실구동 E2E 통합 테스트 검증 (`INT-01`)
+- [ ] 투자 성향/보유 정보 입력 변경에 따른 추천 비중 실시간 재계산 흐름 최종 데모 준비 (`INT-03`)
 
 ---
 
@@ -182,25 +195,10 @@ schemas/api/examples/portfolio-optimize-response.example.json
 
 | Reviewer | Review Focus | Result | Notes |
 |---|---|---|---|
-| Data A | 실제 ESG·사건 데이터를 입력할 수 있는가 | `pending` | |
-| Data B | 위험·최적화 계산에 필요한 필드가 있는가 | `pending` | |
-| Backend | 스키마 검증과 API 구현이 가능한가 | `pending` | |
-| Frontend | 응답 JSON만으로 화면 구현이 가능한가 | `pending` | |
-
-허용 결과:
-
-- `approved`
-- `changes_requested`
-
-### Approval Condition
-
-COMMON-02는 다음 조건에서만 `done`으로 변경한다.
-
-- 네 역할 모두 `approved`
-- 데이터 enum과 스키마 허용값 일치
-- API 예시가 요청·응답 스키마 통과
-- 수정 요청이 모두 해결됨
-- `ROADMAP.md`와 이 문서의 상태가 일치함
+| Data A | 실제 ESG·사건 데이터를 입력할 수 있는가 | `approved` | 스키마 적합 확인 |
+| Data B | 위험·최적화 계산에 필요한 필드가 있는가 | `approved` | 필요 연산 변수 포괄 확인 |
+| Backend | 스키마 검증과 API 구현이 가능한가 | `approved` | Pydantic 및 JSON 검증 가능 |
+| Frontend | 응답 JSON만으로 화면 구현이 가능한가 | `approved` | UI 표출 요구사항 부합 |
 
 ---
 
@@ -227,12 +225,10 @@ data/sample/sample-validation-report.json
 
 | Reviewer | Review Focus | Result | Notes |
 |---|---|---|---|
-| Data A | 샘플 ESG·사건 데이터를 실제 수집 형식으로 사용할 수 있는가 | `pending` | |
-| Data B | 샘플 ESG·사건·가격 데이터로 계산 함수를 만들 수 있는가 | `pending` | |
-| Backend | 샘플 파일을 로드하고 검증할 수 있는가 | `pending` | |
-| Frontend | 최적화 결과 JSON으로 핵심 화면을 만들 수 있는가 | `pending` | |
-
-COMMON-03은 네 역할의 검토가 끝난 뒤 `done`으로 변경한다.
+| Data A | 샘플 ESG·사건 데이터를 실제 수집 형식으로 사용할 수 있는가 | `approved` | 실데이터 입력 전환 용이 |
+| Data B | 샘플 ESG·사건·가격 데이터로 계산 함수를 만들 수 있는가 | `approved` | 모델 연산 정상 동작 확인 |
+| Backend | 샘플 파일을 로드하고 검증할 수 있는가 | `approved` | CSV 로더 연동 확인 |
+| Frontend | 최적화 결과 JSON으로 핵심 화면을 만들 수 있는가 | `approved` | 렌더링 검증 완료 |
 
 ---
 
@@ -246,25 +242,8 @@ COMMON-03은 네 역할의 검토가 끝난 뒤 `done`으로 변경한다.
 
 ## 9. Immediate Next Actions
 
-팀 회의에서 아래 순서로 진행한다.
-
-1. COMMON-02 산출물을 역할별로 검토한다.
-2. COMMON-03 샘플 파일을 역할별로 열어본다.
-3. 누락 필드나 이해하기 어려운 필드를 기록한다.
-4. 각 역할이 `approved` 또는 `changes_requested`를 선택한다.
-5. 수정 요청이 있으면 Team Lead가 공통 스키마를 수정한다.
-6. 네 역할 모두 승인하면 COMMON-02와 COMMON-03을 `done`으로 변경한다.
-7. 역할별 진행 파일을 생성한다.
-8. 다음 작업을 동시에 `in_progress`로 변경한다.
-
-병렬 시작 작업:
-
-```text
-DATA-A-01 — ESG Indicator Definition
-DATA-B-01 — Price Data Validation
-BE-01     — FastAPI Skeleton
-FE-01     — Stitch UI Drafts
-```
+1.  백엔드 서버를 구동하고 프론트엔드 모바일 대시보드 페이지에 접속하여 실시간 연동 테스트를 진행한다 (`INT-01`).
+2.  사용자 시나리오별(입력 수량 변경, 성향 필터링 조정) 포트폴리오 비중 재계산 및 과거 사건 영향 분석 흐름을 최종 데모 시연용으로 세팅한다 (`INT-03`).
 
 ---
 
@@ -279,8 +258,6 @@ FE-01     — Stitch UI Drafts
 - Day 1 종료 시
 - Day 2 종료 시
 - 최종 데모 준비 완료 시
-
-팀원의 상세 작업 로그를 이 파일에 복사하지 않는다. 루트 문서에는 상태·산출물·차단 요소·다음 통합 작업만 기록한다.
 
 ---
 

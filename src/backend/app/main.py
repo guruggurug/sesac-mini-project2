@@ -1,10 +1,27 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from starlette.middleware.sessions import SessionMiddleware
+
+from app.core.config import FRONTEND_STATIC_DIR
+from app.core.exceptions import CSVValidationError, csv_validation_exception_handler
+from app.routes.health import router as health_router
+from app.routes.portfolio import router as portfolio_router
+from app.routes.risk import router as risk_router
+from app.routes.issues import router as issues_router
+from app.routes.data import router as data_router
 
 app = FastAPI(
-    title="Semiconductor Value Investing Navigation API",
+    title="Chip Buddy API",
     description="삼성전자와 SK하이닉스 투자 위험 분석 및 포트폴리오 최적화 API MVP",
     version="0.1.0"
+)
+
+# 세션 미들웨어 설정 (암호화 쿠키 세션)
+app.add_middleware(
+    SessionMiddleware,
+    secret_key="chip-buddy-secret-key-super-secure-mvp-12345",
+    session_cookie="chip_buddy_session"
 )
 
 # CORS 설정
@@ -16,58 +33,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-@app.get("/health", tags=["Health"])
-def health_check():
-    """
-    서버 헬스 체크 API
-    """
-    return {"status": "ok", "message": "FastAPI server is running"}
+# 커스텀 예외 핸들러 등록
+app.add_exception_handler(CSVValidationError, csv_validation_exception_handler)
 
-@app.post("/portfolio/calculate", tags=["Portfolio"])
-def calculate_portfolio():
-    """
-    포트폴리오 입력 데이터 기반 현재 비중 및 기본 진단 결과 반환
-    """
-    return {"message": "Endpoint to be implemented"}
+# 정적 파일 마운트 (절대 경로 적용)
+app.mount("/static", StaticFiles(directory=FRONTEND_STATIC_DIR), name="static")
 
-@app.post("/risk/esg", tags=["Risk"])
-def calculate_esg_risk():
-    """
-    두 기업의 ESG 위험 수준 계산
-    """
-    return {"message": "Endpoint to be implemented"}
-
-@app.post("/risk/downside", tags=["Risk"])
-def calculate_downside_risk():
-    """
-    Historical CVaR 기반 가격 하방 위험 계산
-    """
-    return {"message": "Endpoint to be implemented"}
-
-@app.post("/portfolio/optimize", tags=["Portfolio"])
-def optimize_portfolio():
-    """
-    ESG 위험, CVaR, 턴오버 페널티를 고려한 추천 포트폴리오 비중 최적화
-    """
-    return {"message": "Endpoint to be implemented"}
-
-@app.get("/issues/current", tags=["Issues"])
-def get_current_issues():
-    """
-    실시간 또는 현재 진행 중인 반도체 기업 현안 및 이벤트 조회
-    """
-    return {"message": "Endpoint to be implemented"}
-
-@app.get("/issues/historical", tags=["Issues"])
-def get_historical_issues():
-    """
-    과거 유사 사건 및 주가 영향 데이터 조회
-    """
-    return {"message": "Endpoint to be implemented"}
-
-@app.post("/data/refresh", tags=["Data"])
-def refresh_data():
-    """
-    원시(raw) 또는 후보(candidate) 데이터 갱신
-    """
-    return {"message": "Endpoint to be implemented"}
+# 라우터 등록
+app.include_router(health_router)
+app.include_router(portfolio_router)  # GET / 와 POST /portfolio/optimize 포함
+app.include_router(risk_router)
+app.include_router(issues_router)
+app.include_router(data_router)

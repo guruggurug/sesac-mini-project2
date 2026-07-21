@@ -1,0 +1,71 @@
+<!-- components/issue_cards.html -->
+
+<!-- 현재 주요 이슈 카드 -->
+<div class="card result-card">
+    <h3 class="section-title">📢 최근 주요 ESG/준법 이슈</h3>
+    
+    {% for issue in current_issues %}
+    <div class="issue-item" style="border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 12px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <span class="data-badge badge-sample">{{ issue.company_name }}</span>
+            <span style="font-size: 0.7rem; color: var(--text-muted);">{{ issue.event_date }}</span>
+        </div>
+        <h4 style="font-size: 0.85rem; font-weight: 600; color: var(--text-primary); margin-bottom: 4px;">{{ issue.summary }}</h4>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 0.7rem; color: #60a5fa;">상태: {{ issue.status }}</span>
+            {% if issue.official_source_url %}
+                <a href="{{ issue.official_source_url }}" target="_blank" style="font-size: 0.7rem; color: var(--primary); text-decoration: underline;">공식 원문 보기</a>
+            {% endif %}
+        </div>
+    </div>
+    {% else %}
+    <p class="explanation-text">현재 등록된 이슈 데이터가 없거나 조회 중입니다.</p>
+    {% endfor %}
+</div>
+
+<!-- 과거 사례 주가 반응 정보 -->
+<div class="card result-card" style="margin-top: 15px;">
+    <h3 class="section-title">📉 과거 유사 사례 주가 영향</h3>
+    <p class="explanation-text" style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 10px;">
+        ⚠️ 과거 사례의 주가 흐름은 현재 사건의 향후 결과를 보장하지 않습니다. (최근 10일 반응 윈도우 기준)
+    </p>
+    
+    {% for hist in historical_issues %}
+    <div style="background: rgba(17, 24, 39, 0.6); padding: 12px; border-radius: 8px; margin-bottom: 10px; border: 1px solid var(--border-color);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 6px;">
+            <span style="font-size: 0.8rem; font-weight: 600; color: var(--text-primary);">{{ hist.company_name }}</span>
+            <span style="font-size: 0.7rem; color: var(--text-muted);">사건일: {{ hist.event_date }}</span>
+        </div>
+        <div style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 8px; line-height: 1.3;">
+            {{ hist.summary }}
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; text-align: center;">
+            <div style="background: rgba(0,0,0,0.2); padding: 6px; border-radius: 4px;">
+                <span style="display: block; font-size: 0.65rem; color: var(--text-muted); margin-bottom: 2px;">1일 수익률</span>
+                <span style="font-size: 0.75rem; font-weight: 600; color: {% if hist.return_1d and hist.return_1d < 0 %}#ef4444{% elif hist.return_1d and hist.return_1d > 0 %}#10b981{% else %}var(--text-primary){% endif %};">
+                    {% if hist.return_1d is not none %}{{ (hist.return_1d * 100) | round(1) }}%{% else %}N/A{% endif %}
+                </span>
+            </div>
+            <div style="background: rgba(0,0,0,0.2); padding: 6px; border-radius: 4px;">
+                <span style="display: block; font-size: 0.65rem; color: var(--text-muted); margin-bottom: 2px;">3일 수익률</span>
+                <span style="font-size: 0.75rem; font-weight: 600; color: {% if hist.return_3d and hist.return_3d < 0 %}#ef4444{% elif hist.return_3d and hist.return_3d > 0 %}#10b981{% else %}var(--text-primary){% endif %};">
+                    {% if hist.return_3d is not none %}{{ (hist.return_3d * 100) | round(1) }}%{% else %}N/A{% endif %}
+                </span>
+            </div>
+            <div style="background: rgba(0,0,0,0.2); padding: 6px; border-radius: 4px;">
+                <span style="display: block; font-size: 0.65rem; color: var(--text-muted); margin-bottom: 2px;">최대 낙폭 (MDD)</span>
+                <span style="font-size: 0.75rem; font-weight: 600; color: #ef4444;">
+                    {% if hist.max_drawdown is not none %}{{ (hist.max_drawdown * 100) | round(1) }}%{% else %}N/A{% endif %}
+                </span>
+            </div>
+        </div>
+        {% if hist.recovery_days is not none %}
+        <div style="font-size: 0.65rem; color: var(--text-muted); margin-top: 6px; text-align: right;">
+            🕒 주가 회복 소요 기간: <strong style="color: var(--text-primary);">{{ hist.recovery_days }}일</strong>
+        </div>
+        {% endif %}
+    </div>
+    {% else %}
+    <p class="explanation-text">과거 유사 사례 분석 결과가 없습니다.</p>
+    {% endfor %}
+</div>

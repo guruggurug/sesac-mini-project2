@@ -1,0 +1,14 @@
+<!-- components/bottom_nav.html -->
+{% set current_path = request.url.path if request and request.url else '/' %}
+<nav class="app-nav" style="position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 390px; background: rgba(11, 15, 25, 0.95); backdrop-filter: blur(12px); border-top: 1px solid var(--border-color); display: flex; justify-content: space-around; padding: 10px 0; z-index: 200;">
+    <a href="/" class="nav-item {% if current_path == '/' or current_path == '/diagnosis' %}active{% endif %}" 
+       style="display: flex; flex-direction: column; align-items: center; color: {% if current_path == '/' or current_path == '/diagnosis' %}var(--primary){% else %}var(--text-secondary){% endif %}; text-decoration: none; font-size: 0.7rem; font-weight: {% if current_path == '/' or current_path == '/diagnosis' %}600{% else %}400{% endif %};">
+        <span style="font-size: 1.2rem;">⚡</span>
+        <span>진단/최적화</span>
+    </a>
+    <a href="/issues" class="nav-item {% if current_path == '/issues' %}active{% endif %}" 
+       style="display: flex; flex-direction: column; align-items: center; color: {% if current_path == '/issues' %}var(--primary){% else %}var(--text-secondary){% endif %}; text-decoration: none; font-size: 0.7rem; font-weight: {% if current_path == '/issues' %}600{% else %}400{% endif %};">
+        <span style="font-size: 1.2rem;">📰</span>
+        <span>이슈 분석</span>
+    </a>
+</nav>

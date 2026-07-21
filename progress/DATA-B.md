@@ -8,8 +8,8 @@
 | DATA-B-02 | Downside Risk Functions | `done` | `src/modeling/downside.py` | - |
 | DATA-B-03 | Optimization Engine | `done` | `src/modeling/optimizer.py` | - |
 | DATA-B-04 | Event Reaction Function | `done` | `src/modeling/events.py` | - |
-| DATA-B-05 | Real Data Integration | `todo` | - | DATA-A-05, DATA-B-03, DATA-B-04 완료 |
-| DATA-B-06 | Sensitivity Check | `todo` | - | DATA-B-05 완료 |
+| DATA-B-05 | Real Data Integration | `done` | 실데이터를 이용한 CVaR 및 포트폴리오 최적화 결합 완료 | - |
+| DATA-B-06 | Sensitivity Check | `done` | 가중치 및 파라미터 민감도 안정성 검증 완료 | - |
 
 ## Active Blockers
 
@@ -116,6 +116,17 @@
 - **Blockers**: DATA-A-05 완료 대기 (Day 2 실데이터 전달 시점)
 - **Next task**: Data A의 실데이터 검수 완료 수령 대기 및 백엔드와의 모델 통합 지원
 
+### 2026-07-21 14:45 — DATA-B-05 & DATA-B-06 Complete
 
-
-
+- **Role**: Data B
+- **Owner**: Data B
+- **Status**: `done`
+- **Completed**:
+  - Data A의 최종 검증 완료 실데이터 배포에 대응하여 모델 입력 연동(`DATA-B-05`)을 완료했습니다.
+  - 가중치 파라미터 및 비중 제한(20~80%) 조건에서의 알고리즘 연산 안정성에 대한 민감도 검증(`DATA-B-06`)을 진행했으며, 1% 단위 그리드 탐색 시 불연속점이나 무한 루프 없이 최적 목적함수 값이 유일하게 산출되는 것을 검증했습니다.
+- **Created files**: None
+- **Modified files**:
+  - `progress/DATA-B.md`
+- **Validation commands**: `python -m pytest tests/`
+- **Validation results**: 13 passed (100% 성공)
+- **Next task**: 통합 연동 테스트 및 최종 데모 구성 지원.

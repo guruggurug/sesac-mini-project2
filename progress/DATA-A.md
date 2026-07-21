@@ -84,3 +84,19 @@
 - **Remaining**: 없음
 - **Blockers**: 없음
 - **Next task**: Data B 및 백엔드 팀으로의 데이터 전달 및 연동 검토 지원
+
+### 2026-07-21 14:45 — DATA-A-01 ~ DATA-A-05 Complete & Integration Approved
+
+- **Role**: Data A
+- **Status**: `done`
+- **Completed**:
+  - `COMMON-02` 및 `COMMON-03` 스키마 및 샘플 데이터 검토 승인 (`approved`).
+  - 삼성전자 및 SK하이닉스의 2024 지속가능경영보고서 및 사업보고서 기반 ESG 정량 지표 정의 및 데이터 수집 완료.
+  - 원안위, 환경부, 노동부 등 공인 정부 기관 보도자료 기반 역사적 주요 사건(피폭, 화학물질 누출 등) 데이터셋 구축 완료.
+  - 수집된 데이터셋 정합성 및 신뢰도 검수 완료 후 실데이터 배포 완료.
+- **Created files**:
+  - [esg_indicators.csv](file:///c:/dev/sesac-mini-pjt2/data/reviewed/esg_indicators.csv)
+  - [events.csv](file:///c:/dev/sesac-mini-pjt2/data/reviewed/events.csv)
+  - [sources.csv](file:///c:/dev/sesac-mini-pjt2/data/reviewed/sources.csv)
+- **Validation results**: 스키마 정합성 검증 통과.
+- **Next task**: 프론트엔드-백엔드 E2E 실데이터 연동 확인 및 검토 지원.

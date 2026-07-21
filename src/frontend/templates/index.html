@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>반도체 가치투자 내비게이션</title>
+    <title>칩버디 (Chip Buddy)</title>
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -23,7 +23,7 @@
         <header class="app-header">
             <div class="logo-area">
                 <span class="logo-icon">⚡</span>
-                <h1 class="logo-title">Antigravity NAV</h1>
+                <h1 class="logo-title">Chip Buddy</h1>
             </div>
             <span class="data-badge badge-sample" id="data-status-badge">Sample Data</span>
         </header>
@@ -46,41 +46,69 @@
                       hx-target="#results-area"
                       hx-indicator="#loading-spinner">
                     
-                    <!-- 위험 선호도 선택 -->
-                    <div class="form-group" style="margin-bottom: 10px;">
-                        <label for="risk-priority">투자 성향 / 위험 우선순위</label>
-                        <select id="risk-priority" name="risk_priority" style="background: rgba(17,24,39,0.8); color: white; padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); font-size: 0.85rem;">
-                            <option value="balanced" selected>균형형 (Balanced)</option>
-                            <option value="min_loss">손실 최소화 (Min Loss)</option>
-                            <option value="esg_focused">ESG 중시 (ESG Focused)</option>
-                        </select>
+                    <!-- 조정 기준 요약 표시 및 hidden 전송 -->
+                    <div style="background: rgba(30, 41, 59, 0.5); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 12px; font-size: 0.8rem; display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <span style="color: var(--text-secondary); display: block; font-size: 0.7rem; margin-bottom: 2px;">적용된 포트폴리오 조정 기준</span>
+                            <strong style="color: #60a5fa;">
+                                {% if rebalancing_profile == 'strategy_preserving' %}
+                                    현재 전략 유지형
+                                {% elif rebalancing_profile == 'balanced_adjustment' %}
+                                    필요 조정형 (추천)
+                                {% else %}
+                                    위험 우선 조정형
+                                {% endif %}
+                            </strong>
+                        </div>
+                        <a href="/rebalancing-profile" style="color: var(--primary); text-decoration: underline; font-size: 0.75rem; font-weight: 500;">기준 변경</a>
                     </div>
+                    <input type="hidden" name="risk_priority" value="{{ rebalancing_profile }}">
 
                     <!-- 삼성전자 입력 -->
-                    <div class="form-row">
+                    <div class="form-row" style="background: rgba(30, 41, 59, 0.2); padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.02); margin-bottom: 10px;">
+                        <span style="font-size: 0.85rem; font-weight: 700; color: var(--text-primary); display: block; margin-bottom: 6px; grid-column: span 2;">🔵 삼성전자 (005930)</span>
                         <div class="form-group">
-                            <label for="samsung-shares">삼성전자 보유 수량</label>
-                            <input type="number" id="samsung-shares" name="samsung_qty" placeholder="0" min="0" required>
+                            <label for="samsung-shares">보유 수량 (주)</label>
+                            <input type="number" id="samsung-shares" name="samsung_qty" placeholder="0" min="0" oninput="calculateRealtimeWeights()">
                         </div>
                         <div class="form-group">
-                            <label for="samsung-price">삼성전자 평단가 (원)</label>
-                            <input type="number" id="samsung-price" name="samsung_price" placeholder="0" min="0" required>
+                            <label for="samsung-price">평단가 (원)</label>
+                            <input type="number" id="samsung-price" name="samsung_price" placeholder="0" min="0" oninput="calculateRealtimeWeights()">
+                        </div>
+                        <div class="form-group" style="grid-column: span 2; margin-top: 6px;">
+                            <label for="samsung-reason">매수 이유 (정성 분석용)</label>
+                            <textarea id="samsung-reason" name="samsung_reason" placeholder="예: 업황 개선 기대, 배당 매력 등" style="width: 100%; height: 44px; background: rgba(17,24,39,0.8); border: 1px solid var(--border-color); border-radius: 6px; padding: 6px; font-size: 0.75rem; color: white; resize: none;" maxlength="500"></textarea>
                         </div>
                     </div>
 
                     <!-- SK하이닉스 입력 -->
-                    <div class="form-row">
+                    <div class="form-row" style="background: rgba(30, 41, 59, 0.2); padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.02); margin-bottom: 15px;">
+                        <span style="font-size: 0.85rem; font-weight: 700; color: var(--text-primary); display: block; margin-bottom: 6px; grid-column: span 2;">🔴 SK하이닉스 (000660)</span>
                         <div class="form-group">
-                            <label for="hynix-shares">SK하이닉스 보유 수량</label>
-                            <input type="number" id="hynix-shares" name="sk_qty" placeholder="0" min="0" required>
+                            <label for="hynix-shares">보유 수량 (주)</label>
+                            <input type="number" id="hynix-shares" name="sk_qty" placeholder="0" min="0" oninput="calculateRealtimeWeights()">
                         </div>
                         <div class="form-group">
-                            <label for="hynix-price">SK하이닉스 평단가 (원)</label>
-                            <input type="number" id="hynix-price" name="sk_price" placeholder="0" min="0" required>
+                            <label for="hynix-price">평단가 (원)</label>
+                            <input type="number" id="hynix-price" name="sk_price" placeholder="0" min="0" oninput="calculateRealtimeWeights()">
+                        </div>
+                        <div class="form-group" style="grid-column: span 2; margin-top: 6px;">
+                            <label for="hynix-reason">매수 이유 (정성 분석용)</label>
+                            <textarea id="hynix-reason" name="sk_reason" placeholder="예: 반도체 턴어라운드, AI 반도체 점유율 증가 등" style="width: 100%; height: 44px; background: rgba(17,24,39,0.8); border: 1px solid var(--border-color); border-radius: 6px; padding: 6px; font-size: 0.75rem; color: white; resize: none;" maxlength="500"></textarea>
                         </div>
                     </div>
 
-                    <button type="submit" class="btn-primary" id="btn-submit">포트폴리오 진단하기</button>
+                    <!-- 실시간 간이 계산 정보 -->
+                    <div id="live-calc-box" style="display: none; background: rgba(16, 185, 129, 0.1); border: 1px dashed rgba(16, 185, 129, 0.3); border-radius: 8px; padding: 10px; margin-bottom: 12px; font-size: 0.75rem; line-height: 1.4;">
+                        📊 <strong>실시간 계산 비중 (입력값 기준):</strong><br>
+                        • 총 평가액: <span id="live-total-eval" style="font-weight: 600; color: #10b981;">0</span>원<br>
+                        • 현재 비중: 삼성전자 <span id="live-sam-weight" style="font-weight: 600;">0</span>% | SK하이닉스 <span id="live-sk-weight" style="font-weight: 600;">0</span>%
+                    </div>
+
+                    <div style="display: flex; gap: 8px; margin-bottom: 10px;">
+                        <button type="button" onclick="loadSamplePortfolio()" class="btn-primary" style="background: rgba(71, 85, 105, 0.6); flex: 1; height: 44px; font-size: 0.8rem; border: 1px solid var(--border-color); cursor: pointer;">샘플 로드</button>
+                        <button type="submit" class="btn-primary" id="btn-submit" style="flex: 2; height: 44px;">포트폴리오 진단하기</button>
+                    </div>
                 </form>
             </section>
 
@@ -103,8 +131,47 @@
         <!-- Footer -->
         <footer class="app-footer">
             <p class="disclaimer">⚠️ 본 서비스에서 제공하는 결과는 투자 참고용이며, 투자 자문이나 매매 지시가 아닙니다. 모든 투자의 책임은 본인에게 있습니다.</p>
-            <p class="copyright">&copy; 2026 Semiconductor Value Investing Navigation MVP</p>
+            <p class="copyright">&copy; 2026 Chip Buddy MVP</p>
         </footer>
+        <!-- 하단 내비게이션 바 -->
+        {% include "components/bottom_nav.html" ignore missing %}  
     </div>
+
+    <script>
+        const SAM_LIVE_EST = 74500;
+        const SK_LIVE_EST = 187000;
+
+        function calculateRealtimeWeights() {
+            const samQty = parseFloat(document.getElementById('samsung-shares').value) || 0;
+            const skQty = parseFloat(document.getElementById('hynix-shares').value) || 0;
+
+            const samEval = samQty * SAM_LIVE_EST;
+            const skEval = skQty * SK_LIVE_EST;
+            const totalEval = samEval + skEval;
+
+            const calcBox = document.getElementById('live-calc-box');
+
+            if (totalEval > 0) {
+                calcBox.style.display = 'block';
+                document.getElementById('live-total-eval').innerText = totalEval.toLocaleString();
+                document.getElementById('live-sam-weight').innerText = ((samEval / totalEval) * 100).toFixed(1);
+                document.getElementById('live-sk-weight').innerText = ((skEval / totalEval) * 100).toFixed(1);
+            } else {
+                calcBox.style.display = 'none';
+            }
+        }
+
+        function loadSamplePortfolio() {
+            document.getElementById('samsung-shares').value = 70;
+            document.getElementById('samsung-price').value = 75000;
+            document.getElementById('samsung-reason').value = "반도체 장기 성장성 확보 및 안정성";
+            
+            document.getElementById('hynix-shares').value = 30;
+            document.getElementById('hynix-price').value = 180000;
+            document.getElementById('hynix-reason').value = "AI 반도체 수요 폭발 및 HBM 기술 우위";
+
+            calculateRealtimeWeights();
+        }
+    </script>
 </body>
 </html>
