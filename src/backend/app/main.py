@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from starlette.middleware.sessions import SessionMiddleware
 
 from app.core.config import FRONTEND_STATIC_DIR
 from app.core.exceptions import CSVValidationError, csv_validation_exception_handler
@@ -11,9 +12,16 @@ from app.routes.issues import router as issues_router
 from app.routes.data import router as data_router
 
 app = FastAPI(
-    title="Semiconductor Value Investing Navigation API",
+    title="Chip Buddy API",
     description="삼성전자와 SK하이닉스 투자 위험 분석 및 포트폴리오 최적화 API MVP",
     version="0.1.0"
+)
+
+# 세션 미들웨어 설정 (암호화 쿠키 세션)
+app.add_middleware(
+    SessionMiddleware,
+    secret_key="chip-buddy-secret-key-super-secure-mvp-12345",
+    session_cookie="chip_buddy_session"
 )
 
 # CORS 설정

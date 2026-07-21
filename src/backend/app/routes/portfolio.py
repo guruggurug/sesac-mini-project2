@@ -1,9 +1,10 @@
 from fastapi import APIRouter, Request, Form, HTTPException
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
 from app.core.templates import templates
+from typing import Optional
 
 import sys
-from app.core.config import BASE_DIR
+from app.core.config import BASE_DIR, TURNOVER_WEIGHTS, DEFAULT_DOWNSIDE_WEIGHT, DEFAULT_ESG_WEIGHT
 if BASE_DIR not in sys.path:
     sys.path.insert(0, BASE_DIR)
 
@@ -13,34 +14,133 @@ from app.repositories.esg_repository import ESGRepository
 from app.repositories.price_repository import PriceRepository
 from app.utils.realtime_price import get_realtime_price
 from src.modeling.optimizer import optimize_portfolio as run_optimize
+from app.core.schemas import PurchaseReason, KnowledgeStage, RebalancingProfile, TurnoverLevel, AnalysisSettings
 
 router = APIRouter()
 
 @router.get("/")
-@router.get("/diagnosis")
-def get_diagnosis_page(request: Request):
+@router.get("/portfolio/setup")
+def get_setup_page(request: Request):
     """
-    메인 진단 대시보드 페이지 반환
+    최종 포트폴리오 자산 입력 페이지 반환 (세션 설정이 없을 경우 /diagnosis로 리다이렉트)
     """
+    if "purchase_reason" not in request.session or "rebalancing_profile" not in request.session:
+        return RedirectResponse(url="/diagnosis", status_code=303)
+        
     return templates.TemplateResponse(
         request=request,
         name="index.html",
+        context={
+            "purchase_reason": request.session.get("purchase_reason"),
+            "knowledge_stage": request.session.get("knowledge_stage"),
+            "rebalancing_profile": request.session.get("rebalancing_profile"),
+            "turnover_level": request.session.get("turnover_level"),
+            "data_status": request.session.get("data_status", "sample")
+        }
+    )
+
+@router.get("/diagnosis", response_class=HTMLResponse)
+def get_diagnosis_question_page(request: Request):
+    """
+    1단계: 매수 이유 질문 페이지 반환
+    """
+    return templates.TemplateResponse(
+        request=request,
+        name="diagnosis.html",
         context={}
+    )
+
+@router.post("/diagnosis")
+def post_diagnosis_question(request: Request, purchase_reason: str = Form(...)):
+    """
+    1단계 제출: 매수 이유 저장 및 설명 수준 결정 후 2단계 리다이렉트
+    """
+    if purchase_reason not in [r.value for r in PurchaseReason]:
+        raise HTTPException(status_code=400, detail="유효하지 않은 매수 이유입니다.")
+        
+    mapping = {
+        "price_or_recommendation": "beginner",
+        "news_and_industry": "information_seeker",
+        "value_and_risk_analysis": "value_beginner"
+    }
+    knowledge_stage = mapping[purchase_reason]
+    
+    request.session["purchase_reason"] = purchase_reason
+    request.session["knowledge_stage"] = knowledge_stage
+    
+    return RedirectResponse(url="/rebalancing-profile", status_code=303)
+
+@router.get("/rebalancing-profile", response_class=HTMLResponse)
+def get_rebalancing_profile_page(request: Request):
+    """
+    2단계: 포트폴리오 조정 기준 선택 페이지 반환
+    """
+    if "purchase_reason" not in request.session:
+        return RedirectResponse(url="/diagnosis", status_code=303)
+        
+    return templates.TemplateResponse(
+        request=request,
+        name="rebalancing_profile.html",
+        context={}
+    )
+
+@router.post("/rebalancing-profile")
+def post_rebalancing_profile(request: Request, rebalancing_profile: str = Form(...)):
+    """
+    2단계 제출: 포트폴리오 조정 기준 저장 및 turnover_weight 결정 후 결과 리다이렉트
+    """
+    if rebalancing_profile not in [p.value for p in RebalancingProfile]:
+        raise HTTPException(status_code=400, detail="유효하지 않은 조정 프로필입니다.")
+        
+    mapping_level = {
+        "strategy_preserving": "high",
+        "balanced_adjustment": "medium",
+        "risk_priority_adjustment": "low"
+    }
+    turnover_level = mapping_level[rebalancing_profile]
+    turnover_weight = TURNOVER_WEIGHTS[rebalancing_profile]
+    
+    request.session["rebalancing_profile"] = rebalancing_profile
+    request.session["turnover_level"] = turnover_level
+    request.session["turnover_weight"] = turnover_weight
+    
+    return RedirectResponse(url="/settings-result", status_code=303)
+
+@router.get("/settings-result", response_class=HTMLResponse)
+def get_settings_result_page(request: Request):
+    """
+    3단계: 설정 완료 확인 페이지 반환
+    """
+    if "rebalancing_profile" not in request.session:
+        return RedirectResponse(url="/rebalancing-profile", status_code=303)
+        
+    return templates.TemplateResponse(
+        request=request,
+        name="settings_result.html",
+        context={
+            "purchase_reason": request.session.get("purchase_reason"),
+            "knowledge_stage": request.session.get("knowledge_stage"),
+            "rebalancing_profile": request.session.get("rebalancing_profile"),
+            "turnover_level": request.session.get("turnover_level")
+        }
     )
 
 @router.post("/portfolio/optimize", response_class=HTMLResponse)
 def optimize_portfolio(
     request: Request,
-    samsung_qty: int = Form(...),
-    samsung_price: float = Form(None),
-    sk_qty: int = Form(...),
-    sk_price: float = Form(None),
-    risk_priority: str = Form(...)
+    samsung_qty: Optional[int] = Form(0),
+    samsung_price: Optional[float] = Form(None),
+    sk_qty: Optional[int] = Form(0),
+    sk_price: Optional[float] = Form(None),
+    risk_priority: Optional[str] = Form(None)
 ):
     """
     포트폴리오 비중 최적화 요청 처리 (Form 전송 및 HTMX 응답)
     실시간 외부 주가 연동 반영
     """
+    samsung_qty = samsung_qty or 0
+    sk_qty = sk_qty or 0
+
     # 1. 입력 유효성 검사
     if samsung_qty < 0 or sk_qty < 0:
         raise HTTPException(status_code=400, detail="수량은 0 이상이어야 합니다.")
@@ -56,13 +156,21 @@ def optimize_portfolio(
     if total_eval <= 0:
         raise HTTPException(status_code=400, detail="보유 주식의 총 가치가 0 이하입니다. 수량을 입력해주세요.")
 
-    # 3. 투자 성향 매핑 (min_loss -> conservative 등)
+    # 세션에서 포트폴리오 조정 기준에 맞춰 turnover_weight 추출
+    session_profile = request.session.get("rebalancing_profile", "balanced_adjustment")
+    session_turnover_weight = request.session.get("turnover_weight", 0.10)
+    session_knowledge_stage = request.session.get("knowledge_stage", "beginner")
+
+    # 기존 API 호환을 위한 매핑 (risk_priority가 넘어온 경우)
     mapped_priority = risk_priority
-    if risk_priority == "min_loss":
-        mapped_priority = "conservative"
+    if risk_priority:
+        if risk_priority == "min_loss":
+            mapped_priority = "conservative"
+        if mapped_priority not in ["conservative", "balanced", "esg_focused", "strategy_preserving", "balanced_adjustment", "risk_priority_adjustment"]:
+            raise HTTPException(status_code=400, detail="유효하지 않은 투자 성향입니다.")
         
-    if mapped_priority not in ["conservative", "balanced", "esg_focused"]:
-        raise HTTPException(status_code=400, detail="유효하지 않은 투자 성향입니다.")
+        # risk_priority가 주어졌다면 turnover_weight는 None으로 넘겨 legacy 가중치를 따르도록 함
+        session_turnover_weight = None
 
     # 4. 데이터 로드 (Repositories 활용)
     esg_repo = ESGRepository()
@@ -133,10 +241,18 @@ def optimize_portfolio(
     
     price_df = pd.concat([price_df, sam_row, sk_row], ignore_index=True)
 
-    # 6. 모델 호출을 위한 holdings 구성 (평단가로 실시간 현재가 주입)
+    # 6. 모델 호출을 위한 holdings 구성 (평단가로 실시간 현재가 주입 및 buy_reason 추가)
+    purchase_reason = request.session.get("purchase_reason", "news_and_industry")
+    purchase_reason_text_map = {
+        "price_or_recommendation": "주가 흐름이나 주변 추천",
+        "news_and_industry": "뉴스·실적·산업 전망",
+        "value_and_risk_analysis": "기업가치와 장기 위험"
+    }
+    buy_reason = purchase_reason_text_map.get(purchase_reason, "기본 분석")
+
     holdings = [
-        {"ticker": "005930", "quantity": samsung_qty, "average_price": realtime_sam},
-        {"ticker": "000660", "quantity": sk_qty, "average_price": realtime_sk}
+        {"ticker": "005930", "quantity": samsung_qty, "average_price": realtime_sam, "buy_reason": buy_reason},
+        {"ticker": "000660", "quantity": sk_qty, "average_price": realtime_sk, "buy_reason": buy_reason}
     ]
 
     esg_df = pd.DataFrame(esg_data)
@@ -147,8 +263,12 @@ def optimize_portfolio(
             holdings=holdings,
             price_data=price_df,
             esg_input=esg_df,
-            risk_priority=mapped_priority,
-            data_mode=data_mode
+            risk_priority=mapped_priority or session_profile,
+            data_mode=data_mode,
+            turnover_weight=session_turnover_weight,
+            downside_weight=DEFAULT_DOWNSIDE_WEIGHT,
+            esg_weight=DEFAULT_ESG_WEIGHT,
+            knowledge_stage=session_knowledge_stage
         )
     except Exception as e:
         try:
@@ -164,8 +284,12 @@ def optimize_portfolio(
                 holdings=holdings,
                 price_data=sample_price_df,
                 esg_input=pd.DataFrame(sample_esg_data),
-                risk_priority=mapped_priority,
-                data_mode="fallback"
+                risk_priority=mapped_priority or session_profile,
+                data_mode="fallback",
+                turnover_weight=session_turnover_weight,
+                downside_weight=DEFAULT_DOWNSIDE_WEIGHT,
+                esg_weight=DEFAULT_ESG_WEIGHT,
+                knowledge_stage=session_knowledge_stage
             )
             opt_result["warnings"] = opt_result.get("warnings", []) + [
                 f"최적화 계산 중 오류가 발생하여 샘플 데이터로 폴백 계산되었습니다: {str(e)}"
@@ -193,7 +317,7 @@ def optimize_portfolio(
     return templates.TemplateResponse(
         request=request,
         name="components/risk_result.html", 
-        context={"data": opt_result}
+        context={"data": opt_result, "knowledge_stage": session_knowledge_stage}
     )
 
 @router.post("/portfolio/calculate")

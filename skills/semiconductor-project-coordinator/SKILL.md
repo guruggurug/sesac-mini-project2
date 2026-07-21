@@ -1,9 +1,9 @@
 ---
 name: semiconductor-project-coordinator
-description: Coordinate the two-day, four-person semiconductor value-investing navigation project through its connected GitHub repository or uploaded repository files. Use when the user asks to inspect project status, select the next task for Data A, Data B, Backend, Frontend, or Integration, review ROADMAP.md or PROGRESS.md, update role progress files, check file ownership, prepare Git branches and commits, review schemas and sample data, reduce merge conflicts, or determine whether parallel work can start.
+description: Coordinate the two-day, four-person Chip Buddy project through its connected GitHub repository or uploaded repository files. Use when the user asks to inspect project status, select the next task for Data A, Data B, Backend, Frontend, or Integration, review ROADMAP.md or PROGRESS.md, update role progress files, check file ownership, prepare Git branches and commits, review schemas and sample data, reduce merge conflicts, or determine whether parallel work can start.
 ---
 
-# Semiconductor Project Coordinator
+# Chip Buddy Coordinator
 
 ## Goal
 

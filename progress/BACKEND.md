@@ -101,6 +101,94 @@
 - **Validation results**:
   - 백엔드 12개 API 테스트 케이스 전체 정상 통과 (100% Pass)
 - **Next task**: 프론트엔드 연동 및 최종 E2E 통합 테스트 검토 지원
+### 2026-07-21 15:37 — Service Name Rename (Chip Buddy / 칩버디)
 
+- **Role**: Backend
+- **Status**: `done`
+- **Completed**:
+  - `Chip Buddy` 및 `칩버디`로 서비스명 반영 계획 수립 및 유저 승인 완료.
+  - 백엔드, 프론트엔드, 각종 안내 문서 및 프로젝트 설정 전반의 서비스명 일괄 업데이트 완료.
+- **Created files**: None
+- **Modified files**:
+  - `src/backend/app/main.py`
+  - `src/backend/tests/test_portfolio.py`
+  - `src/frontend/templates/index.html`
+  - `README.md`
+  - `AGENTS.md`
+  - `개발 A GUIDELINE.md`
+  - `팀원 B. GUIDELINE.md`
+  - `skills/semiconductor-project-coordinator/SKILL.md`
+  - `progress/BACKEND.md`
+- **Validation commands**:
+  - `.venv\Scripts\python -m pytest src/backend`
+- **Validation results**:
+  - 12개 API 및 렌더링 테스트 케이스 전원 통과 (100% Pass)
+- **Next task**: 프론트엔드 연동 및 최종 E2E 통합 테스트 검토 지원
 
+### 2026-07-21 15:43 — Backend-based E2E Integration Test Verification & Feature Mapping
+
+- **Role**: Backend
+- **Status**: `done`
+- **Completed**:
+  - `pytest`를 통한 모델링 및 백엔드 API 모듈 전체 통합 테스트(총 25개 테스트 케이스)를 기동하여 100% Pass 검증을 확인했습니다 (E2E 통합 테스트 검증 백엔드 지원 완료).
+  - 현재 백엔드 서버 소스 코드를 전수조사하여 칩버디(Chip Buddy) 서비스가 제공하는 모든 세부 기능 명세를 누락 없이 정리 및 체계화 완료했습니다.
+- **Created files**: None
+- **Modified files**:
+  - `progress/BACKEND.md`
+- **Validation commands**:
+  - `.venv\Scripts\python -m pytest`
+- **Validation results**:
+  - 전체 25개 테스트(백엔드 API 12개 + 모델링 13개) 100% Pass 성공
+- **Next task**: 최종 데모 시연 준비 및 프론트엔드 E2E 결합 지원
+
+### 2026-07-21 17:20 — Rebalancing Profile & Purchase Reason Implementation
+
+- **Role**: Backend
+- **Status**: `done`
+- **Completed**:
+  - 기획안 '투자 분석 및 포트폴리오 조정 기준 설정' 구현 완료.
+  - 암호화 쿠키 기반 세션(`SessionMiddleware`) 도입을 통해 사용자 설정 상태 유지.
+  - `PurchaseReason`, `KnowledgeStage`, `RebalancingProfile`, `TurnoverLevel` 데이터 모델 추가 (`src/backend/app/core/schemas.py`).
+  - 마법사 3단계 렌더링 라우터 추가 (`/diagnosis`, `/rebalancing-profile`, `/settings-result`).
+  - `optimizer.py` 내 가중치 프로필 매핑 적용 (하방위험: 0.7, ESG: 0.3 고정 및 사용자 프로필별 `turnover_weight` 유동 적용).
+  - Jinja2 매크로 순환 호출(RecursionError) 방지를 위한 인라인 테이블 렌더링 도입 (`risk_result.html`).
+  - 전체 pytest 25개 테스트 케이스 100% 통과 완료.
+- **Created files**:
+  - `src/backend/app/core/schemas.py`
+  - `src/frontend/templates/diagnosis.html`
+  - `src/frontend/templates/rebalancing_profile.html`
+  - `src/frontend/templates/settings_result.html`
+- **Modified files**:
+  - `src/backend/app/main.py`
+  - `src/backend/app/core/config.py`
+  - `src/backend/app/routes/portfolio.py`
+  - `src/modeling/optimizer.py`
+  - `src/frontend/templates/components/risk_result.html`
+  - `src/frontend/templates/index.html`
+  - `src/backend/requirements.txt`
+  - `progress/BACKEND.md`
+- **Validation commands**:
+  - `.venv\Scripts\python -m pytest`
+- **Validation results**:
+  - 25 passed, 1 warning (100% Pass)
+- **Next task**: 최종 데모 기동 수동 검증 및 프론트엔드 스타일 다듬기 지원
+
+### 2026-07-21 17:48 — E2E Step 1: Issues Route Stabilization & Dynamic Binding
+
+- **Role**: Backend
+- **Status**: `done`
+- **Completed**:
+  - 이슈 분석 화면(`/issues`) 내의 `official_source_url` 및 `news_url` 키 매핑 오류 해결.
+  - `test_portfolio.py` 내에 `/issues` HTML 페이지 렌더링 및 동적 과거 사례 반응 출력("주가 회복 소요 기간") 확인 테스트 케이스 `test_issues_page_rendering` 추가.
+  - pytest 실행 검증 결과 총 26개 테스트 케이스 100% 통과 달성. 과거 유사 사례 주가 수익률 및 회복일(events.py 연산값)이 Jinja2 테이블에 동적 바인딩 성공함 확인.
+- **Created files**: None
+- **Modified files**:
+  - `src/backend/app/routes/issues.py`
+  - `src/backend/tests/test_portfolio.py`
+  - `progress/BACKEND.md`
+- **Validation commands**:
+  - `.venv\Scripts\python -m pytest`
+- **Validation results**:
+  - 26 passed, 1 warning (100% Pass)
+- **Next task**: E2E 2단계 (대시보드 종합 건강 점수 및 3색 위험 신호등 구현) 착수
 

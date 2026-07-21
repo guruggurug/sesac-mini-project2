@@ -32,8 +32,8 @@ def test_get_diagnosis_page():
     response = client.get("/")
     assert response.status_code == 200
     assert "text/html" in response.headers["content-type"]
-    assert "반도체 가치투자 내비게이션" in response.text
-    assert "Antigravity NAV" in response.text
+    assert "칩버디" in response.text
+    assert "Chip Buddy" in response.text
 
 def test_portfolio_optimize_form_submit():
     """
@@ -197,5 +197,19 @@ def test_portfolio_optimize_realtime_endpoint():
     assert response.status_code == 200
     assert "text/html" in response.headers["content-type"]
     assert "포트폴리오 비중 비교" in response.text
+
+def test_issues_page_rendering():
+    """
+    GET /issues 웹 페이지가 정상적으로 HTML을 렌더링하고 동적 데이터를 표시하는지 테스트
+    """
+    response = client.get("/issues")
+    assert response.status_code == 200
+    assert "text/html" in response.headers["content-type"]
+    assert "최근 주요 ESG" in response.text
+    # 사건 데이터 내용이 동적으로 포함되어 있는지 확인
+    assert "피폭" in response.text or "누출" in response.text
+    # 과거 유사 사례가 정상적으로 연산 및 바인딩 되었는지 확인
+    assert "주가 회복 소요 기간" in response.text
+
 
 

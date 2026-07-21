@@ -48,3 +48,22 @@
 - **Modified files**:
   - `progress/INTEGRATION.md`
 - **Next task**: `INT-01` (End-to-End Test) 최종 구동 및 HTMX-FastAPI 화면 표출 검증.
+
+### 2026-07-21 16:25 — Issues Dashboard Normalization (INT-01)
+
+- **Role**: Integration
+- **Owner**: AI Coding Agent (Antigravity)
+- **Status**: `in_progress`
+- **Completed**:
+  - 기획안 대비 누락되었던 `/issues` HTML 라우터를 백엔드 [issues.py](file:///c:/dev/sesac-mini-pjt2/src/backend/app/routes/issues.py)에 구현하여 404 에러 복구.
+  - 신규 HTML 템플릿 [issues.html](file:///c:/dev/sesac-mini-pjt2/src/frontend/templates/issues.html)을 생성하여 모바일 화면으로 이슈 리스트 서빙 지원.
+  - [bottom_nav.html](file:///c:/dev/sesac-mini-pjt2/src/frontend/templates/components/bottom_nav.html)의 active 탭 표시를 Request path에 따라 유동적으로 스타일링되도록 동적화.
+  - [issue_cards.html](file:///c:/dev/sesac-mini-pjt2/src/frontend/templates/components/issue_cards.html) 내부의 과거 유사 사건 주가 반응 하드코딩 수치들을 제거하고 [events.py](file:///c:/dev/sesac-mini-pjt2/src/modeling/events.py)의 `analyze_all_events` 연산 결과와 연동하여 동적으로 바인딩 처리 완료.
+- **Created files**:
+  - [issues.html](file:///c:/dev/sesac-mini-pjt2/src/frontend/templates/issues.html)
+- **Modified files**:
+  - [issues.py](file:///c:/dev/sesac-mini-pjt2/src/backend/app/routes/issues.py)
+  - [bottom_nav.html](file:///c:/dev/sesac-mini-pjt2/src/frontend/templates/components/bottom_nav.html)
+  - [issue_cards.html](file:///c:/dev/sesac-mini-pjt2/src/frontend/templates/components/issue_cards.html)
+  - [INTEGRATION.md](file:///c:/dev/sesac-mini-pjt2/progress/INTEGRATION.md)
+- **Next task**: `INT-01` (End-to-End Test) 폼 입력 수정 및 홈 화면 실시간 재연산 관련 누락 기능 점검 및 보안.
