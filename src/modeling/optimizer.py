@@ -24,7 +24,9 @@ RISK_PRIORITY_WEIGHTS = {
 
 
 def load_esg_scores(
-    esg_input: Optional[Union[str, Path, pd.DataFrame, Dict[str, float]]] = None
+    esg_input: Optional[Union[str, Path, pd.DataFrame, Dict[str, float]]] = None,
+    *,
+    allow_sample_defaults: bool = False,
 ) -> Dict[str, float]:
     """
     Interface to read ESG risk scores for Samsung and SK Hynix.
@@ -35,24 +37,42 @@ def load_esg_scores(
         TICKER_SK: 0.55,
     }
 
+    def complete_or_raise(scores: Dict[str, float], reason: str) -> Dict[str, float]:
+        missing = [ticker for ticker in (TICKER_SAMSUNG, TICKER_SK) if ticker not in scores]
+        if missing:
+            if allow_sample_defaults:
+                return {
+                    ticker: float(scores.get(ticker, default_esg[ticker]))
+                    for ticker in (TICKER_SAMSUNG, TICKER_SK)
+                }
+            raise ValueError(
+                f"ESG risk score unavailable ({reason}); missing tickers: {', '.join(missing)}"
+            )
+
+        normalized = {ticker: float(scores[ticker]) for ticker in (TICKER_SAMSUNG, TICKER_SK)}
+        for ticker, score in normalized.items():
+            if not np.isfinite(score) or not 0.0 <= score <= 1.0:
+                raise ValueError(f"ESG risk score must be between 0 and 1: {ticker}={score}")
+        return normalized
+
     if esg_input is None:
-        return default_esg
+        return complete_or_raise({}, "input is missing")
 
     if isinstance(esg_input, dict):
-        return {
-            TICKER_SAMSUNG: float(esg_input.get(TICKER_SAMSUNG, default_esg[TICKER_SAMSUNG])),
-            TICKER_SK: float(esg_input.get(TICKER_SK, default_esg[TICKER_SK])),
-        }
+        return complete_or_raise(
+            {str(ticker).zfill(6): value for ticker, value in esg_input.items()},
+            "ticker score is missing",
+        )
 
     if isinstance(esg_input, (str, Path)):
         path = Path(esg_input)
         if not path.exists():
-            return default_esg
+            return complete_or_raise({}, f"file does not exist: {path}")
         df = pd.read_csv(path)
     elif isinstance(esg_input, pd.DataFrame):
         df = esg_input.copy()
     else:
-        return default_esg
+        raise TypeError(f"Unsupported ESG input type: {type(esg_input).__name__}")
 
     scores = {}
     ticker_col = "ticker" if "ticker" in df.columns else ("company_id" if "company_id" in df.columns else None)
@@ -66,10 +86,7 @@ def load_esg_scores(
                 val = float(matched[score_col].iloc[0])
                 scores[ticker] = val
 
-    return {
-        TICKER_SAMSUNG: scores.get(TICKER_SAMSUNG, default_esg[TICKER_SAMSUNG]),
-        TICKER_SK: scores.get(TICKER_SK, default_esg[TICKER_SK]),
-    }
+    return complete_or_raise(scores, "aggregate score column or ticker score is missing")
 
 
 def classify_risk_level(total_risk: float) -> str:
@@ -181,7 +198,11 @@ def optimize_portfolio(
     returns_df = calculate_daily_returns(prices_df)
 
     # 3. Load ESG scores
-    esg_scores = load_esg_scores(esg_input)
+    allow_sample_esg_defaults = data_mode in ("sample", "fallback")
+    esg_scores = load_esg_scores(
+        esg_input,
+        allow_sample_defaults=allow_sample_esg_defaults,
+    )
 
     # 4. Company individual downside risks
     comp_downside = calculate_company_downside_risks(returns_df, prices_df, cvar_confidence=cvar_confidence)
@@ -290,6 +311,11 @@ def optimize_portfolio(
     ]
     if data_mode == "sample":
         warnings.append("현재 샘플 데이터를 사용하여 최적화를 수행했습니다.")
+    if allow_sample_esg_defaults:
+        warnings.append(
+            "ESG 집계 점수가 없어 sample/fallback 전용 예시 점수를 사용했습니다. "
+            "이 값은 validated 결과로 표시할 수 없습니다."
+        )
 
     date_strings = [str(d)[:10] for d in prices_df.index]
 

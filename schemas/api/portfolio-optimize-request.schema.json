@@ -90,7 +90,7 @@
       "type": "string",
       "enum": [
         "sample",
-        "reviewed",
+        "validated",
         "fallback"
       ],
       "default": "sample"

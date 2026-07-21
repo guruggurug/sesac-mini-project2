@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.local/schemas/data/event-sources.schema.json",
+  "title": "Event Source Link CSV Row",
+  "description": "사건과 자동 검증 출처의 다대다 연결",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["event_id", "source_id", "source_role", "is_primary", "note"],
+  "properties": {
+    "event_id": { "type": "string", "pattern": "^EVT-[0-9]{4,}$" },
+    "source_id": { "type": "string", "pattern": "^SRC-[0-9]{4,}$" },
+    "source_role": {
+      "type": "string",
+      "enum": ["detection", "official_confirmation", "company_response", "context"]
+    },
+    "is_primary": { "type": "boolean" },
+    "note": { "type": "string", "maxLength": 1000 }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "is_primary": { "const": true } }, "required": ["is_primary"] },
+      "then": { "properties": { "source_role": { "const": "official_confirmation" } } }
+    }
+  ]
+}
