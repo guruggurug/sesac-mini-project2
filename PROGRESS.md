@@ -4,7 +4,8 @@
 
 - Project phase: Realtime Market & Daily Issue Sync Contract Review
 - Overall status: `in_progress`
-- Last updated: 2026-07-22 03:54 KST
+- Project duration: 4 days
+- Last updated: 2026-07-22 04:15 KST
 - Current integration checkpoint: `CHECKPOINT-05`
 - Data mode: `validated` (Fallback: `sample`)
 - Root progress owner: Team Lead
@@ -109,7 +110,7 @@
 | INT-02 | Data and Model Review | `done` | DATA-A-05, DATA-B-06 |
 | INT-03 | Demo Preparation | `todo` | INT-01, INT-02 |
 
-### Realtime & Daily Sync
+### Day 3-4 Realtime & Daily Sync
 
 | Task ID | Task | Status | Dependency |
 |---|---|---|---|
@@ -314,6 +315,8 @@ schemas/api/examples/sync-status-response.example.json
 - 프로젝트 전체 차단 요소 발생 시
 - Day 1 종료 시
 - Day 2 종료 시
+- Day 3 종료 시
+- Day 4 종료 시
 - 최종 데모 준비 완료 시
 
 ---

@@ -4,11 +4,11 @@
 
 | Task ID | Task | Status | Output | Blocker |
 |---|---|---|---|---|
-| DATA-A-01 | ESG Indicator Definition | `done` | `data/reviewed/esg_indicators.csv`, `data/notes/data_dictionary.md` | 없음 |
-| DATA-A-02 | Official Report Collection | `done` | `data/raw/reports/README.md`, `data/reviewed/sources.csv` | 없음 |
-| DATA-A-03 | ESG Value Review | `done` | `data/reviewed/esg_indicators.csv` (12행 교차검증) | 없음 |
-| DATA-A-04 | Event Dataset | `done` | `data/reviewed/events.csv` (5건 검증 사건) | 없음 |
-| DATA-A-05 | Final Data Quality Review | `done` | `scripts/validate_data_a.py` 통과 | 없음 |
+| DATA-A-01 | ESG Indicator Definition | `done` | `data/processed/esg_indicators.csv`, `data/notes/data_dictionary.md` | 없음 |
+| DATA-A-02 | Official Report Collection | `done` | `data/raw/reports/README.md`, `data/processed/sources.csv` | 없음 |
+| DATA-A-03 | ESG Value Review | `done` | `data/processed/esg_indicators.csv` (72행: available 54, unavailable 18) | 없음 |
+| DATA-A-04 | Event Dataset | `done` | `data/processed/events.csv` (공식 확인 confirmed 사건 3건) | 없음 |
+| DATA-A-05 | Final Data Quality Review | `done` | `validate_data_a_bundle()` 및 계약 테스트 통과 | 없음 |
 | DATA-A-RT-01 | Daily Disclosure and News Source·Classification·Deduplication Rules | `review` | candidate/source 계약, 중복·severity 자동 결정 규칙 | 공유 스키마 교차 검토 필요 |
 | DATA-A-RT-02 | Candidate Data Quality and Event Status Validation | `review` | candidate 6건, source 6건, event-source 4건, processed event 3건 통합 검증 | 실제 일일 수집기 연동 필요 |
 

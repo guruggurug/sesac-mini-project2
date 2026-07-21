@@ -7,10 +7,10 @@
 | BE-01 | FastAPI Skeleton | `done` | `src/backend/app/main.py` 등 | COMMON-01 완료 |
 | BE-02 | Data Loader and Validation | `done` | `src/backend/app/utils/csv_validator.py` | COMMON-02, COMMON-03 승인 |
 | BE-03 | Mock API | `done` | `src/backend/app/routes/` 내 Mocking | BE-01, BE-02 완료 |
-| BE-04 | Real Data Integration | `done` | `data/reviewed/` 디렉토리 연동 완료 | DATA-A-05, BE-02 완료 |
+| BE-04 | Real Data Integration | `done` | `data/processed/` 자동 검증 스냅샷 연동 완료 | DATA-A-05, BE-02 완료 |
 | BE-05 | Model Integration | `done` | `src/backend/app/routes/` 내 실제 계산 모듈 연동 | DATA-B-05, BE-03 완료 |
 | BE-06 | Fallback and Contract Tests | `done` | `test_portfolio.py` 수정 및 예외 폴백 로직 검증 | BE-04, BE-05 완료 |
-| BE-RT-00 | ESG Schema Validator and Sample Contract Compatibility Recovery | `done` | nullable 캐스팅, sample ESG·event 계약, 회귀 테스트 | 없음 |
+| BE-RT-00 | ESG Schema Validator and Sample Contract Compatibility Recovery | `done` | processed/sample ESG·event 계약, nullable 캐스팅, 회귀 테스트 | 없음 |
 
 ## Active Blockers
 
@@ -117,7 +117,7 @@
   - `README.md`
   - `AGENTS.md`
   - `개발 A GUIDELINE.md`
-  - `팀원 B. GUIDELINE.md`
+  - `데이터 B GUIDELINE.md`
   - `skills/semiconductor-project-coordinator/SKILL.md`
   - `progress/BACKEND.md`
 - **Validation commands**:

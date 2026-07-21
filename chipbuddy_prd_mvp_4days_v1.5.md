@@ -378,7 +378,7 @@ IssueRisk(k) = ResidualRisk(k) + ControversyPenalty(k) + DataUncertainty(k)
 ESGRisk = Σ(MaterialityWeight(k) × IssueRisk(k))
 ```
 
-사건 점수는 심각도, 최신성, 기업 책임, 지속성, 근거 신뢰도를 곱해 산정한다. `Rumor`는 0점, `Reported`는 경고만, `Confirmed`와 `Sanctioned`만 정량 반영한다.
+사건 점수는 심각도, 최신성, 기업 책임, 지속성, 근거 신뢰도를 곱해 산정한다. 소문성 기록은 raw 단계에서 제외하고, `Reported`는 경고만 표시한다. `Confirmed`와 `Resolved` 사건 중 자동 스키마·공식 출처 검증을 통과한 사건만 정량 반영하며 제재 결과는 별도 `enforcement_action`에 저장한다.
 
 ### 출력
 
