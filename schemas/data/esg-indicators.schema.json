@@ -16,17 +16,25 @@
     "period",
     "business_scope",
     "geography",
-    "source_type",
+    "source_id",
     "source_title",
     "source_page",
     "source_url",
+    "source_table_title",
+    "source_text",
     "assurance",
     "scope_mismatch",
     "availability",
     "data_confidence",
     "risk_direction",
     "review_status",
-    "note"
+    "note",
+    "target_value",
+    "target_unit",
+    "target_year",
+    "baseline_value",
+    "baseline_year",
+    "target_source_id"
   ],
   "properties": {
     "company_id": {
@@ -96,20 +104,9 @@
         "unknown"
       ]
     },
-    "source_type": {
+    "source_id": {
       "type": "string",
-      "enum": [
-        "government",
-        "regulator",
-        "company_report",
-        "company_disclosure",
-        "company_press_release",
-        "exchange",
-        "court",
-        "news",
-        "research",
-        "other"
-      ]
+      "pattern": "^SRC-[0-9]{4}$"
     },
     "source_title": {
       "type": "string",
@@ -181,6 +178,54 @@
     },
     "note": {
       "type": "string"
+    },
+    "source_table_title": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "source_text": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "target_value": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "target_unit": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "target_year": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "baseline_value": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "baseline_year": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "target_source_id": {
+      "type": [
+        "string",
+        "null"
+      ]
     }
   },
   "allOf": [
@@ -252,17 +297,25 @@
       "period": "2024",
       "business_scope": "DS",
       "geography": "global",
-      "source_type": "company_report",
+      "source_id": "SRC-0001",
       "source_title": "삼성전자 DS 지속가능경영보고서",
       "source_page": 73,
       "source_url": "https://example.com/report.pdf",
+      "source_table_title": "온실가스 배출집약도",
+      "source_text": "2024년 온실가스 배출집약도는 12.4 tCO2e/억원입니다.",
       "assurance": "third_party_assured",
       "scope_mismatch": false,
       "availability": "available",
       "data_confidence": "high",
       "risk_direction": "higher_is_worse",
       "review_status": "approved",
-      "note": "원문 확인 완료"
+      "note": "원문 확인 완료",
+      "target_value": 10.0,
+      "target_unit": "tCO2e/억원",
+      "target_year": "2030",
+      "baseline_value": 15.0,
+      "baseline_year": "2018",
+      "target_source_id": "SRC-0001"
     }
   ]
 }

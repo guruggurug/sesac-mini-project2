@@ -1,0 +1,7 @@
+event_id,source_id,source_role,is_primary,note
+EVT-0001,SRC-0006,government_disclosure,true,원자력안전위원회 기흥사업장 안전사고 조사 및 행정처분 공식 보도자료
+EVT-0001,SRC-0001,company_briefing,false,삼성전자 공식 보도자료 및 사과문
+EVT-0002,SRC-0007,government_disclosure,true,환경부 유해화학물질 관리 위반 처분 공고
+EVT-0003,SRC-0008,government_disclosure,true,고용노동부 청주사업장 불화수소 가스누출 현장조사 및 집중점검 보도자료
+EVT-0004,SRC-0009,regulator_disclosure,true,공정거래위원회 하도급거래 시정조치 의결서
+EVT-0005,SRC-0010,regulator_disclosure,true,개인정보보호위원회 개인정보 유출 과태료 의결서
