@@ -3,9 +3,9 @@
 ## Status and scope
 
 - Contract task: `COMMON-RT-02`
-- Status: `approved`
+- Status: `review`
 - Scope: KOSPI, KOSDAQ, Samsung Electronics (`005930`), SK hynix (`000660`), and the daily/manual issue sync flow
-- Approval completed: Data A, Data B, Backend, and Frontend (`2026-07-22`)
+- Approval required: Data A, Data B, Backend, and Frontend
 
 This document defines the shared contract. It does not mean that the producer or consumer implementation is complete.
 
@@ -112,8 +112,8 @@ Recalculation is triggered only after an atomic processed snapshot is published 
 
 ## Ownership and review checklist
 
-- Data A (`approved`): candidate/processed boundaries and automated official-source, event-status, evidence, and deduplication rules are defined.
-- Data B (`approved`): scoring-relevant validated changes and validated-mode missing-score behavior are explicit.
-- Backend (`approved`): schemas define implementable locks, scheduler/manual service reuse, caching, state transitions, and error behavior.
-- Frontend (`approved`): responses expose polling intervals, timestamps, loading/error/fallback labels, manual refresh, and sync status fields.
+- Data A (`review`): remediation artifacts exist, but the role log still records unavailable governance data and cross-role implementation dependencies.
+- Data B (`pending`): confirm scoring-relevant recalculation triggers, result/version handling, and validated-mode missing-score behavior.
+- Backend (`pending`): confirm provider/cache/error behavior, locks, scheduler/manual service reuse, and state persistence implementability.
+- Frontend (`pending`): confirm polling behavior, timestamps, loading/error/fallback labels, manual refresh, and status consumption.
 - Integration: verify the same quote snapshot drives both market cards and portfolio valuation.
