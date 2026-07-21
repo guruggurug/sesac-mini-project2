@@ -28,7 +28,7 @@ All agents must follow this document before creating, modifying, or deleting pro
 - 1% grid-search optimization
 - Current versus recommended weight comparison
 - Historical event return analysis
-- Sample, reviewed, and fallback data states
+- Sample, validated, and fallback data states
 - FastAPI backend
 - Mobile-first frontend
 - Google Stitch UI drafts
@@ -103,7 +103,7 @@ Responsible for:
 - ESG indicator definitions
 - Official report collection
 - ESG value verification
-- Event candidate review
+- Event candidate normalization and automated verification rules
 - Official source confirmation
 - `esg_indicators.csv`
 - `events.csv`
@@ -132,8 +132,8 @@ Responsible for:
 
 Data B does not:
 
-- Approve ESG source data
-- Select official events without Data A review
+- Change automated ESG source-verification rules independently
+- Select model-eligible events without official-source verification
 - Implement frontend layouts
 - Change API contracts independently
 
@@ -153,9 +153,9 @@ Responsible for:
 Backend does not:
 
 - Change ESG methodology
-- Approve events
+- Bypass event verification rules
 - Modify model weights without agreement
-- Present sample output as reviewed output
+- Present sample output as validated output
 
 ### Frontend
 
@@ -343,7 +343,7 @@ The agent must not mark a task `done` when:
 - Tests were not run
 - Required output files do not exist
 - Required schema checks failed
-- Sample data is shown as reviewed data
+- Sample data is shown as validated data
 - Unverified events are included in scoring
 - Data scope is ambiguous
 - Hard-coded demo values remain in production paths
@@ -424,7 +424,7 @@ The root `PROGRESS.md` must remain a concise project summary. Detailed logs belo
 Allowed data states:
 
 - `sample`
-- `reviewed`
+- `validated`
 - `fallback`
 
 Every API response and UI result must identify the data state when relevant.
@@ -436,14 +436,14 @@ Use this order:
 ```text
 raw
 → candidate
-→ human review
-→ reviewed
+→ automated schema and official-source verification
 → processed
 → API
 → UI
 ```
 
 Models must not read directly from `data/raw/`.
+Human review is not part of the runtime pipeline. Candidate records that fail automated verification remain non-scoring warnings or are rejected.
 
 ### Missing Values
 
@@ -452,6 +452,8 @@ Models must not read directly from `data/raw/`.
 - Use `unavailable`.
 - Lower data confidence when needed.
 - Show data shortage in the UI.
+- `availability = unavailable` requires `raw_value = null`; zero is not a missing-value marker.
+- Parser, source, or schema validation failures must remain rejected candidates and must not be converted into `availability = unavailable`.
 
 ### Samsung Scope
 
@@ -471,19 +473,19 @@ scope_mismatch = true
 
 Allowed event statuses:
 
-- `rumor`
 - `reported`
 - `confirmed`
-- `sanctioned`
 - `resolved`
 
-Only `confirmed`, `sanctioned`, and approved `resolved` events may affect model scores.
+`sanctioned` is an enforcement outcome, not an event status. Store it in `enforcement_action`.
 
-`rumor` and `reported` events may be shown as warnings but must not affect ESG risk scores.
+Only `confirmed` and `resolved` events that pass automated schema and official-source verification may affect model scores.
+
+`rumor` records remain in raw collection only and must not be normalized into event data. `reported` events may be shown as warnings but must not affect ESG risk scores.
 
 ### Source Rules
 
-Each approved ESG value must include:
+Each validated ESG value must include:
 
 - Company
 - Indicator
@@ -495,19 +497,19 @@ Each approved ESG value must include:
 - Source title
 - Source page
 - Source URL
-- Review status
 - Data confidence
 
-Each approved event must include:
+Each model-eligible event must include:
 
 - Company
 - Event category
 - Event date
 - Event date type
+- Detection source type (`dart_disclosure` or `news`)
 - Status
+- Enforcement action
 - Official confirmation
 - Official source
-- Review status
 
 ---
 
@@ -553,10 +555,10 @@ The backend must:
 - Validate all input schemas
 - Return clear errors
 - Support sample-data mode
-- Support reviewed-data mode
+- Support validated-data mode
 - Support fallback mode
 - Keep API response examples synchronized
-- Use reviewed data for model calculations
+- Use automatically validated processed data for model calculations
 - Filter unverified events
 - Preserve source metadata
 
@@ -565,10 +567,10 @@ The backend must not:
 - Return sample results without a sample label
 - Silently convert malformed values
 - Ignore missing required columns
-- Overwrite reviewed data during refresh
+- Overwrite the last valid processed snapshot with invalid refresh output
 - Put API keys in source code
 
-External refresh must write to raw or candidate storage only.
+External refresh must write to raw or candidate storage first. Automated verification may atomically publish a new processed snapshot only after schema, official-source, status, and deduplication checks pass.
 
 ---
 
@@ -636,7 +638,7 @@ Allowed files:
 - tests/unit/test_downside.py
 
 Do not modify:
-- data/reviewed/
+- data/processed/
 - src/frontend/
 - schemas/
 
@@ -650,7 +652,7 @@ Antigravity agents must not:
 - Run `git push --force`
 - Modify `.env`
 - Print secrets
-- Delete reviewed data
+- Delete processed data
 - Rewrite unrelated files
 - Change project scope
 - Mark unverified work as complete
@@ -667,7 +669,7 @@ Agents must not perform:
 - User-home deletion
 - Force push
 - Secret exposure
-- Bulk overwrite of reviewed data
+- Bulk overwrite of processed data
 - Bulk overwrite of Stitch-integrated frontend code
 - Deletion of prior progress logs
 
@@ -720,7 +722,7 @@ Before marking any task complete, run the relevant checks.
 - Date formats
 - Scope values
 - Source presence
-- Review status
+- Automated verification result
 
 ### Modeling
 
@@ -737,7 +739,7 @@ Before marking any task complete, run the relevant checks.
 - Schema validation
 - OpenAPI examples
 - Error handling
-- Sample, reviewed, and fallback states
+- Sample, validated, and fallback states
 
 ### Frontend
 

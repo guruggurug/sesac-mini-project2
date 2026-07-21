@@ -8,7 +8,7 @@
 - 대상 플랫폼: 모바일 웹 대시보드
 - 지원 종목: 삼성전자, SK하이닉스
 - 주요 사용자: 주식 및 반도체 배경지식이 거의 없는 초보 투자자
-- 구현 전략: Python 기반 FastAPI 웹앱을 Railway에 배포하고, Google Stitch로 UI를 설계하며, Antigravity와 Gemini를 개발·수집·분석·검증 오케스트레이션 엔진으로 활용한다. 4일 MVP는 사전 수집 데이터와 제한적 실시간 조회를 혼합한다.
+- 구현 전략: Python 기반 FastAPI 웹앱을 Railway에 배포하고, Google Stitch로 UI를 설계하며, Antigravity와 Gemini를 개발·수집·분석·검증 오케스트레이션 엔진으로 활용한다. 시장 가격은 장중 10~30초 간격으로 갱신하고, 공시·뉴스·ESG 이슈는 하루 한 번 자동 동기화하며 사용자가 요청하면 추가 동기화한다.
 
 ---
 
@@ -27,6 +27,9 @@
 - 현재 비중과 추천 비중 비교
 - 추천 비중 적용 시 예상 위험 변화 설명
 - 현재 이슈와 과거 흐름의 별도 분석
+- 코스피·코스닥·삼성전자·SK하이닉스 시장 현황의 장중 갱신
+- 실시간 현재가를 반영한 총 자산 평가액·평가손익·현재 비중
+- 일일 자동 동기화와 사용자 수동 동기화를 통한 최신 이슈 확인
 
 ## 1.3 제품 목표
 
@@ -35,6 +38,8 @@
 3. 시스템이 위험 기반 적정 비중을 자동 산출한다.
 4. 사용자가 현재 비중과 추천 비중의 차이와 이유를 이해한다.
 5. 추천 결과가 수익률 보장이나 매매 명령으로 오해되지 않도록 한다.
+6. 사용자가 홈에서 시장과 보유자산의 최신 상태를 확인할 수 있도록 한다.
+7. 매일 갱신되는 공시·뉴스·ESG 이슈와 사용자 요청 동기화를 통해 최신 위험 정보를 제공한다.
 
 ## 1.4 비목표
 
@@ -86,7 +91,7 @@ ESG Risk = Σ(Materiality Weight × Issue Risk)
 
 ## 2.4 데이터·출처 원칙 강화
 
-- DART·KIND·정부기관·기업 보고서를 우선한다.
+- OpenDART 전자공시를 공식 확인 근거로 우선하고 뉴스는 사건 탐지에 사용한다.
 - 외부 ESG 등급은 참고자료로만 사용하며 원점수를 흉내 내거나 무단 재가공하지 않는다.
 - 모든 위험 카드에 기준연도, 사업범위, 출처, 데이터 신뢰도를 표시한다.
 
@@ -152,6 +157,12 @@ ESG Risk = Σ(Materiality Weight × Issue Risk)
 - 과거 사건 수익률 차트 및 타임라인
 - 포트폴리오 수정 후 최적화 재계산
 - 출처 및 면책 문구
+- 코스피·코스닥·삼성전자·SK하이닉스 장중 시장 현황
+- 삼성전자·SK하이닉스 실시간 현재가 기반 총 자산 평가액·평가손익·현재 비중
+- 공시·뉴스·ESG 이슈 하루 1회 자동 동기화
+- 사용자가 요청하는 이슈 수동 동기화
+- 마지막 갱신 시각, 다음 자동 갱신 시각, 갱신·실패·폴백 상태 표시
+- 자동 검증 통과 사건 또는 사건 상태 변경 시 ESG 위험과 추천 비중 재계산
 
 ## 4.2 Should Have
 
@@ -176,7 +187,8 @@ ESG Risk = Σ(Materiality Weight × Issue Risk)
 - 고도화된 블랙리터만·효율적 프런티어 시각화
 - 전 종목 검색
 - 계좌 연동
-- 초단위 스트리밍 뉴스 및 완전 자동 무검수 사건 반영
+- 틱 단위 초고빈도 시세 스트리밍
+- 검증 규칙 없이 뉴스 원문을 최종 ESG 점수에 직접 반영하는 기능
 - 알림
 
 ---
@@ -310,12 +322,13 @@ current_weight = market_value / total_market_value
 
 ### 구성
 
-1. 포트폴리오 상태 점수와 신호
-2. AI 포트폴리오 요약
-3. 현재 보유 비중
-4. 종목별 상태 카드
-5. 최적화 미리보기
-6. 포트폴리오 최적화 화면 CTA
+1. 코스피·코스닥·삼성전자·SK하이닉스 시장 현황
+2. 실시간 총 자산 평가액·평가손익·현재 비중
+3. 포트폴리오 상태 점수와 신호
+4. AI 포트폴리오 요약
+5. 종목별 상태 카드
+6. 최적화 미리보기
+7. 포트폴리오 최적화 화면 CTA
 
 ### 최적화 미리보기 필드
 
@@ -340,6 +353,10 @@ current_weight = market_value / total_market_value
 - 사용자는 5초 이내 상태 점수와 신호를 확인할 수 있다.
 - 사용자는 15초 이내 현재 비중과 추천 비중을 비교할 수 있다.
 - 홈에서 이슈 콘텐츠가 노출되지 않아야 한다.
+- 홈 진입 시 코스피·코스닥·삼성전자·SK하이닉스의 현재값, 전일 대비, 등락률과 조회 시각을 표시한다.
+- 시장 가격은 장중 10~30초 간격으로 다시 조회하며 페이지 전체를 새로 불러오지 않는다.
+- 실시간 가격 조회 실패 시 마지막 정상값과 지연 상태를 표시하고 임의 값이나 0으로 대체하지 않는다.
+- 총 자산 평가액, 평가손익과 현재 비중은 삼성전자·SK하이닉스의 동일 조회 시각 현재가로 다시 계산한다.
 
 ---
 
@@ -525,6 +542,13 @@ w_samsung + w_skhynix = 1
 
 - 이슈 콘텐츠는 홈이 아닌 이슈 분석 화면에서만 제공한다.
 - 과거 사례가 미래 성과를 보장하지 않는다는 문구를 표시한다.
+- 공시·뉴스·ESG 이슈는 매일 지정된 시각에 한 번 자동 동기화한다.
+- 사용자는 이슈 분석 화면의 `새로운 이슈 확인` 기능으로 추가 동기화를 요청할 수 있다.
+- 수동 동기화는 동시 중복 실행을 방지하고 기존 실행의 상태를 반환해야 한다.
+- 신규 이슈가 없을 때도 기준 시각과 함께 정상 완료 메시지를 표시한다.
+- 동기화 실패 시 기존 validated 데이터와 마지막 정상 결과를 유지한다.
+- 자동 검증 통과 사건이나 사건 상태 변경이 있으면 ESG 위험과 최적화 결과를 다시 계산한다.
+- 마지막 성공 시각, 다음 자동 갱신 예정 시각, 신규·변경 건수와 실패 소스를 표시한다.
 
 ---
 
@@ -600,6 +624,51 @@ w_samsung + w_skhynix = 1
 | generated_at | datetime | 계산 시각 |
 | explanation | text | 추천 근거 |
 
+## 7.5 시장 가격
+
+| 필드 | 타입 | 설명 |
+|---|---|---|
+| instrument_id | string | KOSPI, KOSDAQ, 005930, 000660 |
+| instrument_type | enum | index 또는 equity |
+| current_value | number | 현재 지수 또는 주가 |
+| previous_close | number | 전일 종가 |
+| change | number | 전일 대비 변화량 |
+| change_rate | float | 전일 대비 등락률 |
+| market_status | enum | open, closed, delayed, unavailable |
+| as_of | datetime | 가격 기준 시각 |
+| data_status | enum | validated, sample, fallback |
+
+## 7.6 동기화 상태
+
+| 필드 | 타입 | 설명 |
+|---|---|---|
+| sync_id | string | 동기화 실행 식별자 |
+| sync_type | enum | scheduled 또는 manual |
+| status | enum | queued, running, success, partial_success, failed |
+| stage | enum | queued, collecting, normalizing, validating, publishing, recalculating, completed |
+| started_at | datetime | 시작 시각 |
+| completed_at | datetime 또는 null | 완료 시각 |
+| last_success_at | datetime 또는 null | 마지막 성공 시각 |
+| next_scheduled_at | datetime | 다음 자동 갱신 예정 시각 |
+| collected_items | integer | 전자공시·뉴스 수집 건수 |
+| candidate_items | integer | 정규화된 후보 건수 |
+| validated_items | integer | 자동 검증 통과 건수 |
+| rejected_items | integer | 자동 검증 탈락 건수 |
+| published_items | integer | processed 스냅샷 발행 건수 |
+| new_items | integer | 신규 이슈 수 |
+| updated_items | integer | 상태 변경 이슈 수 |
+| snapshot_updated | boolean | 새 processed 스냅샷 발행 여부 |
+| published_snapshot_version | string 또는 null | 발행된 스냅샷 버전 |
+| published_at | datetime 또는 null | 발행 시각 |
+| recalculation_triggered | boolean | ESG·최적화 재계산 요청 여부 |
+| recalculation_status | enum | not_requested, queued, running, success, failed |
+| recalculated_at | datetime 또는 null | 재계산 종료 시각 |
+| failure_stage | enum 또는 null | 실패한 파이프라인 단계 |
+| failed_sources | array | 실패한 외부 소스 |
+| data_status | enum | validated, sample, fallback |
+
+`success`는 수집과 모든 후보의 자동 검증이 끝나고, 유효한 변경이 있으면 processed 스냅샷 발행까지 성공한 상태다. 신규 데이터가 없으면 `snapshot_updated=false`인 정상 성공이다. 일부 소스만 실패했지만 나머지 후보 검증과 안전한 발행이 완료되면 `partial_success`, 사용 가능한 결과가 없거나 원자적 발행이 실패하면 `failed`다.
+
 ---
 
 # 8. Python 애플리케이션·API·배포 구조
@@ -624,16 +693,19 @@ w_samsung + w_skhynix = 1
 
 ```text
 GET  /health
+GET  /market/quotes
+POST /portfolio/summary
 POST /portfolio/calculate
 POST /risk/esg
 POST /risk/downside
 POST /portfolio/optimize
 GET  /issues/current
 GET  /issues/historical
-POST /data/refresh
+POST /sync/issues
+GET  /sync/status
 ```
 
-`POST /data/refresh`는 관리자 또는 예약 작업이 공시·가격·뉴스 데이터를 갱신할 때 사용한다. 일반 사용자가 임의로 대량 수집을 실행하지 못하도록 보호한다.
+`POST /sync/issues`는 사용자의 `새로운 이슈 확인` 요청과 일일 예약 작업이 같은 동기화 서비스를 사용하도록 한다. 요청은 동시 실행 잠금, 최소 재요청 간격과 `sync_id`를 사용해 중복 수집을 막는다. 원본은 raw 또는 candidate 저장소에 기록하고 스키마·공식 출처·사건 상태·근거·중복 검사를 통과한 결과를 사람 검수 없이 processed 스냅샷에 원자적으로 반영한다.
 
 ## 8.3 Python 서비스 인터페이스
 
@@ -697,6 +769,8 @@ Railway는 서비스를 실행하고 배포하는 운영 환경이며, 화면을
 - Railway 배포 환경에서 주요 화면 초기 로딩 3초 이내
 - 포트폴리오 수정 후 최적화 재계산 2초 이내
 - 외부 데이터 갱신과 사용자 요청 계산을 분리해 수집 지연이 화면을 막지 않도록 한다
+- 시장 가격은 장중 10~30초 간격으로 갱신하고 각 값에 `as_of`를 표시한다.
+- 수동 이슈 동기화 요청은 즉시 `queued` 또는 `running` 상태와 `sync_id`를 반환한다.
 
 ## 안정성
 
@@ -704,6 +778,9 @@ Railway는 서비스를 실행하고 배포하는 운영 환경이며, 화면을
 - 라이브 데이터 실패 시 마지막 정상 데이터 또는 샘플 데이터 사용
 - 동일 입력에 동일 결과 반환
 - 누락 데이터는 임의 추정하지 않고 샘플 또는 unavailable로 표시
+- 동일 동기화의 중복 실행을 금지하고 기존 작업 상태를 반환한다.
+- 외부 가격 API 실패 시 마지막 정상 가격을 사용하되 `delayed` 또는 `fallback`으로 표시한다.
+- 동기화 실패는 기존 validated 데이터와 마지막 정상 스냅샷을 덮어쓰지 않는다.
 
 ## 접근성
 
@@ -746,6 +823,8 @@ Railway는 서비스를 실행하고 배포하는 운영 환경이며, 화면을
 - ESG·가격 하방위험 별도 카드
 - Plotly 기반 비중·위험 차트 구현
 - 이슈 분석 및 규칙 기반 추천 문장 구현
+- 코스피·코스닥·삼성전자·SK하이닉스 시장 가격 서비스와 캐시 구현
+- 실시간 현재가 기반 총 자산 평가액·평가손익·현재 비중 구현
 - Railway Web Service 배포 및 환경변수 설정
 
 ## Day 4 — Antigravity 검증·예약 갱신·데모
@@ -755,7 +834,10 @@ Railway는 서비스를 실행하고 배포하는 운영 환경이며, 화면을
 - 합계 100%, 20~80% 제약, 재현성 테스트
 - 공식 출처·기준연도·데이터 신뢰도·면책 표시
 - Antigravity로 pytest와 브라우저 사용자 흐름 검증
-- Railway 예약 갱신 작업 또는 수동 refresh 작업 검증
+- 공시·뉴스·ESG 이슈 하루 1회 예약 동기화 검증
+- 사용자 수동 이슈 동기화, 동시 실행 잠금과 상태 조회 검증
+- 자동 검증 통과 사건 또는 상태 변경 후 ESG 위험·추천 비중 재계산 검증
+- 가격 및 이슈 외부 API 실패 시 마지막 정상 데이터 폴백 검증
 
 # 11. 출시 기준
 
@@ -773,6 +855,11 @@ MVP는 다음 조건을 모두 충족해야 한다.
 - 이슈 분석 화면에서 현재·과거 이슈 확인 가능
 - 포트폴리오 수정 후 최적화 재계산
 - 전체 데모 흐름 오류 없음
+- 홈에서 코스피·코스닥·삼성전자·SK하이닉스 시장 현황과 기준 시각 확인
+- 실시간 현재가 변경 시 총 자산 평가액·평가손익·현재 비중 갱신
+- 이슈 하루 1회 자동 동기화와 사용자 수동 동기화 동작
+- 자동 검증 통과 사건 또는 사건 상태 변경 후 ESG 위험·추천 비중 재계산
+- 가격·이슈 외부 API 실패 시 마지막 정상 데이터와 폴백 상태 표시
 
 ---
 

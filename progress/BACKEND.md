@@ -10,6 +10,7 @@
 | BE-04 | Real Data Integration | `done` | `data/reviewed/` 디렉토리 연동 완료 | DATA-A-05, BE-02 완료 |
 | BE-05 | Model Integration | `done` | `src/backend/app/routes/` 내 실제 계산 모듈 연동 | DATA-B-05, BE-03 완료 |
 | BE-06 | Fallback and Contract Tests | `done` | `test_portfolio.py` 수정 및 예외 폴백 로직 검증 | BE-04, BE-05 완료 |
+| BE-RT-00 | ESG Schema Validator and Sample Contract Compatibility Recovery | `done` | nullable 캐스팅, sample ESG·event 계약, 회귀 테스트 | 없음 |
 
 ## Active Blockers
 
@@ -191,4 +192,36 @@
 - **Validation results**:
   - 26 passed, 1 warning (100% Pass)
 - **Next task**: E2E 2단계 (대시보드 종합 건강 점수 및 3색 위험 신호등 구현) 착수
+
+### 2026-07-21 21:37 — BE-RT-00: ESG Schema Contract Recovery
+
+- **Role**: Backend
+- **Owner**: Backend
+- **Task ID**: `BE-RT-00`
+- **Status**: `done`
+- **Completed**:
+  - JSON Schema의 `type: [number, null]` nullable union을 CSV 숫자로 캐스팅하도록 검증기 보완.
+  - sample ESG·event CSV를 최신 필수 열과 타입에 맞게 동기화.
+  - reviewed ESG 72행, reviewed 사건 5건, sample ESG 2행, sample 사건 2행의 동일 검증기 통과 확인.
+  - ESG repository와 `/risk/esg` 회귀 테스트 복구.
+- **Created files**:
+  - `src/backend/tests/test_csv_validator.py`
+- **Modified files**:
+  - `src/backend/app/utils/csv_validator.py`
+  - `data/sample/esg_indicators.sample.csv`
+  - `data/sample/events.sample.csv`
+  - `data/sample/sample-validation-report.json`
+  - `progress/BACKEND.md`
+- **Validation commands**:
+  - reviewed/sample ESG·event 직접 `validate_csv_file` 검증
+  - `.venv\Scripts\python.exe -m pytest -p no:cacheprovider -q src/backend/tests/test_csv_validator.py src/backend/tests/test_portfolio.py -k "csv_validator or esg_repository or event_repository or risk_esg"`
+  - `.venv\Scripts\python.exe -m pytest -p no:cacheprovider -q tests src/backend/tests`
+- **Validation results**:
+  - 직접 검증 4종 모두 통과.
+  - 관련 회귀 테스트 6 passed.
+  - 전체 테스트 29 passed, 1 warning.
+- **Remaining**:
+  - `COMMON-RT-02` 시장·포트폴리오·동기화 API 계약 검토.
+- **Blockers**: 없음
+- **Next task**: `COMMON-RT-02` 계약 검토 후 `BE-RT-01` 시장 가격 서비스 구현.
 

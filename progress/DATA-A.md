@@ -9,6 +9,8 @@
 | DATA-A-03 | ESG Value Review | `done` | `data/reviewed/esg_indicators.csv` (12행 교차검증) | 없음 |
 | DATA-A-04 | Event Dataset | `done` | `data/reviewed/events.csv` (5건 검증 사건) | 없음 |
 | DATA-A-05 | Final Data Quality Review | `done` | `scripts/validate_data_a.py` 통과 | 없음 |
+| DATA-A-RT-01 | Daily Disclosure and News Source·Classification·Deduplication Rules | `review` | candidate/source 계약, 중복·severity 자동 결정 규칙 | 공유 스키마 교차 검토 필요 |
+| DATA-A-RT-02 | Candidate Data Quality and Event Status Validation | `review` | candidate 6건, source 6건, event-source 4건, processed event 3건 통합 검증 | 실제 일일 수집기 연동 필요 |
 
 ## Active Blockers
 
@@ -85,18 +87,178 @@
 - **Blockers**: 없음
 - **Next task**: Data B 및 백엔드 팀으로의 데이터 전달 및 연동 검토 지원
 
-### 2026-07-21 14:45 — DATA-A-01 ~ DATA-A-05 Complete & Integration Approved
+### 2026-07-21 18:10 — DATA-A Advanced Deliverables: ESG & Events Data Final Upgrade
 
 - **Role**: Data A
+- **Owner**: Data A
 - **Status**: `done`
 - **Completed**:
-  - `COMMON-02` 및 `COMMON-03` 스키마 및 샘플 데이터 검토 승인 (`approved`).
-  - 삼성전자 및 SK하이닉스의 2024 지속가능경영보고서 및 사업보고서 기반 ESG 정량 지표 정의 및 데이터 수집 완료.
-  - 원안위, 환경부, 노동부 등 공인 정부 기관 보도자료 기반 역사적 주요 사건(피폭, 화학물질 누출 등) 데이터셋 구축 완료.
-  - 수집된 데이터셋 정합성 및 신뢰도 검수 완료 후 실데이터 배포 완료.
+  - `data_A_chip_buddy_final_tasks.md` 고도화 요구에 맞춘 데이터셋 전면 수정 및 최종 산출물 완성.
+  - 가격 및 지수 파일 검수 완료 폴더로 이동: `prices.csv` ➡️ `data/reviewed/stock_prices.csv`, `index_prices.csv` ➡️ `data/reviewed/index_prices.csv`.
+  - ESG 지표 12개로 전면 확장 및 3개년 시계열(2022~2024) 및 기업 목표값 수집 완료 (`data/reviewed/esg_indicators.csv`, 총 72행).
+  - 지표 비교 가능성 분석서 (`data/docs/indicator_comparability.csv`) 신설하여 양사 산식 및 단위 비교 분류 완료.
+  - 사건 데이터에 최초 시장 공개일(`market_event_date`, `market_event_date_type`) 도입 및 관련 ESG 지표 연계 완료 (`data/reviewed/events.csv`).
+  - 다대다 출처 연계를 위해 `data/reviewed/event_sources.csv` 신설 및 뉴스 후보 연계 컬럼 보완 (`data/raw/news_candidates.csv`).
+  - 사건 심각도 판단 가이드라인 (`data/docs/event_severity_guide.md`) 및 데이터 품질 보고서 (`data/docs/data_quality_report.md`) 신설.
+  - `schemas/data/esg-indicators.schema.json` 및 `schemas/data/events.schema.json` 스키마 고도화 수정.
+  - `scripts/validate_data_a.py` 검증 규칙 수정 후 데이터 무결성 최종 검증 통과 (72행 ESG 지표, 5건 사건, 10건 출처 완벽 통과).
 - **Created files**:
-  - [esg_indicators.csv](file:///c:/dev/sesac-mini-pjt2/data/reviewed/esg_indicators.csv)
-  - [events.csv](file:///c:/dev/sesac-mini-pjt2/data/reviewed/events.csv)
-  - [sources.csv](file:///c:/dev/sesac-mini-pjt2/data/reviewed/sources.csv)
-- **Validation results**: 스키마 정합성 검증 통과.
-- **Next task**: 프론트엔드-백엔드 E2E 실데이터 연동 확인 및 검토 지원.
+  - `data/docs/indicator_comparability.csv`
+  - `data/docs/event_severity_guide.md`
+  - `data/docs/data_quality_report.md`
+  - `data/reviewed/event_sources.csv`
+- **Modified files**:
+  - `data/reviewed/esg_indicators.csv`
+  - `data/reviewed/events.csv`
+  - `data/raw/news_candidates.csv`
+  - `schemas/data/esg-indicators.schema.json`
+  - `schemas/data/events.schema.json`
+  - `scripts/validate_data_a.py`
+  - `progress/DATA-A.md`
+- **Validation commands**:
+  - `python scripts/validate_data_a.py`
+- **Validation results**:
+  - ESG 지표 72행 검증 통과 (005930: 36행, 000660: 36행)
+  - 사건 데이터 5건 검증 통과 (market_event_date 및 linked_indicator_id 수록 완료)
+  - 전체 스키마 정합성 검증 성공
+- **Remaining**: 없음
+- **Blockers**: 없음
+- **Next task**: Data B 및 백엔드 팀으로의 데이터 전달 및 연동 검토 지원 (예: `stock_prices.csv`와 `index_prices.csv` 기반의 역사적 CVaR 및 포트폴리오 최적화 계산 연동)
+
+### 2026-07-22 02:00 — DATA-A-RT-01/02: Candidate·Source·Dedup·Severity Contract Recovery
+
+- **Role**: Data A
+- **Owner**: Data A / Team Lead
+- **Status**: `review`
+- **Completed**:
+  - candidate, source, event-source JSON Schema 신규 정의
+  - candidate 5건과 source 10건, event-source 6건을 새 계약으로 마이그레이션
+  - 후보 URL/external ID/content hash 중복 키와 사건 동일성·날짜·텍스트 유사도 판정 규칙 명문화
+  - 사건 병합 우선순위와 충돌 시 후보 거절 정책 명문화
+  - 처분 기준과 근거 키워드 중 최댓값을 사용하는 deterministic severity 산정 구현
+  - 레거시 `sanctioned` 일괄 이관으로 과대 분류된 처분을 근거 문구에 따라 `fine` 또는 `corrective_order`로 정정
+  - 사건에 `severity_rule_version=1.0.0`을 저장하고 processed/sample severity 재산정
+  - 공식 1차 출처가 사건마다 정확히 하나인지 검증하는 CSV 계약 검사 추가
+- **Created files**:
+  - `schemas/data/event-candidates.schema.json`
+  - `schemas/data/sources.schema.json`
+  - `schemas/data/event-sources.schema.json`
+  - `schemas/data/issue-pipeline-rules.json`
+  - `schemas/data/issue-pipeline-rules.schema.json`
+  - `data/docs/issue_pipeline_contract.md`
+  - `src/backend/app/utils/issue_rules.py`
+  - `src/backend/tests/test_issue_pipeline_contracts.py`
+- **Modified files**:
+  - `schemas/data/events.schema.json`
+  - `schemas/data/data-enums.yaml`
+  - `data/candidate/news_candidates.csv`
+  - `data/processed/sources.csv`
+  - `data/processed/event_sources.csv`
+  - `data/processed/events.csv`
+  - `data/sample/events.sample.csv`
+  - `src/backend/app/utils/csv_validator.py`
+  - `scripts/migrate_automated_validation.py`
+  - `data/docs/event_severity_guide.md`
+  - `data/docs/data_quality_report.md`
+- **Validation commands**:
+  - `.venv/Scripts/python.exe -m pytest src/backend/tests/test_csv_validator.py src/backend/tests/test_issue_pipeline_contracts.py -q`
+  - `.venv/Scripts/python.exe -m pytest tests src/backend/tests/test_realtime_api_contracts.py -q --disable-warnings`
+- **Validation results**:
+  - Data A 신규·기존 계약 테스트 14건 통과
+  - 모델링·실시간 API 계약 회귀 테스트 24건 통과
+  - 전체 52건 실행은 기존 실시간 외부 가격 경로에서 장시간 대기하여 중단했으며 assertion 실패는 확인되지 않음
+- **Remaining**:
+  - Backend가 일일 동기화 서비스에서 새 candidate/source validator와 severity 함수를 호출하도록 연결
+  - Data B가 `confirmed|resolved` 사건과 새 severity를 재계산 입력으로 사용하는지 교차 검토
+- **Blockers**: 공유 계약이므로 Backend·Data B 교차 검토 전 `done` 처리 불가
+- **Next task**: Backend 동기화 구현 시 자동 발행 게이트 연결 및 계약 테스트 추가
+
+### 2026-07-22 02:40 — DATA-A-RT-01/02: needs_revision Remediation
+
+- **Role**: Data A
+- **Owner**: Data A / Team Lead
+- **Status**: `review`
+- **Completed**:
+  - 공식 근거를 확인하지 못한 EVT-0002·EVT-0004를 processed에서 제거하고 해당 후보를 `rejected`로 전환
+  - EVT-0003을 고용부 공식 보도자료 기준 `confirmed/investigation`으로 정정하고 해결일을 null 처리
+  - EVT-0005를 개인정보위 공식 발표 ID·발표일·제재 내용으로 정정
+  - 원안위·고용부·개인정보위 및 ESG 공식 자료를 `data/raw/reports/`에 저장하고 SHA-256을 source registry에 연결
+  - 잘못된 `SRC-0001=company_response` 연결을 `context`로 정정
+  - 임시 DART 접수번호에 의존하던 G01~G03 양사 18행을 `availability=unavailable`, `raw_value=null`로 전환
+  - JSON Schema format, 회사 ID/이름, DART·공식 도메인, candidate 파생값, severity 버전·재계산 검증 추가
+  - candidate→event→event-source→source 및 ESG→source와 raw hash를 검사하는 `validate_data_a_bundle()` 구현
+  - ESG·event repository가 통합 bundle validator를 통과해야만 `validated`로 로드하도록 변경
+  - 미구현 `/data/refresh`가 성공을 가장하지 않고 HTTP 501을 반환하도록 변경
+  - Data B 사건 반응 기준일을 `market_event_date` 우선으로 수정
+  - 데이터 사전을 12개 지표와 현재 결측 상태 기준으로 갱신
+- **Created files**:
+  - `scripts/remediate_data_a_findings.py`
+  - `data/raw/reports/README.md`
+  - `data/raw/reports/Samsung_Electronics_Sustainability_Report_2024_ENG.pdf`
+  - `data/raw/reports/skhynix_sustainability_report_archive.html`
+  - `data/raw/reports/nssc_201_samsung_radiation.pdf`
+  - `data/raw/reports/moel_19573_skhynix_fluorine_inspection.html`
+  - `data/raw/reports/pipc_8994_samsung_privacy.html`
+- **Modified files**:
+  - `data/candidate/news_candidates.csv`
+  - `data/processed/esg_indicators.csv`
+  - `data/processed/events.csv`
+  - `data/processed/event_sources.csv`
+  - `data/processed/sources.csv`
+  - `data/docs/data_dictionary.md`
+  - `data/notes/data_dictionary.md`
+  - `data/docs/data_quality_report.md`
+  - `data/docs/issue_pipeline_contract.md`
+  - `schemas/data/event-candidates.schema.json`
+  - `schemas/data/sources.schema.json`
+  - `schemas/data/issue-pipeline-rules.json`
+  - `schemas/data/issue-pipeline-rules.schema.json`
+  - `src/backend/app/utils/csv_validator.py`
+  - `src/backend/app/repositories/esg_repository.py`
+  - `src/backend/app/repositories/event_repository.py`
+  - `src/backend/app/routes/data.py`
+  - `src/modeling/events.py`
+  - `src/backend/tests/test_issue_pipeline_contracts.py`
+  - `tests/test_events.py`
+- **Validation commands**:
+  - `.venv/Scripts/python.exe -m pytest src/backend/tests/test_csv_validator.py src/backend/tests/test_issue_pipeline_contracts.py tests/test_events.py -q`
+  - `.venv/Scripts/python.exe -m pytest <repository/API subset> tests src/backend/tests/test_realtime_api_contracts.py -q --disable-warnings`
+- **Validation results**:
+  - Data A 계약·raw hash·시장 공개일·거짓 동기화 성공 방지 집중 테스트 22건 통과
+  - 저장소·API·모델링·실시간 계약 회귀 테스트 30건 통과 (경고 1건)
+- **Remaining**:
+  - G01~G03 공식 원문을 다시 수집해 현재 unavailable 18행을 복구
+  - BE-RT-03 실제 일일 수집·잠금·원자적 스냅샷 발행 구현
+- **Blockers**: 실제 외부 수집기는 Backend 작업이므로 Data A 단독으로 `done` 처리하지 않음
+- **Next task**: BE-RT-03 구현 시 `validate_data_a_bundle()`을 발행 직전 게이트로 호출
+
+### 2026-07-22 03:10 — DATA-A-RT-01/02: 결측 ESG 소비 경로 보완
+
+- **Role**: Data A / 교차 계약 점검
+- **Owner**: Data A / Team Lead
+- **Status**: `review`
+- **Completed**:
+  - Data B 집계 점수가 없는 validated ESG 지표에 하드코딩 점수를 자동 대입하던 경로 제거
+  - 예시 ESG 점수는 `sample` 또는 명시적 `fallback` 모드에서만 허용
+  - 운영 모드에서 기업별 집계 점수가 누락되면 모델 입력 검증 오류를 발생시키도록 변경
+  - `/risk/esg`가 존재하지 않는 `esg_risk_score`를 `0.0`으로 바꾸지 않고 `null`과 `risk_level=unavailable`을 반환하도록 변경
+  - Data B 집계 모델 미동기화 상태를 API 경고로 명시
+- **Modified files**:
+  - `src/modeling/optimizer.py`
+  - `src/backend/app/routes/risk.py`
+  - `tests/test_optimizer.py`
+  - `src/backend/tests/test_portfolio.py`
+  - `progress/DATA-A.md`
+- **Validation commands**:
+  - `.venv/Scripts/python.exe -m pytest -q tests/test_optimizer.py src/backend/tests/test_portfolio.py::test_risk_esg_endpoint src/backend/tests/test_portfolio.py::test_portfolio_optimize_form_submit src/backend/tests/test_portfolio.py::test_portfolio_optimize_realtime_endpoint`
+  - `.venv/Scripts/python.exe -m pytest -q tests src/backend/tests`
+  - `git diff --check`
+- **Validation results**:
+  - 대상 테스트 5건 통과
+  - 모델·백엔드 전체 회귀 테스트 35건 통과
+  - 공백 오류 없음(기존 CRLF 변환 경고만 존재)
+- **Remaining**:
+  - Data B의 실제 ESG 집계 점수 산식과 출력 계약이 동기화되면 `validated` 최적화 경로에 연결
+  - 지배구조 G01~G03 공식 원문 재수집 전 18행은 `unavailable` 유지
+- **Blockers**: Data B 집계 모델이 현재 브랜치에 아직 없음
+- **Next task**: Data B 산출물 동기화 후 두 기업의 완전한 `esg_risk_score` 입력을 계약 테스트로 고정
