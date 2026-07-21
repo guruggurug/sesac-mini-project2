@@ -27,25 +27,50 @@ def calculate_esg_risk():
         raise HTTPException(status_code=500, detail=f"ESG 데이터 로드 실패: {str(e)}")
         
     result = {}
+    company_rows = {"005930": [], "000660": []}
     for row in esg_data:
         ticker = str(row.get("company_id", row.get("ticker", ""))).zfill(6)
         if ticker in ("005930", "000660"):
-            esg_risk = float(row.get("esg_risk_score", 0.0))
-            mismatch_val = row.get("scope_mismatch", False)
-            if isinstance(mismatch_val, str):
-                mismatch_val = mismatch_val.lower() == "true"
-                
-            result[ticker] = {
-                "company_name": row.get("company_name", "삼성전자" if ticker == "005930" else "SK하이닉스"),
-                "esg_risk": round(esg_risk, 4),
-                "risk_level": classify_risk_level(esg_risk),
-                "data_confidence": row.get("data_confidence", "medium"),
-                "scope_mismatch": mismatch_val
-            }
+            company_rows[ticker].append(row)
+
+    confidence_order = {"low": 0, "medium": 1, "high": 2}
+    for ticker, rows in company_rows.items():
+        score_rows = [row for row in rows if row.get("esg_risk_score") not in (None, "")]
+        mismatch_values = []
+        for row in rows:
+            mismatch = row.get("scope_mismatch", False)
+            mismatch_values.append(mismatch.lower() == "true" if isinstance(mismatch, str) else bool(mismatch))
+
+        confidences = [
+            row.get("data_confidence")
+            for row in rows
+            if row.get("data_confidence") in confidence_order
+        ]
+        data_confidence = min(confidences, key=confidence_order.get) if confidences else "low"
+
+        if score_rows:
+            esg_risk = float(score_rows[0]["esg_risk_score"])
+            risk_level = classify_risk_level(esg_risk)
+        else:
+            esg_risk = None
+            risk_level = "unavailable"
+
+        result[ticker] = {
+            "company_name": rows[0].get("company_name") if rows else ("삼성전자" if ticker == "005930" else "SK하이닉스"),
+            "esg_risk": round(esg_risk, 4) if esg_risk is not None else None,
+            "risk_level": risk_level,
+            "data_confidence": data_confidence,
+            "scope_mismatch": any(mismatch_values),
+        }
             
     result["data_status"] = esg_status
     if esg_warn:
         result["warning"] = esg_warn
+    if any(company["esg_risk"] is None for company in result.values() if isinstance(company, dict)):
+        result["warning"] = (
+            f"{result.get('warning') + ' ' if result.get('warning') else ''}"
+            "ESG 지표 원천값은 검증되었지만 Data B 집계 점수가 아직 없어 ESG 위험을 unavailable로 표시합니다."
+        )
         
     return result
 
@@ -97,5 +122,4 @@ def calculate_downside_risk():
         result["warning"] = price_warn
         
     return result
-
 

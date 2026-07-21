@@ -9,32 +9,32 @@ class PriceRepository:
     일별 주가 데이터를 로딩하고 관리하는 레포지토리
     """
     def __init__(self):
-        self.reviewed_path = os.path.join(BASE_DIR, "data", "reviewed", "stock_prices.csv")
+        self.processed_path = os.path.join(BASE_DIR, "data", "processed", "stock_prices.csv")
         self.sample_path = os.path.join(BASE_DIR, "data", "sample", "stock_prices.sample.csv")
 
     def load_data(self) -> tuple[list[dict], str, str | None]:
         """
         주가 데이터를 로드합니다.
-        reviewed 데이터 로딩 시도 -> 실패 시 sample 데이터로 폴백.
+        자동 검증된 processed 데이터 로딩 시도 -> 실패 시 sample 데이터로 폴백.
         반환값: (데이터 리스트, data_status, warning_message)
         """
-        # 1. reviewed 데이터 시도
-        if os.path.exists(self.reviewed_path):
+        # 1. 자동 검증된 processed 데이터 시도
+        if os.path.exists(self.processed_path):
             try:
-                data = validate_csv_file(self.reviewed_path, "price")
-                return data, "reviewed", None
+                data = validate_csv_file(self.processed_path, "price")
+                return data, "validated", None
             except CSVValidationError as e:
-                warning = f"reviewed 주가 데이터 검증 실패로 샘플 데이터로 폴백했습니다. 에러: {e.message}"
+                warning = f"processed 주가 데이터 자동 검증 실패로 샘플 데이터로 폴백했습니다. 에러: {e.message}"
                 try:
                     data = validate_csv_file(self.sample_path, "price")
                     return data, "fallback", warning
                 except Exception:
                     raise CSVValidationError(
                         code="PRICE_LOAD_FAILURE",
-                        message="reviewed 및 sample 주가 데이터를 모두 로드하는 데 실패했습니다."
+                        message="processed 및 sample 주가 데이터를 모두 로드하는 데 실패했습니다."
                     )
         
-        # 2. reviewed 파일이 없는 경우 sample 로딩
+        # 2. processed 파일이 없는 경우 sample 로딩
         try:
             data = validate_csv_file(self.sample_path, "price")
             return data, "sample", None

@@ -101,7 +101,7 @@
       "type": "string",
       "enum": [
         "sample",
-        "reviewed",
+        "validated",
         "fallback"
       ]
     },

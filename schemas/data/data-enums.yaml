@@ -17,23 +17,90 @@ data_confidence:
   - medium
   - low
 
-review_status:
-  - pending
-  - needs_review
-  - approved
-  - rejected
-
 event_status:
-  - rumor
   - reported
   - confirmed
-  - sanctioned
   - resolved
+
+detection_source_type:
+  - dart_disclosure
+  - news
+
+candidate_validation_status:
+  - pending
+  - validated
+  - rejected
+
+source_validation_method:
+  - dart_receipt
+  - official_domain
+  - news_canonical_url
+
+event_source_role:
+  - detection
+  - official_confirmation
+  - company_response
+  - context
+
+enforcement_action:
+  - no_action
+  - investigation
+  - corrective_order
+  - fine
+  - sanctioned
 
 data_status:
   - sample
-  - reviewed
+  - validated
   - fallback
+
+instrument_id:
+  - KOSPI
+  - KOSDAQ
+  - "005930"
+  - "000660"
+
+instrument_type:
+  - index
+  - equity
+
+market_status:
+  - open
+  - closed
+  - delayed
+  - unavailable
+
+price_status:
+  - live
+  - cached
+  - fallback
+
+sync_type:
+  - scheduled
+  - manual
+
+sync_status:
+  - queued
+  - running
+  - success
+  - partial_success
+  - failed
+
+sync_stage:
+  - queued
+  - collecting
+  - normalizing
+  - validating
+  - publishing
+  - recalculating
+  - completed
+
+recalculation_status:
+  - not_requested
+  - queued
+  - running
+  - success
+  - failed
 
 business_scope:
   - DS

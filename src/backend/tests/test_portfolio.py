@@ -25,6 +25,13 @@ def test_health_check():
     assert data["status"] == "ok"
     assert "FastAPI server is running" in data["message"]
 
+
+def test_data_refresh_does_not_report_false_success_before_sync_implementation():
+    response = client.post("/data/refresh")
+
+    assert response.status_code == 501
+    assert response.json()["detail"]["code"] == "ISSUE_SYNC_NOT_IMPLEMENTED"
+
 def test_get_diagnosis_page():
     """
     GET / 진단 홈 페이지가 정상적으로 HTML을 렌더링하는지 테스트
@@ -65,23 +72,22 @@ def test_issues_endpoints():
     assert res_current.status_code == 200
     data_current = res_current.json()
     assert "events" in data_current
-    assert data_current["data_status"] in ("sample", "reviewed", "fallback")
+    assert data_current["data_status"] in ("sample", "validated", "fallback")
     
     res_historical = client.get("/issues/historical")
     assert res_historical.status_code == 200
     data_historical = res_historical.json()
     assert "events" in data_historical
-    assert data_historical["data_status"] in ("sample", "reviewed", "fallback")
+    assert data_historical["data_status"] in ("sample", "validated", "fallback")
 
-def test_esg_repository_reviewed_loading():
+def test_esg_repository_processed_loading():
     """
-    데이터 A의 실제 ESG indicators 파일이 무사히 reviewed 상태로 로드되는지 검증
+    자동 검증된 ESG indicators 파일이 validated 상태로 로드되는지 검증
     """
     repo = ESGRepository()
     data, status, warning = repo.load_data()
     
-    # 깃허브 feature/data-a 브랜치로부터 가져왔으므로 reviewed 여야 함
-    assert status == "reviewed"
+    assert status == "validated"
     assert warning is None
     assert len(data) > 0
     
@@ -92,34 +98,61 @@ def test_esg_repository_reviewed_loading():
         assert "availability" in row
         assert "raw_value" in row
 
-def test_event_repository_reviewed_loading_and_filtering():
+def test_event_repository_processed_loading_and_filtering():
     """
-    데이터 A의 실제 사건 파일이 reviewed 상태로 로드되며 필터링이 잘 되는지 검증
+    자동 검증된 사건 파일이 validated 상태로 로드되며 필터링되는지 검증
     """
     repo = EventRepository()
     data, status, warning = repo.load_data()
     
-    assert status == "reviewed"
+    assert status == "validated"
     assert warning is None
     assert len(data) > 0
     
-    # 모델 사용 불가 사건 (rumor, reported)을 걸러내는지 검사
+    # 모델 사용 불가 사건(reported)을 걸러내는지 검사
     model_ready = repo.get_model_ready_events(data)
     for evt in model_ready:
-        assert evt["status"] in ("confirmed", "sanctioned", "resolved")
-        assert evt["review_status"] == "approved"
+        assert evt["status"] in ("confirmed", "resolved")
+        assert evt["authority_confirmed"] is True
+        assert evt["official_source_url"]
 
-def test_price_repository_reviewed_loading():
+
+def test_event_repository_automatic_verification_gate():
+    repo = EventRepository()
+    events = [
+        {
+            "event_id": "EVT-1001",
+            "status": "confirmed",
+            "authority_confirmed": True,
+            "official_source_url": "https://example.com/official",
+        },
+        {
+            "event_id": "EVT-1002",
+            "status": "confirmed",
+            "authority_confirmed": False,
+            "official_source_url": "https://example.com/news",
+        },
+        {
+            "event_id": "EVT-1003",
+            "status": "reported",
+            "authority_confirmed": False,
+            "official_source_url": None,
+        },
+    ]
+
+    model_ready = repo.get_model_ready_events(events)
+
+    assert [event["event_id"] for event in model_ready] == ["EVT-1001"]
+
+def test_price_repository_processed_loading():
     """
-    주가 데이터 로딩 검증 (reviewed 데이터가 없으면 sample로 fallback 됨)
+    주가 데이터 로딩 검증 (processed 데이터가 없으면 sample로 fallback 됨)
     """
     repo = PriceRepository()
     df, status, warning = repo.load_data_as_df()
     
-    # main 브랜치와 data-a 브랜치 상태상 stock_prices.csv가 reviewed에 없다면 sample이 될 것임
-    # stock_prices.csv가 reviewed 폴더에 있는지 확인 후 검증
-    if os.path.exists(repo.reviewed_path):
-        assert status == "reviewed"
+    if os.path.exists(repo.processed_path):
+        assert status == "validated"
     else:
         assert status == "sample"
         
@@ -144,7 +177,7 @@ def test_calculate_portfolio_weights_endpoint():
     assert "current_weights" in data
     assert "005930" in data["current_weights"]
     assert "000660" in data["current_weights"]
-    assert data["data_status"] in ("sample", "reviewed", "fallback")
+    assert data["data_status"] in ("sample", "validated", "fallback")
 
 def test_risk_esg_endpoint():
     """
@@ -157,7 +190,10 @@ def test_risk_esg_endpoint():
     assert "000660" in data
     assert "esg_risk" in data["005930"]
     assert "risk_level" in data["005930"]
-    assert data["data_status"] in ("sample", "reviewed", "fallback")
+    assert data["005930"]["esg_risk"] is None
+    assert data["005930"]["risk_level"] == "unavailable"
+    assert "warning" in data
+    assert data["data_status"] in ("sample", "validated", "fallback")
 
 def test_risk_downside_endpoint():
     """
@@ -170,7 +206,7 @@ def test_risk_downside_endpoint():
     assert "000660" in data
     assert "downside_risk" in data["005930"]
     assert "risk_level" in data["005930"]
-    assert data["data_status"] in ("sample", "reviewed", "fallback")
+    assert data["data_status"] in ("sample", "validated", "fallback")
 
 def test_realtime_price_utility():
     """
@@ -210,6 +246,3 @@ def test_issues_page_rendering():
     assert "피폭" in response.text or "누출" in response.text
     # 과거 유사 사례가 정상적으로 연산 및 바인딩 되었는지 확인
     assert "주가 회복 소요 기간" in response.text
-
-
-
