@@ -3,9 +3,9 @@
 ## Status and scope
 
 - Contract task: `COMMON-RT-02`
-- Status: `review`
+- Status: `approved`
 - Scope: KOSPI, KOSDAQ, Samsung Electronics (`005930`), SK hynix (`000660`), and the daily/manual issue sync flow
-- Approval required: Data A, Data B, Backend, and Frontend
+- Approval completed: Data A, Data B, Backend, and Frontend (`2026-07-22`)
 
 This document defines the shared contract. It does not mean that the producer or consumer implementation is complete.
 
@@ -99,12 +99,21 @@ Terminal result semantics:
 
 `recalculation_triggered`, `recalculation_status`, and `recalculated_at` distinguish issue publication from ESG and optimization recalculation. A sync may succeed without recalculation when no model-eligible event changed.
 
+Recalculation is triggered only after an atomic processed snapshot is published and at least one scoring-relevant input changes:
+
+- a new or changed `confirmed` or `resolved` event passes official-source verification;
+- an existing event enters or leaves model eligibility because its status, official confirmation, or official source changes;
+- a validated ESG indicator value, availability, period, or other aggregation input changes; or
+- a model-eligible event's category, date, severity, or enforcement outcome changes in a way consumed by the ESG aggregation rules.
+
+`reported` events, rejected candidates, duplicate-only collection results, and metadata changes that do not alter model inputs do not trigger recalculation. Validated mode must fail explicitly when a required aggregate ESG score is unavailable; sample defaults are allowed only in explicitly labeled `sample` or `fallback` mode.
+
 `failed_sources` exposes partial collection failures. If the last validated snapshot remains usable, the response may keep it with `data_status: fallback` and a clear warning.
 
 ## Ownership and review checklist
 
-- Data A: define candidate/processed boundaries and automated official-source, event-status, evidence, and deduplication rules.
-- Data B: confirm which automatically validated changes trigger ESG aggregation and optimization recalculation.
-- Backend: implement schemas, locks, scheduler/manual service reuse, caching, and error behavior.
-- Frontend: implement polling, timestamps, loading/error/fallback labels, manual refresh, and status polling.
+- Data A (`approved`): candidate/processed boundaries and automated official-source, event-status, evidence, and deduplication rules are defined.
+- Data B (`approved`): scoring-relevant validated changes and validated-mode missing-score behavior are explicit.
+- Backend (`approved`): schemas define implementable locks, scheduler/manual service reuse, caching, state transitions, and error behavior.
+- Frontend (`approved`): responses expose polling intervals, timestamps, loading/error/fallback labels, manual refresh, and sync status fields.
 - Integration: verify the same quote snapshot drives both market cards and portfolio valuation.
