@@ -8,16 +8,15 @@
 | INT-02 | Data and Model Review | `done` | 실데이터 스키마 및 최적화 엔진 안정성 검수 완료 | - |
 | INT-03 | Demo Preparation | `todo` | 투자 성향/보유 정보 입력에 따른 재계산 데모 구성 | INT-01 완료 대기 |
 | COMMON-RT-01 | Realtime and Daily Sync Requirements Definition | `done` | PRD·Plan·ROADMAP 요구사항 확정 | - |
-| COMMON-RT-02 | Market, Portfolio Summary and Sync API Contract Review | `review` | 계약 문서·JSON Schema·예시·계약 테스트 완료 | 전 역할 승인 필요 |
+| COMMON-RT-02 | Market, Portfolio Summary and Sync API Contract Review | `done` | 계약 문서·JSON Schema·예시·계약 테스트와 전 역할 승인 완료 | - |
 | COMMON-RT-03 | Human Review Removal and Automated Validation Contract Migration | `done` | processed/validated 자동 검증 계약·데이터·소비 코드 전환 | - |
-| BE-RT-00 | ESG Schema Validator and Sample Contract Compatibility Recovery | `done` | reviewed/sample 검증과 ESG API 로딩 복구 | - |
+| BE-RT-00 | ESG Schema Validator and Sample Contract Compatibility Recovery | `done` | processed/sample 검증과 ESG API 로딩 복구 | - |
 | INT-RT-01 | Market·Portfolio·Daily Sync End-to-End Test | `todo` | 실시간 시장·자산 평가와 이슈 동기화 E2E | 역할별 구현 대기 |
 
 ## Active Blockers
 
 | Blocker ID | Related Task | Description | Owner | Required Action | Status |
 |---|---|---|---|---|---|
-| RT-B01 | COMMON-RT-02 | 공용 API·스키마 계약에 대한 전 역할 승인 필요 | Team Lead / All Roles | 계약 검토 및 승인 | `review` |
 | RT-B02 | DATA-B-RT-01 | Data B 동적 ESG·최적화 변경 미동기화 | Data B | 완료 후 통합 브랜치 동기화 | `in_progress` |
 
 ## Work Log
@@ -241,3 +240,31 @@
   - 프로젝트 작업 상태상 `COMMON-RT-02` 역할별 승인과 Realtime & Daily Sync 구현은 계속 진행 필요.
 - **Blockers**: 없음.
 - **Next task**: `COMMON-RT-02` 역할별 승인을 완료하고 Realtime & Daily Sync 역할 구현 착수.
+
+### 2026-07-22 03:41 — COMMON-RT-02 Final Cross-Role Contract Review
+
+- **Role**: Integration / Team Lead
+- **Owner**: Team Lead / Codex
+- **Task ID**: `COMMON-RT-02`
+- **Status**: `done`
+- **Completed**:
+  - Data A·Data B·Backend·Frontend 관점의 계약 승인 조건과 기존 보완 내역 재검토.
+  - candidate/source/event-source 스키마와 자동 중복 판정 규칙 존재 확인.
+  - validated 모드에서 ESG 집계 점수 누락 시 예시 점수를 사용하지 않고 오류 처리하는 모델 경로 확인.
+  - fallback 가격의 stale 상태를 스키마에서 강제하고 scoring 입력 변경에 따른 재계산 트리거를 명시.
+  - Data A, Data B, Backend, Frontend 관점 계약을 모두 `approved`로 확정.
+- **Schema proposal**:
+  - 시장 시세의 `price_status=fallback`이면 `is_stale=true`를 JSON Schema에서 강제해 문서와 응답 계약을 일치시킨다.
+  - 자동 검증 후 ESG·최적화 재계산을 발생시키는 모델 적격 사건 변경 조건을 API 계약 문서에 명시한다.
+- **Affected roles**: Data A, Data B, Backend, Frontend, Integration.
+- **Validation commands**:
+  - `pytest src/backend/tests/test_realtime_api_contracts.py src/backend/tests/test_issue_pipeline_contracts.py -q`
+  - 전체 pytest 회귀 테스트
+  - `git diff --check`
+- **Validation results**:
+  - 계약·이슈 파이프라인 집중 테스트 `23 passed`.
+  - 전체 pytest 회귀 테스트 통과 (`59 tests collected`).
+  - JSON Schema Draft 2020-12 자체 검증과 예시 검증 통과.
+- **Remaining**: 승인된 계약에 따른 역할별 Realtime & Daily Sync 구현.
+- **Blockers**: 없음.
+- **Next task**: Data B 변경을 동기화하고 `BE-RT-01`, `DATA-A-RT-01`부터 역할 구현 착수.

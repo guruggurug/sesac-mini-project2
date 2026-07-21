@@ -103,6 +103,10 @@
         {
           "if": { "properties": { "price_status": { "const": "live" } }, "required": ["price_status"] },
           "then": { "properties": { "is_stale": { "const": false } } }
+        },
+        {
+          "if": { "properties": { "price_status": { "const": "fallback" } }, "required": ["price_status"] },
+          "then": { "properties": { "is_stale": { "const": true } } }
         }
       ]
     }

@@ -56,7 +56,7 @@
 ## Realtime & Daily Sync Tasks
 
 - [x] COMMON-RT-01: Realtime and Daily Sync Requirements Definition (팀 리드)
-- [ ] COMMON-RT-02: Market, Portfolio Summary and Sync API Contract Review (팀 리드, 전 역할 승인 필요)
+- [x] COMMON-RT-02: Market, Portfolio Summary and Sync API Contract Review (팀 리드, 전 역할 승인 완료)
 - [x] COMMON-RT-03: Human Review Removal and Automated Validation Contract Migration (팀 리드)
 - [ ] DATA-A-RT-01: Daily Disclosure and News Source·Classification·Deduplication Rules
 - [ ] DATA-A-RT-02: Candidate Data Quality and Event Status Validation
@@ -72,14 +72,14 @@
 - [ ] FE-RT-03: Issue Manual Refresh and Sync Status UI
 - [ ] INT-RT-01: Market·Portfolio·Daily Sync End-to-End Test
 
-`COMMON-RT-02` 계약 초안과 검증 예시는 `schemas/api/README.md`, `schemas/api/*summary*.schema.json`, `schemas/api/market-quotes-response.schema.json`, `schemas/api/sync-*.schema.json`, `schemas/api/examples/`에 작성되었다. 계약 테스트는 통과했으며 전 역할 승인 전까지 상태는 `review`로 유지한다.
+`COMMON-RT-02` 계약과 검증 예시는 `schemas/api/README.md`, `schemas/api/*summary*.schema.json`, `schemas/api/market-quotes-response.schema.json`, `schemas/api/sync-*.schema.json`, `schemas/api/examples/`에 작성되었다. 계약 집중 테스트와 전체 회귀 테스트를 통과했고 Data A, Data B, Backend, Frontend 승인이 완료되었다.
 
 ## Integration Checkpoints
 - **CHECKPOINT-01 (Day 1 시작)**: Initial Parallel-Work Readiness (공통 스키마 및 샘플 데이터 합의) - *완료*
 - **CHECKPOINT-02 (Day 1 종료)**: Mock-Based End-to-End Verification (Mock API 기반 프론트-백 연동 완료) - *완료*
 - **CHECKPOINT-03 (Day 2 중간)**: Real Data & Model Integration (실제 데이터 및 최적화 엔진 백엔드 통합 완료) - *완료*
 - **CHECKPOINT-04 (Day 2 종료)**: Final Production QA & Demo Ready (E2E 테스트, 예외/폴백 처리 완료 및 최종 데모 검증 완료) - *진행 중*
-- **CHECKPOINT-05 (실시간·동기화 확장)**: Market Quotes & Daily Issue Sync Ready (시장 가격, 실시간 자산 평가, 일일·수동 이슈 동기화, 재계산과 폴백 검증) - *요구사항 확정 / 구현 대기*
+- **CHECKPOINT-05 (실시간·동기화 확장)**: Market Quotes & Daily Issue Sync Ready (시장 가격, 실시간 자산 평가, 일일·수동 이슈 동기화, 재계산과 폴백 검증) - *계약 승인 / 구현 대기*
 
 ## Priority
 
@@ -108,7 +108,6 @@
 
 ## Current Blockers
 
-- `COMMON-RT-02`: 시장 가격·포트폴리오 요약·동기화 API와 공용 스키마에 대한 Data A, Data B, Backend, Frontend 합의가 필요하다.
 - Data B의 동적 ESG·최적화 변경이 아직 현재 브랜치에 동기화되지 않아 재계산 통합은 대기 중이다.
 - 코스피·코스닥·삼성전자·SK하이닉스 시장 데이터와 공시·뉴스에 사용할 외부 소스, 호출 제한과 실패 정책을 확정해야 한다.
 

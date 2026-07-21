@@ -40,6 +40,18 @@ def test_market_quotes_example_has_exact_required_instruments() -> None:
     assert len(instrument_ids) == len(set(instrument_ids)) == 4
 
 
+def test_fallback_market_quote_must_be_marked_stale() -> None:
+    schema = load_json(SCHEMA_DIR / "market-quotes-response.schema.json")
+    validator = Draft202012Validator(schema, format_checker=FormatChecker())
+    fallback = load_json(EXAMPLE_DIR / "market-quotes-response.example.json")
+    fallback["quotes"][0]["price_status"] = "fallback"
+
+    assert list(validator.iter_errors(fallback))
+
+    fallback["quotes"][0]["is_stale"] = True
+    validator.validate(fallback)
+
+
 def test_portfolio_request_allows_one_holding_but_rejects_duplicate_ticker() -> None:
     schema = load_json(SCHEMA_DIR / "portfolio-summary-request.schema.json")
     validator = Draft202012Validator(schema, format_checker=FormatChecker())
