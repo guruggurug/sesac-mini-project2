@@ -19,7 +19,7 @@
 - 추천 비중 산출 근거
 - 과거 유사 사건 이후 1·3·5거래일 주가 흐름
 - 데이터 출처와 신뢰도
-- 샘플·검수 완료·폴백 데이터 상태
+- 샘플·자동 검증 완료·폴백 데이터 상태
 
 ---
 
@@ -105,7 +105,7 @@ FastAPI
 - 추천 비중 계산
 - 현재·추천 비중 비교
 - 예상 위험 감소율 표시
-- 샘플·검수·폴백 상태 표시
+- 샘플·자동 검증·폴백 상태 표시
 - 과거 사건 후 1·3·5거래일 반응 표시
 - 출처 및 면책 문구 표시
 
@@ -136,17 +136,17 @@ FastAPI
 
 | 역할 | 핵심 책임 | 주요 산출물 |
 |---|---|---|
-| 데이터 A | ESG·사건 데이터 검수 | `esg_indicators.csv`, `events.csv`, `sources.csv` |
+| 데이터 A | ESG·사건 자동 검증 규칙 | `esg_indicators.csv`, `events.csv`, `sources.csv` |
 | 데이터 B | 위험 계산·최적화 | 위험 함수, 최적화 함수, 결과 JSON |
 | 개발 A | 백엔드·API 통합 | FastAPI, 데이터 로더, OpenAPI |
 | 개발 B | 화면·사용자 흐름 | Stitch UI, 프론트엔드, API 연결 |
 
 ### 데이터 A
 
-- 공식 보고서와 공공기관 자료 수집
+- OpenDART 전자공시와 뉴스 수집
 - ESG 지표 값·단위·연도·범위 확인
-- 사건 후보의 공식 확인 여부 검수
-- 검수 완료 CSV 작성
+- 사건 후보의 공식 출처·상태 자동 검증 규칙 정의
+- 자동 검증 통과 CSV 작성
 
 ### 데이터 B
 
@@ -162,7 +162,7 @@ FastAPI
 - FastAPI 프로젝트 구성
 - CSV·JSON 로더와 검증기
 - 모델 함수 연결
-- 샘플·검수·폴백 처리
+- 샘플·자동 검증·폴백 처리
 - OpenAPI 문서화
 
 ### 개발 B
@@ -235,7 +235,7 @@ FastAPI
 │   ├── dictionary/
 │   ├── sample/
 │   ├── raw/
-│   ├── reviewed/
+│   ├── candidate/
 │   ├── processed/
 │   └── snapshots/
 │
@@ -274,13 +274,13 @@ FastAPI
 
 ```text
 data/raw/
-→ 외부에서 수집한 원본 및 후보 데이터
+→ 외부에서 수집한 원본 데이터
 
-data/reviewed/
-→ 사람이 검수하고 승인한 데이터
+data/candidate/
+→ 원본을 사건·지표 스키마로 정규화한 자동 검증 대기 데이터
 
 data/processed/
-→ 모델 계산 결과
+→ 스키마·공식 출처·상태·근거·중복 자동 검증을 통과한 데이터와 모델 계산 결과
 
 data/sample/
 → 병렬 개발과 데모를 위한 샘플 데이터
@@ -291,20 +291,33 @@ data/sample/
 ```text
 raw
 → candidate
-→ human review
-→ reviewed
+→ automated validation
 → processed
 → API
 → UI
 ```
 
-### 필수 검수 데이터
+사람 검수는 런타임 파이프라인에 포함하지 않습니다. 자동 검증을 통과하지 못한 후보는 점수에서 제외하고 경고 전용으로 유지하거나 폐기합니다.
+
+### 필수 자동 검증 데이터
 
 ```text
-data/reviewed/esg_indicators.csv
-data/reviewed/events.csv
-data/reviewed/sources.csv
-data/reviewed/stock_prices.csv
+data/processed/esg_indicators.csv
+data/processed/events.csv
+data/processed/sources.csv
+data/processed/event_sources.csv
+data/processed/stock_prices.csv
+```
+
+이슈 자동 검증 계약과 결정 규칙은 다음 파일을 함께 사용합니다.
+
+```text
+schemas/data/event-candidates.schema.json
+schemas/data/sources.schema.json
+schemas/data/event-sources.schema.json
+schemas/data/events.schema.json
+schemas/data/issue-pipeline-rules.json
+data/docs/issue_pipeline_contract.md
 ```
 
 ### 필수 샘플 데이터
@@ -339,28 +352,25 @@ data_status = sample
 허용 상태:
 
 ```text
-rumor
 reported
 confirmed
-sanctioned
 resolved
 ```
 
 모델 점수에 반영할 수 있는 상태:
 
 ```text
-confirmed
-sanctioned
-검수된 resolved
+공식 출처가 확인된 confirmed
+공식 출처가 확인된 resolved
 ```
 
-`rumor`와 `reported`는 화면 경고로 표시할 수 있지만 ESG 점수에 반영하면 안 됩니다.
+`rumor`는 raw 단계에서 제외하고, `reported`는 화면 경고로 표시할 수 있지만 ESG 점수에 반영하면 안 됩니다. 제재 여부는 상태와 분리된 `enforcement_action`으로 기록합니다.
 
 ### 데이터 상태
 
 ```text
 sample
-reviewed
+validated
 fallback
 ```
 
@@ -394,7 +404,7 @@ Allowed files:
 - tests/unit/test_downside.py
 
 Do not modify:
-- data/reviewed/
+- data/processed/
 - src/frontend/
 - schemas/
 
@@ -543,7 +553,7 @@ GET  /issues/historical
 POST /data/refresh
 ```
 
-`POST /data/refresh`는 raw 또는 candidate 데이터를 갱신하는 용도입니다. 검수 없이 `data/reviewed/`를 덮어쓰면 안 됩니다.
+`POST /data/refresh`는 BE-RT-03의 실제 수집·잠금·원자적 발행이 구현되기 전까지 HTTP 501을 반환합니다. 구현 후에는 raw 또는 candidate를 먼저 갱신하고 `validate_data_a_bundle()`의 스키마·공식 출처·raw hash·상태·근거·중복 검사를 모두 통과한 경우에만 새 `data/processed/` 스냅샷을 원자적으로 발행해야 합니다.
 
 ---
 
@@ -560,7 +570,7 @@ POST /data/refresh
 - 허용 enum
 - 범위 정보
 - 출처 존재
-- 검수 상태
+- 자동 검증 조건
 
 ### 모델링
 
@@ -576,7 +586,7 @@ POST /data/refresh
 - 요청·응답 스키마
 - 422·404·500 처리
 - OpenAPI 예시
-- sample·reviewed·fallback 상태
+- sample·validated·fallback 상태
 - 모델 함수 연결
 
 ### 프론트엔드
@@ -625,7 +635,7 @@ docs/*
 ```text
 feat: add portfolio optimization endpoint
 fix: filter reported events from ESG score
-data: add reviewed ESG indicators
+data: add validated ESG indicators
 test: add CVaR constraint tests
 docs: update roadmap and progress rules
 chore: initialize repository structure

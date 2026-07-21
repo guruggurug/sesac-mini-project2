@@ -7,12 +7,18 @@
 | INT-01 | End-to-End Test | `in_progress` | 실데이터 & 실시간 주가 API 활용 최종 화면 연동 검증 | - |
 | INT-02 | Data and Model Review | `done` | 실데이터 스키마 및 최적화 엔진 안정성 검수 완료 | - |
 | INT-03 | Demo Preparation | `todo` | 투자 성향/보유 정보 입력에 따른 재계산 데모 구성 | INT-01 완료 대기 |
+| COMMON-RT-01 | Realtime and Daily Sync Requirements Definition | `done` | PRD·Plan·ROADMAP 요구사항 확정 | - |
+| COMMON-RT-02 | Market, Portfolio Summary and Sync API Contract Review | `review` | 계약 문서·JSON Schema·예시·계약 테스트 완료 | 전 역할 승인 필요 |
+| COMMON-RT-03 | Human Review Removal and Automated Validation Contract Migration | `done` | processed/validated 자동 검증 계약·데이터·소비 코드 전환 | - |
+| BE-RT-00 | ESG Schema Validator and Sample Contract Compatibility Recovery | `done` | reviewed/sample 검증과 ESG API 로딩 복구 | - |
+| INT-RT-01 | Market·Portfolio·Daily Sync End-to-End Test | `todo` | 실시간 시장·자산 평가와 이슈 동기화 E2E | 역할별 구현 대기 |
 
 ## Active Blockers
 
 | Blocker ID | Related Task | Description | Owner | Required Action | Status |
 |---|---|---|---|---|---|
-| - | - | 현재 없음 | - | - | - |
+| RT-B01 | COMMON-RT-02 | 공용 API·스키마 계약에 대한 전 역할 승인 필요 | Team Lead / All Roles | 계약 검토 및 승인 | `review` |
+| RT-B02 | DATA-B-RT-01 | Data B 동적 ESG·최적화 변경 미동기화 | Data B | 완료 후 통합 브랜치 동기화 | `in_progress` |
 
 ## Work Log
 
@@ -67,3 +73,169 @@
   - [issue_cards.html](file:///c:/dev/sesac-mini-pjt2/src/frontend/templates/components/issue_cards.html)
   - [INTEGRATION.md](file:///c:/dev/sesac-mini-pjt2/progress/INTEGRATION.md)
 - **Next task**: `INT-01` (End-to-End Test) 폼 입력 수정 및 홈 화면 실시간 재연산 관련 누락 기능 점검 및 보안.
+
+### 2026-07-21 21:27 — Realtime Market & Daily Issue Sync Requirements Finalized
+
+- **Role**: Integration
+- **Owner**: Team Lead
+- **Task ID**: `COMMON-RT-01`
+- **Status**: `done`
+- **Completed**:
+  - 시장 가격은 장중 10~30초 간격으로 갱신하도록 확정.
+  - 홈에 코스피·코스닥·삼성전자·SK하이닉스 시장 현황을 표시하도록 확정.
+  - 삼성전자·SK하이닉스 현재가를 총 자산 평가액·평가손익·현재 비중에 반영하도록 확정.
+  - 공시·뉴스·ESG 이슈는 하루 한 번 자동 동기화하고 사용자가 추가 동기화를 요청할 수 있도록 확정.
+  - 신규 승인 사건 또는 사건 상태 변경 후 ESG 위험과 추천 비중을 다시 계산하도록 확정.
+- **Modified files**:
+  - `chipbuddy_prd_mvp_4days_v1.5.md`
+  - `chipbuddy_plan_mvp_4days_v1.5.md`
+  - `ROADMAP.md`
+  - `PROGRESS.md`
+  - `progress/INTEGRATION.md`
+- **Validation commands**:
+  - 실시간·동기화 키워드 및 잔존 충돌 문구 검색
+- **Validation results**:
+  - 제한적 실시간·실시간 가격 Drop First·관리자 전용 갱신 충돌 문구 제거 확인.
+- **Remaining**:
+  - `COMMON-RT-02` 공용 API·스키마에 대한 전 역할 검토 및 승인.
+- **Blockers**:
+  - Data B 변경 미동기화 및 ESG 데이터 계약 비호환.
+- **Next task**: `COMMON-RT-02` 계약 초안 작성과 역할별 리뷰.
+
+### 2026-07-21 21:45 — Market, Portfolio and Sync API Contract Draft
+
+- **Role**: Integration
+- **Owner**: Team Lead
+- **Task ID**: `COMMON-RT-02`
+- **Status**: `review`
+- **Completed**:
+  - `GET /market/quotes`의 필수 4개 항목, 10~30초 갱신 간격, 가격·시장·지연·출처 상태를 정의.
+  - `POST /portfolio/summary`의 보유 수량·평단가 입력과 현재가 기반 평가액·손익·수익률·현재 비중 계산 계약을 정의.
+  - `POST /sync/issues`와 `GET /sync/status`의 예약/수동 공용 서비스, 중복 실행 재사용, 상태 전이와 후보→검수 데이터 경계를 정의.
+  - JSON Schema, sample 표기 예시와 산술·중복·상태 전이 계약 테스트를 작성.
+- **Created files**:
+  - `schemas/api/README.md`
+  - `schemas/api/market-quotes-response.schema.json`
+  - `schemas/api/portfolio-summary-request.schema.json`
+  - `schemas/api/portfolio-summary-response.schema.json`
+  - `schemas/api/sync-issues-request.schema.json`
+  - `schemas/api/sync-status-response.schema.json`
+  - `schemas/api/examples/market-quotes-response.example.json`
+  - `schemas/api/examples/portfolio-summary-request.example.json`
+  - `schemas/api/examples/portfolio-summary-response.example.json`
+  - `schemas/api/examples/sync-issues-request.example.json`
+  - `schemas/api/examples/sync-status-response.example.json`
+  - `src/backend/tests/test_realtime_api_contracts.py`
+- **Modified files**:
+  - `schemas/data/data-enums.yaml`
+  - `chipbuddy_prd_mvp_4days_v1.5.md`
+  - `chipbuddy_plan_mvp_4days_v1.5.md`
+  - `ROADMAP.md`
+  - `PROGRESS.md`
+  - `progress/INTEGRATION.md`
+- **Validation commands**:
+  - `.venv\\Scripts\\python.exe -m pytest src/backend/tests/test_realtime_api_contracts.py -q`
+  - `git diff --check`
+- **Validation results**:
+  - 계약 테스트 `9 passed`.
+  - whitespace 오류 없음.
+- **Remaining**:
+  - Data A, Data B, Backend, Frontend 역할별 계약 승인.
+  - 승인 후 Pydantic 모델·라우터·서비스·프론트엔드 소비자 구현.
+- **Blockers**:
+  - 공유 스키마 승인이 끝나기 전에는 `done` 처리 불가.
+- **Next task**: 역할별 계약 검토 후 Backend의 시장 가격 서비스와 포트폴리오 요약 API 구현.
+
+### 2026-07-21 22:25 — Automated Validation Runtime Migration
+
+- **Role**: Integration
+- **Owner**: Team Lead
+- **Task ID**: `COMMON-RT-03`
+- **Status**: `done`
+- **Completed**:
+  - 런타임 파이프라인에서 사람 검수 단계를 제거하고 `raw → candidate → automated validation → processed → API → UI`로 확정.
+  - `review_status`와 `needs_review`를 ESG·사건 스키마, enum, CSV와 모델 필터에서 제거.
+  - `data_status=reviewed`를 `data_status=validated`로 변경하고 데이터 경로를 `data/reviewed/`에서 `data/processed/`로 이전.
+  - 모델 사건 반영 조건을 `confirmed|sanctioned|resolved`, `authority_confirmed=true`, 공식 출처 존재로 자동화.
+  - AGENTS·PRD·Plan·ROADMAP·README·API 계약을 같은 자동 검증 흐름으로 정렬.
+- **Created files**:
+  - `scripts/migrate_automated_validation.py`
+  - `data/candidate/news_candidates.csv`
+  - `data/processed/*`
+- **Validation commands**:
+  - `.venv\\Scripts\\python.exe -m pytest -q`
+  - 활성 스키마·코드·데이터의 `review_status|needs_review|reviewed` 잔존 검색
+- **Validation results**:
+  - 전체 테스트 `38 passed`, 기존 Starlette/httpx deprecation warning 1건.
+  - 활성 스키마·백엔드·모델·테스트·CSV에 사람 검수 상태 참조 없음.
+- **Remaining**:
+  - 실제 일일·수동 수집기와 원자적 processed 스냅샷 발행 서비스 구현.
+  - `COMMON-RT-02`의 역할 관점 계약 검토.
+- **Blockers**: 없음.
+- **Next task**: `COMMON-RT-02` 단독 역할 관점 검토 후 `BE-RT-01` 시장 가격 서비스 구현.
+
+### 2026-07-22 01:42 — Data A Contract Review Remediation
+
+- **Role**: Integration / Data A self-review
+- **Owner**: Team Lead
+- **Task ID**: `COMMON-RT-02`
+- **Status**: `review`
+- **Completed**:
+  - 사건 상태를 `reported|confirmed|resolved`로 단순화하고 제재 결과를 `enforcement_action`으로 분리.
+  - 탐지 출처를 `dart_disclosure|news`로 제한하고 소문 데이터는 raw 단계에서 제외하도록 확정.
+  - `availability=unavailable`이면 `raw_value=null`만 허용하고 0을 거부하는 계약 테스트 추가.
+  - 검증 실패 후보는 unavailable 데이터로 변환하지 않고 processed 발행에서 제외하도록 문서화.
+  - 동기화 응답에 `stage`, 단계별 건수, 스냅샷 발행 증거와 재계산 상태를 추가.
+  - `success`, `partial_success`, `failed`의 수집·검증·발행 의미를 분리.
+- **Modified files**:
+  - `AGENTS.md`
+  - `README.md`
+  - `chipbuddy_prd_mvp_4days_v1.5.md`
+  - `chipbuddy_plan_mvp_4days_v1.5.md`
+  - `schemas/data/data-enums.yaml`
+  - `schemas/data/events.schema.json`
+  - `schemas/api/README.md`
+  - `schemas/api/sync-status-response.schema.json`
+  - `schemas/api/examples/sync-status-response.example.json`
+  - `data/processed/events.csv`
+  - `data/sample/events.sample.csv`
+  - `scripts/migrate_automated_validation.py`
+  - 관련 테스트와 Data A 문서
+- **Validation commands**:
+  - `.venv\\Scripts\\python.exe -m pytest -q`
+  - `.venv\\Scripts\\python.exe -m pytest src/backend/tests/test_csv_validator.py src/backend/tests/test_realtime_api_contracts.py -q`
+- **Validation results**:
+  - 전체 회귀 테스트 `43 passed`, 기존 Starlette/httpx deprecation warning 1건.
+  - 최종 스키마·계약 집중 테스트 `17 passed`.
+- **Remaining**:
+  - candidate, sources, event_sources 스키마 정의.
+  - 자동 중복 판정 키와 충돌 처리 규칙 정의.
+  - Data B 최신 ESG 모델에서 unavailable 값을 0 또는 하드코딩 기본점수로 대체하지 않는지 검증.
+- **Blockers**:
+  - 위 세 항목 완료 전 Data A 관점 최종 `approved` 처리 불가.
+- **Next task**: candidate/source/dedup 계약을 보완한 뒤 Data A 자체 검토를 종료.
+
+### 2026-07-22 03:28 — Integration Checkpoint Commit Preparation
+
+- **Role**: Integration
+- **Owner**: Team Lead / Codex
+- **Task ID**: `INT-01`, `COMMON-RT-02`, `COMMON-RT-03`
+- **Status**: `in_progress`
+- **Completed**:
+  - 로컬 변경의 staged/unstaged 상태와 삭제 대상을 점검하고 `reviewed → processed` 마이그레이션에 따른 삭제임을 확인.
+  - 삭제된 `data/reviewed/*`를 참조하던 환경 설정 예시를 `data/processed/*`로 정렬.
+  - 원격 브랜치의 선행 커밋과 로컬 변경의 동기화 순서를 확인.
+- **Modified files**:
+  - `.env.example`
+  - `env.example`
+  - `progress/INTEGRATION.md`
+- **Validation commands**:
+  - 전체 pytest 회귀 테스트
+  - Git whitespace 검사
+- **Validation results**:
+  - 전체 pytest 회귀 테스트 통과.
+  - `git diff --check` 통과.
+- **Remaining**:
+  - 인덱스 정리, 검증, 논리적 커밋, 원격 동기화 및 push.
+- **Blockers**: 없음.
+- **Next task**: 전체 테스트 통과 후 체크포인트 커밋을 생성하고 원격 브랜치와 동기화.
