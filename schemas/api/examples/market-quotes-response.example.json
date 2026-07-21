@@ -1,0 +1,72 @@
+{
+  "quotes": [
+    {
+      "instrument_id": "KOSPI",
+      "instrument_type": "index",
+      "name": "코스피",
+      "current_value": 3210.45,
+      "previous_close": 3198.12,
+      "change": 12.33,
+      "change_rate": 0.003856,
+      "currency": "KRW",
+      "market_status": "open",
+      "price_status": "live",
+      "as_of": "2026-07-21T10:15:30+09:00",
+      "source": "sample-market-provider",
+      "source_url": "https://example.local/market/kospi",
+      "is_stale": false
+    },
+    {
+      "instrument_id": "KOSDAQ",
+      "instrument_type": "index",
+      "name": "코스닥",
+      "current_value": 812.34,
+      "previous_close": 808.2,
+      "change": 4.14,
+      "change_rate": 0.005122,
+      "currency": "KRW",
+      "market_status": "open",
+      "price_status": "live",
+      "as_of": "2026-07-21T10:15:30+09:00",
+      "source": "sample-market-provider",
+      "source_url": "https://example.local/market/kosdaq",
+      "is_stale": false
+    },
+    {
+      "instrument_id": "005930",
+      "instrument_type": "equity",
+      "name": "삼성전자",
+      "current_value": 78000,
+      "previous_close": 77200,
+      "change": 800,
+      "change_rate": 0.010363,
+      "currency": "KRW",
+      "market_status": "open",
+      "price_status": "live",
+      "as_of": "2026-07-21T10:15:30+09:00",
+      "source": "sample-market-provider",
+      "source_url": "https://example.local/market/005930",
+      "is_stale": false
+    },
+    {
+      "instrument_id": "000660",
+      "instrument_type": "equity",
+      "name": "SK하이닉스",
+      "current_value": 195000,
+      "previous_close": 192500,
+      "change": 2500,
+      "change_rate": 0.012987,
+      "currency": "KRW",
+      "market_status": "open",
+      "price_status": "live",
+      "as_of": "2026-07-21T10:15:30+09:00",
+      "source": "sample-market-provider",
+      "source_url": "https://example.local/market/000660",
+      "is_stale": false
+    }
+  ],
+  "refresh_interval_seconds": 15,
+  "data_status": "sample",
+  "generated_at": "2026-07-21T10:15:31+09:00",
+  "warnings": ["예시 응답이며 실제 투자 판단에 사용할 수 없습니다."]
+}

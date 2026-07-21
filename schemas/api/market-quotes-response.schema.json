@@ -1,0 +1,110 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.local/schemas/api/market-quotes-response.schema.json",
+  "title": "Market Quotes Response",
+  "description": "코스피·코스닥·삼성전자·SK하이닉스 장중 시장 현황 응답",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "quotes",
+    "refresh_interval_seconds",
+    "data_status",
+    "generated_at",
+    "warnings"
+  ],
+  "properties": {
+    "quotes": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "items": { "$ref": "#/$defs/quote" },
+      "allOf": [
+        { "contains": { "properties": { "instrument_id": { "const": "KOSPI" } }, "required": ["instrument_id"] }, "minContains": 1, "maxContains": 1 },
+        { "contains": { "properties": { "instrument_id": { "const": "KOSDAQ" } }, "required": ["instrument_id"] }, "minContains": 1, "maxContains": 1 },
+        { "contains": { "properties": { "instrument_id": { "const": "005930" } }, "required": ["instrument_id"] }, "minContains": 1, "maxContains": 1 },
+        { "contains": { "properties": { "instrument_id": { "const": "000660" } }, "required": ["instrument_id"] }, "minContains": 1, "maxContains": 1 }
+      ]
+    },
+    "refresh_interval_seconds": {
+      "type": "integer",
+      "minimum": 10,
+      "maximum": 30
+    },
+    "data_status": {
+      "type": "string",
+      "enum": ["sample", "validated", "fallback"]
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "warnings": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1, "maxLength": 500 }
+    }
+  },
+  "$defs": {
+    "quote": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "instrument_id",
+        "instrument_type",
+        "name",
+        "current_value",
+        "previous_close",
+        "change",
+        "change_rate",
+        "currency",
+        "market_status",
+        "price_status",
+        "as_of",
+        "source",
+        "source_url",
+        "is_stale"
+      ],
+      "properties": {
+        "instrument_id": {
+          "type": "string",
+          "enum": ["KOSPI", "KOSDAQ", "005930", "000660"]
+        },
+        "instrument_type": {
+          "type": "string",
+          "enum": ["index", "equity"]
+        },
+        "name": { "type": "string", "minLength": 1, "maxLength": 50 },
+        "current_value": { "type": "number", "exclusiveMinimum": 0 },
+        "previous_close": { "type": "number", "exclusiveMinimum": 0 },
+        "change": { "type": "number" },
+        "change_rate": { "type": "number" },
+        "currency": { "type": "string", "const": "KRW" },
+        "market_status": {
+          "type": "string",
+          "enum": ["open", "closed", "delayed", "unavailable"]
+        },
+        "price_status": {
+          "type": "string",
+          "enum": ["live", "cached", "fallback"]
+        },
+        "as_of": { "type": "string", "format": "date-time" },
+        "source": { "type": "string", "minLength": 1, "maxLength": 100 },
+        "source_url": { "type": "string", "format": "uri", "maxLength": 500 },
+        "is_stale": { "type": "boolean" }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "instrument_id": { "enum": ["KOSPI", "KOSDAQ"] } }, "required": ["instrument_id"] },
+          "then": { "properties": { "instrument_type": { "const": "index" } } }
+        },
+        {
+          "if": { "properties": { "instrument_id": { "enum": ["005930", "000660"] } }, "required": ["instrument_id"] },
+          "then": { "properties": { "instrument_type": { "const": "equity" } } }
+        },
+        {
+          "if": { "properties": { "price_status": { "const": "live" } }, "required": ["price_status"] },
+          "then": { "properties": { "is_stale": { "const": false } } }
+        }
+      ]
+    }
+  }
+}

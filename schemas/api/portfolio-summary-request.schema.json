@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.local/schemas/api/portfolio-summary-request.schema.json",
+  "title": "Portfolio Summary Request",
+  "description": "실시간 현재가 기반 포트폴리오 평가 요청",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["holdings"],
+  "properties": {
+    "holdings": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 2,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["ticker", "quantity", "average_price"],
+        "properties": {
+          "ticker": { "type": "string", "enum": ["005930", "000660"] },
+          "quantity": { "type": "number", "exclusiveMinimum": 0 },
+          "average_price": { "type": "number", "exclusiveMinimum": 0 }
+        }
+      },
+      "allOf": [
+        { "contains": { "properties": { "ticker": { "const": "005930" } }, "required": ["ticker"] }, "minContains": 0, "maxContains": 1 },
+        { "contains": { "properties": { "ticker": { "const": "000660" } }, "required": ["ticker"] }, "minContains": 0, "maxContains": 1 }
+      ]
+    }
+  }
+}
