@@ -297,3 +297,39 @@
   - Data B, Backend, Frontend 역할별 계약 검토와 명시적 승인.
 - **Blockers**: `RT-B01` 복원.
 - **Next task**: 각 역할이 자기 진행 로그에 COMMON-RT-02 검토 결과를 기록한 뒤 팀 리드가 최종 승인 여부를 재판정.
+
+### 2026-07-22 04:05 — Four-Day Scope and Legacy Contract Cleanup
+
+- **Role**: Integration / Team Lead
+- **Owner**: Team Lead / Codex
+- **Task ID**: `COMMON-RT-02`
+- **Status**: `review`
+- **Completed**:
+  - 프로젝트 기간을 4일로 확정.
+  - `ROADMAP.md`의 실시간·일일 동기화 작업을 Day 3-4 구간으로 명시.
+  - 프론트엔드 런타임의 `reviewed` 상태를 `validated`·`fallback`·`sample` 계약으로 교정.
+  - PRD·계획·기능 문서의 사건 상태를 `reported`·`confirmed`·`resolved`로 통일하고 제재 결과를 `enforcement_action`으로 분리.
+  - 개발 A 가이드의 `raw → candidate → processed` 자동 검증·원자적 발행 흐름과 Realtime API 목록을 최신화.
+  - 데이터 B 가이드의 역할 명칭, 4일 범위, 이벤트 필터·결과 상태 계약을 최신화.
+  - Data A·Backend 현재 작업표의 폐기된 `data/reviewed` 산출물 경로를 processed 경로로 교정.
+  - 오래된 분석 보고서 2개에 superseded 표식을 추가.
+- **Assumptions**:
+  - `AGENTS.md`, `README.md`, 프로젝트 coordinator skill의 2일 표현을 4일로 통일.
+  - 기존 B 가이드 파일은 `데이터 B GUIDELINE.md`로 변경하고 역할 명칭을 데이터 B로 통일.
+  - 과거 Work Log와 마이그레이션 스크립트의 레거시 문자열은 감사 이력·호환 목적으로 보존.
+- **Created or renamed files**:
+  - `데이터 B GUIDELINE.md` (기존 B 가이드 파일 이름 변경)
+- **Modified files**:
+  - `AGENTS.md`, `README.md`, `ROADMAP.md`, `PROGRESS.md`
+  - `개발 A GUIDELINE.md`, `chipbuddy_prd_mvp_4days_v1.5.md`, `chipbuddy_plan_mvp_4days_v1.5.md`, `chip_buddy_features.md`
+  - `src/frontend/index.js`, `src/frontend/templates/issues.html`, `src/frontend/templates/components/risk_result.html`, `src/frontend/static/css/index.css`
+  - `progress/DATA-A.md`, `progress/BACKEND.md`, `progress/INTEGRATION.md`
+  - `IDEA_ALIGNMENT_REPORT.md`, `analysis_results.md`, `skills/semiconductor-project-coordinator/SKILL.md`
+- **Validation commands**:
+  - `rg`로 레거시 경로·상태·사건 enum·기간 전수 재검색
+  - `.venv\\Scripts\\python.exe -m pytest -q --disable-warnings`
+  - `git diff --check`
+- **Validation results**: 활성 문서·런타임의 레거시 표현 없음. 전체 테스트 `59 passed, 1 warning` (276.70초). `git diff --check` 통과.
+- **Remaining**: `COMMON-RT-02`는 Data A `review`, Data B·Backend·Frontend `pending`이므로 전 역할 명시 승인 후에만 `done` 처리.
+- **Blockers**: 없음.
+- **Next task**: 역할별 `COMMON-RT-02` 계약 검토와 명시 승인 수집.

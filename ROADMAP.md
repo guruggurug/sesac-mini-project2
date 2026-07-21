@@ -53,7 +53,7 @@
 - [x] INT-02: Data and Model Review
 - [ ] INT-03: Demo Preparation
 
-## Realtime & Daily Sync Tasks
+## Day 3-4 Realtime & Daily Sync Tasks
 
 - [x] COMMON-RT-01: Realtime and Daily Sync Requirements Definition (팀 리드)
 - [ ] COMMON-RT-02: Market, Portfolio Summary and Sync API Contract Review (팀 리드, 전 역할 승인 필요)
@@ -79,7 +79,7 @@
 - **CHECKPOINT-02 (Day 1 종료)**: Mock-Based End-to-End Verification (Mock API 기반 프론트-백 연동 완료) - *완료*
 - **CHECKPOINT-03 (Day 2 중간)**: Real Data & Model Integration (실제 데이터 및 최적화 엔진 백엔드 통합 완료) - *완료*
 - **CHECKPOINT-04 (Day 2 종료)**: Final Production QA & Demo Ready (E2E 테스트, 예외/폴백 처리 완료 및 최종 데모 검증 완료) - *진행 중*
-- **CHECKPOINT-05 (실시간·동기화 확장)**: Market Quotes & Daily Issue Sync Ready (시장 가격, 실시간 자산 평가, 일일·수동 이슈 동기화, 재계산과 폴백 검증) - *계약 검토 / 구현 대기*
+- **CHECKPOINT-05 (Day 3-4 실시간·동기화 확장)**: Market Quotes & Daily Issue Sync Ready (시장 가격, 실시간 자산 평가, 일일·수동 이슈 동기화, 재계산과 폴백 검증) - *계약 검토 / 구현 대기*
 
 ## Priority
 

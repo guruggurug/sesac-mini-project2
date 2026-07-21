@@ -4,7 +4,7 @@
 
 This file defines the mandatory rules for all human contributors and AI coding agents working on the **Chip Buddy MVP**.
 
-The project goal is to build a two-day MVP that compares Samsung Electronics and SK hynix using:
+The project goal is to build a four-day MVP that compares Samsung Electronics and SK hynix using:
 
 - ESG management risk
 - Historical downside risk
@@ -179,7 +179,7 @@ Frontend does not:
 
 ## 6. `ROADMAP.md` Rules
 
-`ROADMAP.md` defines the approved two-day project plan.
+`ROADMAP.md` defines the approved four-day project plan.
 
 ### Required Sections
 
@@ -188,8 +188,7 @@ Frontend does not:
 - Project goal
 - MVP completion criteria
 - Team roles
-- Day 1 tasks
-- Day 2 tasks
+- Day 1 through Day 4 tasks
 - Integration checkpoints
 - Must / Should / Drop First priorities
 - Current blockers
@@ -840,6 +839,10 @@ A task is not complete until documentation and progress tracking are updated.
 ## Day 1
 
 ## Day 2
+
+## Day 3
+
+## Day 4
 
 ## Integration Checkpoints
 

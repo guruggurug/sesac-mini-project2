@@ -1,13 +1,13 @@
 ---
 name: semiconductor-project-coordinator
-description: Coordinate the two-day, four-person Chip Buddy project through its connected GitHub repository or uploaded repository files. Use when the user asks to inspect project status, select the next task for Data A, Data B, Backend, Frontend, or Integration, review ROADMAP.md or PROGRESS.md, update role progress files, check file ownership, prepare Git branches and commits, review schemas and sample data, reduce merge conflicts, or determine whether parallel work can start.
+description: Coordinate the four-day, four-person Chip Buddy project through its connected GitHub repository or uploaded repository files. Use when the user asks to inspect project status, select the next task for Data A, Data B, Backend, Frontend, or Integration, review ROADMAP.md or PROGRESS.md, update role progress files, check file ownership, prepare Git branches and commits, review schemas and sample data, reduce merge conflicts, or determine whether parallel work can start.
 ---
 
 # Chip Buddy Coordinator
 
 ## Goal
 
-Coordinate the repository without overwriting another role's work. Base every recommendation on the latest repository state and preserve the project's two-day MVP scope.
+Coordinate the repository without overwriting another role's work. Base every recommendation on the latest repository state and preserve the project's four-day MVP scope.
 
 ## Repository Sources
 
@@ -103,7 +103,7 @@ When reviewing work:
 - compare changed files with task ownership
 - verify schema and sample consistency
 - verify that required tests or validation were run
-- identify scope creep beyond the two-day MVP
+- identify scope creep beyond the four-day MVP
 - flag destructive rewrites of shared files
 - distinguish blockers from optional improvements
 

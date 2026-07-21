@@ -1,8 +1,8 @@
-# 데이터 B 조원 작업 가이드라인
+# 데이터 B 작업 가이드라인
 
 ## 0. 문서 목적
 
-이 문서는 「칩버디 (Chip Buddy)」 2일 MVP에서 **데이터 B 조원**이 무엇을, 어떤 순서로, 왜 해야 하는지 정리한 실행 가이드다.
+이 문서는 「칩버디 (Chip Buddy)」 4일 MVP에서 **데이터 B**가 무엇을, 어떤 순서로, 왜 해야 하는지 정리한 실행 가이드다.
 
 데이터 B의 핵심 역할은 다음과 같다.
 
@@ -70,7 +70,8 @@ B의 함수를 API로 연결
 
 ```text
 availability: available / unavailable
-status: rumor / reported / confirmed / sanctioned / resolved
+status: reported / confirmed / resolved
+enforcement_action: no_action / investigation / corrective_order / fine / sanctioned
 data_confidence: high / medium / low
 ```
 
@@ -133,7 +134,7 @@ event_id,company_id,event_category,event_date,status,severity,data_status
 SAMPLE001,005930,occupational_safety,2024-03-15,confirmed,4,sample
 ```
 
-실제 사건은 `confirmed` 또는 `sanctioned`만 점수 계산에 반영한다. `reported` 사건은 화면 경고용이며 모델 점수에는 넣지 않는다.
+실제 사건은 `confirmed` 또는 `resolved` 중 자동 스키마·공식 출처 검증을 통과한 사건만 점수 계산에 반영한다. `reported` 사건은 화면 경고용이며 모델 점수에는 넣지 않고, 제재 결과는 별도 `enforcement_action`으로 소비한다.
 
 ---
 
@@ -645,7 +646,7 @@ ESG 위험 결합 함수
 ```text
 샘플 ESG 파일 → 실제 esg_indicators.csv
 샘플 사건 파일 → 실제 events.csv
-confirmed/sanctioned 필터 적용
+자동 검증된 confirmed/resolved 필터 적용
 결측·범위·신뢰도 처리 확인
 최종 결과 재계산
 ```
@@ -719,7 +720,7 @@ calculate_event_reaction(price_df, event_date, company_id)
   "current_total_risk": 0.558,
   "optimized_total_risk": 0.482,
   "risk_reduction_rate": 0.136,
-  "data_status": "reviewed",
+  "data_status": "validated",
   "explanation": [
     "두 종목의 과거 가격 하방위험을 비교했습니다.",
     "검증된 ESG 관리위험을 함께 반영했습니다.",
@@ -881,7 +882,7 @@ prototype_model.py
 ## 실제 데이터 도착 후
 
 - 샘플 파일을 실제 파일로 교체
-- `confirmed`·`sanctioned` 필터 확인
+- 자동 검증된 `confirmed`·`resolved` 필터와 `enforcement_action` 분리 확인
 - 결측·신뢰도·범위 불일치 처리
 - 최종 JSON 생성
 - 개발 A에게 함수 전달
@@ -1022,6 +1023,6 @@ ESG와 CVaR의 단위를 맞춘 뒤 결합한다.
 # 16. 참고 문서
 
 - `deep-research-report_korean-semiconductor-revised.md`
-- `데이터분석정의서_칩버디_2일4인핵심기능.docx`
+- `데이터분석정의서_칩버디_4일4인핵심기능.docx`
 - `semiconductor_navigation_2day_4person_execution_plan_v2.md`
 

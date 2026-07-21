@@ -483,7 +483,7 @@ Issue Risk = Residual Risk + Confirmed Controversy + Data Uncertainty
 ESG Risk = 중요도 가중합
 ```
 
-사건은 `Rumor / Reported / Confirmed / Sanctioned / Resolved`로 관리한다. Confirmed 이상만 점수에 반영한다.
+정규화 사건 상태는 `Reported / Confirmed / Resolved`로 관리한다. 소문성 기록은 raw 단계에서 제외하고, `Reported`는 경고 전용으로 유지한다. `Confirmed`와 `Resolved` 중 자동 스키마·공식 출처 검증을 통과한 사건만 점수에 반영하며 제재 결과는 별도 `enforcement_action`에 기록한다.
 
 ## 8.2 가격 하방위험
 

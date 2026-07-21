@@ -83,7 +83,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         setTimeout(() => {
             renderResults({
-                state: 'sample',
+                data_status: 'sample',
                 current: {
                     samsung: samWeight.toFixed(1),
                     hynix: hynWeight.toFixed(1)
@@ -105,9 +105,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function renderResults(data) {
         // 데이터 상태에 따른 배지 업데이트
-        if (data.state === 'reviewed') {
-            dataStatusBadge.textContent = 'Reviewed Data';
-            dataStatusBadge.className = 'data-badge badge-reviewed';
+        const dataStatus = data.data_status || data.state || 'sample';
+        if (dataStatus === 'validated') {
+            dataStatusBadge.textContent = 'Validated Data';
+            dataStatusBadge.className = 'data-badge badge-validated';
+        } else if (dataStatus === 'fallback') {
+            dataStatusBadge.textContent = 'Fallback Data';
+            dataStatusBadge.className = 'data-badge badge-fallback';
         } else {
             dataStatusBadge.textContent = 'Sample Data';
             dataStatusBadge.className = 'data-badge badge-sample';
