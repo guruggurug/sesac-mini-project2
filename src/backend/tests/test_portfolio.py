@@ -46,6 +46,27 @@ def test_app_startup_runs_runtime_state_recovery(monkeypatch):
 
     assert calls == ["recovered"]
 
+
+def test_app_lifespan_starts_and_stops_scheduler_only_when_enabled(monkeypatch):
+    calls = []
+
+    class StubScheduler:
+        async def start(self):
+            calls.append("started")
+
+        async def stop(self):
+            calls.append("stopped")
+
+    monkeypatch.setattr("app.main.recover_runtime_state_after_restart", lambda: None)
+    monkeypatch.setattr("app.main.ENABLE_ISSUE_SCHEDULER", True)
+    monkeypatch.setattr("app.main.daily_issue_scheduler", StubScheduler())
+
+    with TestClient(app) as startup_client:
+        assert startup_client.get("/health").status_code == 200
+        assert calls == ["started"]
+
+    assert calls == ["started", "stopped"]
+
 def test_health_check():
     """
     GET /health API가 정상 동작하는지 테스트

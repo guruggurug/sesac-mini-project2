@@ -5,8 +5,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
 
-from app.core.config import FRONTEND_STATIC_DIR
-from app.core.runtime import recover_runtime_state_after_restart
+from app.core.config import ENABLE_ISSUE_SCHEDULER, FRONTEND_STATIC_DIR
+from app.core.runtime import daily_issue_scheduler, recover_runtime_state_after_restart
 from app.core.exceptions import CSVValidationError, csv_validation_exception_handler
 from app.routes.health import router as health_router
 from app.routes.portfolio import router as portfolio_router
@@ -19,7 +19,13 @@ from app.routes.ui import router as ui_router
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     recover_runtime_state_after_restart()
-    yield
+    if ENABLE_ISSUE_SCHEDULER:
+        await daily_issue_scheduler.start()
+    try:
+        yield
+    finally:
+        if ENABLE_ISSUE_SCHEDULER:
+            await daily_issue_scheduler.stop()
 
 
 app = FastAPI(

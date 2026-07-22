@@ -11,4 +11,5 @@ python-multipart>=0.0.6
 httpx>=0.24.0
 jsonschema>=4.17.0
 itsdangerous>=2.2.0
+python-dotenv>=1.0.0
 
