@@ -300,7 +300,6 @@ def main() -> None:
     migrate_event_source_csv("data/processed/event_sources.csv")
     for relative_path in (
         "data/processed/stock_prices.csv",
-        "data/prices.csv",
     ):
         rewrite_csv(
             relative_path,
