@@ -128,10 +128,12 @@ PRD와 Plan은 아이디어의 **핵심 분석 기능과 초보자용 설명 가
 - `src/backend/app/routes/issues.py`
 - `src/frontend/templates/components/issue_cards.html`
 
-### 3.4 최신 가격 조회와 재계산
+### 3.4 가격 조회와 재계산
 
-- yfinance를 이용해 삼성전자와 SK하이닉스의 현재 가격을 조회한다.
-- 포트폴리오 계산 및 최적화 요청 시 현재 가격을 가격 시계열에 결합한다.
+- MVP에서는 yfinance를 사용하지 않는다.
+- MVP의 승인된 국내 시장 provider는 한국투자증권 KIS REST API다.
+- KIS 키가 없으면 검증 가격 저장소의 최신 종가만 fallback으로 사용한다.
+- KIS 연동 후 포트폴리오 계산 및 최적화 요청 시 승인된 현재 가격을 가격 시계열에 결합한다.
 - HTMX로 폼을 제출해 결과 영역만 다시 렌더링한다.
 - reviewed 데이터 실패 시 sample/fallback 상태를 지원하는 저장소 구조가 있다.
 

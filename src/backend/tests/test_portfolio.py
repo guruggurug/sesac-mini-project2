@@ -1,5 +1,6 @@
 import sys
 import os
+import pytest
 from fastapi.testclient import TestClient
 
 # PYTHONPATH에 app이 위치한 src/backend 디렉토리 추가
@@ -14,6 +15,36 @@ from app.utils.realtime_price import get_realtime_price
 
 
 client = TestClient(app)
+
+
+@pytest.fixture(autouse=True)
+def mock_market_quotes(monkeypatch):
+    """Keep API regression tests deterministic and independent of external networks."""
+    from app.utils import realtime_price
+
+    class StubQuote:
+        def __init__(self, price):
+            self.price = price
+
+    class StubService:
+        def get_quote(self, ticker):
+            prices = {"005930": 80000.0, "000660": 200000.0}
+            return StubQuote(prices[ticker])
+
+    monkeypatch.setattr(realtime_price, "_DEFAULT_SERVICE", StubService())
+
+
+def test_app_startup_runs_runtime_state_recovery(monkeypatch):
+    calls = []
+    monkeypatch.setattr(
+        "app.main.recover_runtime_state_after_restart",
+        lambda: calls.append("recovered"),
+    )
+
+    with TestClient(app) as startup_client:
+        assert startup_client.get("/health").status_code == 200
+
+    assert calls == ["recovered"]
 
 def test_health_check():
     """
@@ -212,8 +243,16 @@ def test_realtime_price_utility():
     """
     실시간 가격 조회 유틸리티가 정상적으로 float 가격을 반환하는지 테스트
     """
-    price_sam = get_realtime_price("005930")
-    price_sk = get_realtime_price("000660")
+    class StubQuote:
+        def __init__(self, price):
+            self.price = price
+
+    class StubService:
+        def get_quote(self, ticker):
+            return StubQuote({"005930": 80000.0, "000660": 200000.0}[ticker])
+
+    price_sam = get_realtime_price("005930", service=StubService())
+    price_sk = get_realtime_price("000660", service=StubService())
     assert isinstance(price_sam, float)
     assert price_sam > 0
     assert isinstance(price_sk, float)

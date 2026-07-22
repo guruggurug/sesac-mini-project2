@@ -471,13 +471,19 @@ DATA_MODE=sample
 DART_API_KEY=
 NEWS_API_KEY=
 GEMINI_API_KEY=
+KIS_APP_KEY=
+KIS_APP_SECRET=
+KIS_BASE_URL=https://openapi.koreainvestment.com:9443
+RUNTIME_STATE_DB_PATH=data/runtime/state.db
 
 BACKEND_HOST=0.0.0.0
 BACKEND_PORT=8000
 FRONTEND_API_BASE_URL=http://localhost:8000
 ```
 
-> 실제 API 키가 없는 경우 `DATA_MODE=sample`로 실행합니다.
+> KIS 키가 없으면 외부 시장 조회를 수행하지 않습니다. 삼성전자·SK하이닉스는 검증 가격 저장소의 최신 종가를 사용하고, KOSPI·KOSDAQ은 실제값을 임의 생성하지 않습니다. 실제 API 키가 없는 경우 `DATA_MODE=sample`로 실행합니다.
+
+`RUNTIME_STATE_DB_PATH`의 SQLite 파일에는 마지막 정상 시장 가격과 단일 활성 이슈 동기화 lock을 저장합니다. 서버 재시작 시 진행 중이던 동기화는 `failed`로 종료하고 lock을 해제하며, 마지막 정상 가격은 유지합니다.
 
 ---
 
