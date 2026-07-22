@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html class="light" lang="ko">
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>이슈 분석 - Chip Buddy</title>
+    <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=block" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+        try {
+            tailwind.config = {
+                darkMode: "class",
+                theme: {
+                    extend: {
+                        colors: {
+                            "primary": "#964B00",
+                            "background": "#FAF8F5",
+                            "surface": "#FAF8F5",
+                            "on-surface": "#1c1b1b",
+                            "on-surface-variant": "#564334",
+                            "outline-variant": "#E5DEC9"
+                        }
+                    }
+                }
+            }
+        } catch (_e) {}
+    </script>
+</head>
+<body data-ui-screen="issue-analysis" class="bg-[#FAF8F5] text-on-surface flex justify-center items-start min-h-screen">
+    {% if data_status in ["sample", "fallback"] %}<div class="fixed top-1 right-2 z-[100] rounded-full bg-[#F5E8DD] px-2 py-1 text-[10px] font-bold text-[#964B00]">{{ "샘플 데이터" if data_status == "sample" else "대체 데이터" }}</div>{% endif %}
+    <!-- 390px Mobile App Container Shell -->
+    <div class="w-full max-w-[390px] min-h-screen flex flex-col relative shadow-2xl bg-[#FAF8F5] overflow-x-hidden">
+        
+        <!-- Header -->
+        <header class="fixed top-0 w-full max-w-[390px] z-50 bg-[#FAF8F5] border-b border-[#E5DEC9] flex justify-between items-center px-4 h-16">
+            <div class="flex items-center gap-2 cursor-pointer" onclick="window.history.back()">
+                <span class="material-symbols-outlined text-[#964B00] text-[24px]">arrow_back</span>
+                <h1 class="font-bold text-[18px] leading-[24px] text-[#2A1800]">이슈 분석</h1>
+            </div>
+            <div class="flex items-center gap-3">
+                <button class="material-symbols-outlined text-[#964B00]">notifications</button>
+                <button class="material-symbols-outlined text-[#964B00]">account_circle</button>
+            </div>
+        </header>
+
+        <!-- Top Sticky Company Tab Navigation -->
+        <nav class="fixed top-16 w-full max-w-[390px] bg-[#FAF8F5] border-b border-[#E5DEC9] z-40">
+            <div class="flex w-full">
+                <button class="flex-1 py-3 relative flex flex-col items-center justify-center font-bold text-[#964B00] transition-colors" id="tab-samsung" onclick="switchIssueTab('samsung')">
+                    <span class="text-[14px]">삼성전자</span>
+                    <div class="absolute bottom-0 w-full h-[2px] bg-[#964B00]" id="indicator-samsung"></div>
+                </button>
+                <button class="flex-1 py-3 relative flex flex-col items-center justify-center font-medium text-[#8A8A8A] transition-colors" id="tab-sk" onclick="switchIssueTab('sk')">
+                    <span class="text-[14px]">SK하이닉스</span>
+                    <div class="absolute bottom-0 w-full h-[2px] bg-transparent" id="indicator-sk"></div>
+                </button>
+            </div>
+        </nav>
+
+        <!-- Main Content Area -->
+        <main class="mt-28 flex-1 px-4 pt-4 pb-24 flex flex-col gap-4">
+            
+            <!-- Samsung Electronics Issue Content -->
+            <div class="flex flex-col gap-4" id="content-samsung">
+                <!-- Recent Compliance & ESG Issues Card -->
+                <section class="bg-white border rounded-xl overflow-hidden shadow-sm border-[#E5DEC9] p-4">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center gap-2">
+                            <span class="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center text-sm">🔵</span>
+                            <span class="font-bold text-[15px] text-[#2A1800]">삼성전자</span>
+                        </div>
+                        <span class="font-medium text-[12px] text-[#7A7571]">분석 중</span>
+                    </div>
+                    <div class="space-y-2">
+                        <p class="font-medium text-[12px] text-[#7A7571]">2024.05.20</p>
+                        <h2 class="font-bold text-[16px] text-[#2A1800] leading-tight">삼성전자 HBM 공급망 관련 공정거래 이슈</h2>
+                        
+                        <!-- ESG Risk Description Accordion -->
+                        <details class="group bg-[#FAF8F5] rounded-lg border border-[#E5DEC9] mt-3">
+                            <summary class="flex items-center justify-between p-3 cursor-pointer list-none">
+                                <span class="font-medium text-[12px] text-[#7A7571]">리스크 상세 분석</span>
+                                <span class="material-symbols-outlined transition-transform group-open:rotate-180 text-[#7A7571]">expand_more</span>
+                            </summary>
+                            <div class="px-3 pb-3 pt-1">
+                                <p class="font-normal text-[13px] text-[#4A4746] leading-relaxed">
+                                    고대역폭 메모리(HBM) 시장 내 경쟁 우위 확보 과정에서의 독점 규제 및 기술 유출 방지 관련 규제 당국의 조사가 착수되었습니다. 현재 공정거래위원회는 주요 고객사와의 장기 공급 계약 조건에 부당한 경쟁 제한 요소가 포함되어 있는지 여부를 집중적으로 확인하고 있는 것으로 파악됩니다.
+                                </p>
+                            </div>
+                        </details>
+                    </div>
+                    <div class="mt-4">
+                        <button class="font-medium text-[12px] text-[#7A7571] flex items-center gap-1 hover:text-primary transition-colors">
+                            공식 출처 확인
+                            <span class="material-symbols-outlined text-[16px]">open_in_new</span>
+                        </button>
+                    </div>
+                </section>
+
+                <!-- Stock Price Comparison Card -->
+                <section class="bg-white border rounded-xl p-4 border-[#E5DEC9]">
+                    <div class="flex flex-col items-center py-1">
+                        <div class="flex items-center gap-2 mb-1">
+                            <span class="w-2.5 h-2.5 rounded-full bg-[#964B00]"></span>
+                            <span class="font-bold text-[15px] text-[#2A1800]">삼성전자 현재가</span>
+                        </div>
+                        <div class="flex items-baseline gap-2">
+                            <span class="text-[28px] font-bold text-[#2A1800] leading-none">78,200원</span>
+                            <span class="text-[#3182CE] font-bold text-[16px] flex items-center">
+                                <span class="material-symbols-outlined text-[20px]">arrow_drop_down</span>
+                                1.2%
+                            </span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Historical Case Impact Card -->
+                <section class="bg-white border rounded-xl overflow-hidden shadow-sm border-[#E5DEC9] p-4">
+                    <h2 class="font-bold text-[16px] text-[#2A1800] leading-tight mb-4">과거 유사 사례 영향 분석</h2>
+                    
+                    <!-- Stats Grid -->
+                    <div class="grid grid-cols-3 gap-2 mb-4">
+                        <div class="bg-[#FAF8F5] p-3 rounded-lg border border-[#E5DEC9] text-center">
+                            <p class="font-medium text-[11px] text-[#7A7571]">Day+1 수익률</p>
+                            <p class="font-bold text-[15px] text-[#3182CE]">-1.8%</p>
+                        </div>
+                        <div class="bg-[#FAF8F5] p-3 rounded-lg border border-[#E5DEC9] text-center">
+                            <p class="font-medium text-[11px] text-[#7A7571]">Day+3 누적</p>
+                            <p class="font-bold text-[15px] text-[#3182CE]">-4.2%</p>
+                        </div>
+                        <div class="bg-[#FAF8F5] p-3 rounded-lg border border-[#E5DEC9] text-center">
+                            <p class="font-medium text-[11px] text-[#7A7571]">최대 낙폭</p>
+                            <p class="font-bold text-[15px] text-[#3182CE]">-6.1%</p>
+                        </div>
+                    </div>
+
+                    <!-- Chart Placeholder SVG -->
+                    <div class="relative h-40 w-full mt-2">
+                        <svg class="w-full h-full overflow-visible" viewBox="0 0 340 150">
+                            <defs>
+                                <linearGradient id="lineGradientSam" x1="0%" x2="0%" y1="0%" y2="100%">
+                                    <stop offset="0%" stop-color="#964B00" stop-opacity="0.2"></stop>
+                                    <stop offset="100%" stop-color="#964B00" stop-opacity="0"></stop>
+                                </linearGradient>
+                            </defs>
+                            <line stroke="#ddc1ae" stroke-dasharray="2,2" x1="0" x2="340" y1="30" y2="30"></line>
+                            <line stroke="#ddc1ae" stroke-dasharray="2,2" x1="0" x2="340" y1="75" y2="75"></line>
+                            <line stroke="#ddc1ae" stroke-dasharray="2,2" x1="0" x2="340" y1="120" y2="120"></line>
+                            <path d="M 0 30 L 80 50 L 160 110 L 250 125 L 340 100 V 150 H 0 Z" fill="url(#lineGradientSam)"></path>
+                            <path d="M 0 30 L 80 50 L 160 110 L 250 125 L 340 100" fill="none" stroke="#964B00" stroke-width="2.5"></path>
+                            <circle cx="0" cy="30" fill="#964B00" r="4"></circle>
+                            <circle cx="160" cy="110" fill="#ba1a1a" r="4"></circle>
+                            <circle cx="250" cy="125" fill="#ba1a1a" r="4"></circle>
+                        </svg>
+                        <div class="flex justify-between font-medium text-[11px] text-[#7A7571] mt-1">
+                            <span>이슈 발생</span>
+                            <span>T+3</span>
+                            <span>T+7</span>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- SK Hynix Issue Content -->
+            <div class="hidden flex flex-col gap-4" id="content-sk">
+                <!-- Recent Compliance & ESG Issues Card -->
+                <section class="bg-white border rounded-xl overflow-hidden shadow-sm border-[#E5DEC9] p-4">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center gap-2">
+                            <span class="w-8 h-8 rounded-full bg-red-50 flex items-center justify-center text-sm">🔴</span>
+                            <span class="font-bold text-[15px] text-[#2A1800]">SK하이닉스</span>
+                        </div>
+                        <span class="font-medium text-[12px] text-[#7A7571]">분석 중</span>
+                    </div>
+                    <div class="space-y-2">
+                        <p class="font-medium text-[12px] text-[#7A7571]">2024.06.15</p>
+                        <h2 class="font-bold text-[16px] text-[#2A1800] leading-tight">SK하이닉스 HBM3E 12단 독점 공급망 이슈</h2>
+                        
+                        <!-- ESG Risk Description Accordion -->
+                        <details class="group bg-[#FAF8F5] rounded-lg border border-[#E5DEC9] mt-3">
+                            <summary class="flex items-center justify-between p-3 cursor-pointer list-none">
+                                <span class="font-medium text-[12px] text-[#7A7571]">리스크 상세 분석</span>
+                                <span class="material-symbols-outlined transition-transform group-open:rotate-180 text-[#7A7571]">expand_more</span>
+                            </summary>
+                            <div class="px-3 pb-3 pt-1">
+                                <p class="font-normal text-[13px] text-[#4A4746] leading-relaxed">
+                                    AI 반도체 시장 전반의 HBM3E 독점 공급 구조와 관련하여 엔비디아 향 신규 공정 수율 및 투자 집행 시점에 대한 시장 관심이 고조되고 있습니다. 전력 효율성 증대 요구에 부응하는 차세대 packaging 기술 관련 특허 및 글로벌 경쟁사 진입 여부가 주가 모멘텀의 핵심 변수로 작용하고 있습니다.
+                                </p>
+                            </div>
+                        </details>
+                    </div>
+                    <div class="mt-4">
+                        <button class="font-medium text-[12px] text-[#7A7571] flex items-center gap-1 hover:text-primary transition-colors">
+                            공식 출처 확인
+                            <span class="material-symbols-outlined text-[16px]">open_in_new</span>
+                        </button>
+                    </div>
+                </section>
+
+                <!-- Stock Price Comparison Card -->
+                <section class="bg-white border rounded-xl p-4 border-[#E5DEC9]">
+                    <div class="flex flex-col items-center py-1">
+                        <div class="flex items-center gap-2 mb-1">
+                            <span class="w-2.5 h-2.5 rounded-full bg-red-600"></span>
+                            <span class="font-bold text-[15px] text-[#2A1800]">SK하이닉스 현재가</span>
+                        </div>
+                        <div class="flex items-baseline gap-2">
+                            <span class="text-[28px] font-bold text-[#2A1800] leading-none">185,000원</span>
+                            <span class="text-[#38A169] font-bold text-[16px] flex items-center">
+                                <span class="material-symbols-outlined text-[20px]">arrow_drop_up</span>
+                                1.15%
+                            </span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Historical Case Impact Card -->
+                <section class="bg-white border rounded-xl overflow-hidden shadow-sm border-[#E5DEC9] p-4">
+                    <h2 class="font-bold text-[16px] text-[#2A1800] leading-tight mb-4">과거 유사 사례 영향 분석</h2>
+                    
+                    <!-- Stats Grid -->
+                    <div class="grid grid-cols-3 gap-2 mb-4">
+                        <div class="bg-[#FAF8F5] p-3 rounded-lg border border-[#E5DEC9] text-center">
+                            <p class="font-medium text-[11px] text-[#7A7571]">Day+1 수익률</p>
+                            <p class="font-bold text-[15px] text-[#38A169]">+2.4%</p>
+                        </div>
+                        <div class="bg-[#FAF8F5] p-3 rounded-lg border border-[#E5DEC9] text-center">
+                            <p class="font-medium text-[11px] text-[#7A7571]">Day+3 누적</p>
+                            <p class="font-bold text-[15px] text-[#38A169]">+5.1%</p>
+                        </div>
+                        <div class="bg-[#FAF8F5] p-3 rounded-lg border border-[#E5DEC9] text-center">
+                            <p class="font-medium text-[11px] text-[#7A7571]">최대 상승</p>
+                            <p class="font-bold text-[15px] text-[#38A169]">+8.2%</p>
+                        </div>
+                    </div>
+
+                    <!-- Chart Placeholder SVG -->
+                    <div class="relative h-40 w-full mt-2">
+                        <svg class="w-full h-full overflow-visible" viewBox="0 0 340 150">
+                            <defs>
+                                <linearGradient id="lineGradientSK" x1="0%" x2="0%" y1="0%" y2="100%">
+                                    <stop offset="0%" stop-color="#38A169" stop-opacity="0.25"></stop>
+                                    <stop offset="100%" stop-color="#38A169" stop-opacity="0"></stop>
+                                </linearGradient>
+                            </defs>
+                            <line stroke="#ddc1ae" stroke-dasharray="2,2" x1="0" x2="340" y1="30" y2="30"></line>
+                            <line stroke="#ddc1ae" stroke-dasharray="2,2" x1="0" x2="340" y1="75" y2="75"></line>
+                            <line stroke="#ddc1ae" stroke-dasharray="2,2" x1="0" x2="340" y1="120" y2="120"></line>
+                            <path d="M 0 120 L 80 90 L 160 50 L 250 35 L 340 25 V 150 H 0 Z" fill="url(#lineGradientSK)"></path>
+                            <path d="M 0 120 L 80 90 L 160 50 L 250 35 L 340 25" fill="none" stroke="#38A169" stroke-width="2.5"></path>
+                            <circle cx="0" cy="120" fill="#38A169" r="4"></circle>
+                            <circle cx="160" cy="50" fill="#38A169" r="4"></circle>
+                            <circle cx="340" cy="25" fill="#38A169" r="4"></circle>
+                        </svg>
+                        <div class="flex justify-between font-medium text-[11px] text-[#7A7571] mt-1">
+                            <span>이슈 발생</span>
+                            <span>T+3</span>
+                            <span>T+7</span>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Disclaimer Notice -->
+            <footer class="mt-4">
+                <div class="bg-white p-4 rounded-xl border border-[#E5DEC9] flex gap-3 items-start">
+                    <span class="material-symbols-outlined text-[#7A7571] shrink-0 text-[18px] mt-0.5">info</span>
+                    <p class="text-[12px] leading-relaxed text-[#4A4746]">
+                        과거 사례의 주가 흐름은 현재 사건의 결과를 보장하지 않습니다. 본 분석은 참고용이며 최종 투자 결정은 본인의 책임하에 이루어져야 합니다.
+                    </p>
+                </div>
+            </footer>
+        </main>
+
+        <!-- Bottom Navigation Bar (4 tabs: 홈, 진단/최적화, 이슈 분석, 설정) -->
+        <nav class="fixed bottom-0 left-0 right-0 max-w-[390px] mx-auto bg-[#FAF8F5] border-t border-[#E5DEC9] z-50 h-16 grid grid-cols-4 items-center">
+            <!-- 1. 홈 -->
+            <a href="/home" class="flex flex-col items-center justify-center text-[#8A8A8A] hover:text-[#964B00] transition-colors py-1.5 mx-2">
+                <span class="material-symbols-outlined">home</span>
+                <span class="text-[12px] font-medium mt-0.5">홈</span>
+            </a>
+            <!-- 2. 진단/최적화 -->
+            <a href="/diagnosis/result" class="flex flex-col items-center justify-center text-[#8A8A8A] hover:text-[#964B00] transition-colors py-1.5 mx-2">
+                <span class="material-symbols-outlined">analytics</span>
+                <span class="text-[12px] font-medium mt-0.5">진단/최적화</span>
+            </a>
+            <!-- 3. 이슈 분석 (Active) -->
+            <a href="/issue/analysis" class="flex flex-col items-center justify-center text-[#964B00] bg-[#F5E8DD] rounded-xl py-1.5 mx-2">
+                <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">layers</span>
+                <span class="text-[12px] font-bold mt-0.5">이슈 분석</span>
+            </a>
+            <!-- 4. 설정 -->
+            <a href="/portfolio/edit" class="flex flex-col items-center justify-center text-[#8A8A8A] hover:text-[#964B00] transition-colors py-1.5 mx-2">
+                <span class="material-symbols-outlined">settings</span>
+                <span class="text-[12px] font-medium mt-0.5">설정</span>
+            </a>
+        </nav>
+    </div>
+
+    <!-- Company Tab Switcher Script -->
+    <script>
+        function switchIssueTab(company) {
+            const tabSam = document.getElementById('tab-samsung');
+            const tabSK = document.getElementById('tab-sk');
+            const indicatorSam = document.getElementById('indicator-samsung');
+            const indicatorSK = document.getElementById('indicator-sk');
+            const contentSam = document.getElementById('content-samsung');
+            const contentSK = document.getElementById('content-sk');
+
+            if (company === 'samsung') {
+                tabSam.classList.add('text-[#964B00]', 'font-bold');
+                tabSam.classList.remove('text-[#8A8A8A]', 'font-medium');
+                indicatorSam.classList.remove('bg-transparent');
+                indicatorSam.classList.add('bg-[#964B00]');
+
+                tabSK.classList.add('text-[#8A8A8A]', 'font-medium');
+                tabSK.classList.remove('text-[#964B00]', 'font-bold');
+                indicatorSK.classList.remove('bg-[#964B00]');
+                indicatorSK.classList.add('bg-transparent');
+
+                contentSam.classList.remove('hidden');
+                contentSK.classList.add('hidden');
+            } else if (company === 'sk') {
+                tabSK.classList.add('text-[#964B00]', 'font-bold');
+                tabSK.classList.remove('text-[#8A8A8A]', 'font-medium');
+                indicatorSK.classList.remove('bg-transparent');
+                indicatorSK.classList.add('bg-[#964B00]');
+
+                tabSam.classList.add('text-[#8A8A8A]', 'font-medium');
+                tabSam.classList.remove('text-[#964B00]', 'font-bold');
+                indicatorSam.classList.remove('bg-[#964B00]');
+                indicatorSam.classList.add('bg-transparent');
+
+                contentSK.classList.remove('hidden');
+                contentSam.classList.add('hidden');
+            }
+        }
+    </script>
+</body>
+</html>

@@ -70,7 +70,7 @@ def test_get_diagnosis_page():
     response = client.get("/")
     assert response.status_code == 200
     assert "text/html" in response.headers["content-type"]
-    assert "칩버디" in response.text
+    assert "현재 투자 위험도" in response.text
     assert "Chip Buddy" in response.text
 
 def test_portfolio_optimize_form_submit():
@@ -89,11 +89,11 @@ def test_portfolio_optimize_form_submit():
     assert "text/html" in response.headers["content-type"]
     
     html_content = response.text
-    assert "포트폴리오 비중 비교" in html_content
-    assert "개별 위험 지표" in html_content
+    assert "진단 결과" in html_content
+    assert "최적화 전략" in html_content
     assert "삼성전자" in html_content
     assert "SK하이닉스" in html_content
-    assert "포트폴리오 처방전" in html_content
+    assert "예상 CVaR" in html_content
 
 def test_issues_endpoints():
     """
@@ -271,7 +271,7 @@ def test_portfolio_optimize_realtime_endpoint():
     response = client.post("/portfolio/optimize", data=form_data)
     assert response.status_code == 200
     assert "text/html" in response.headers["content-type"]
-    assert "포트폴리오 비중 비교" in response.text
+    assert "진단 결과" in response.text
 
 def test_issues_page_rendering():
     """
@@ -280,8 +280,8 @@ def test_issues_page_rendering():
     response = client.get("/issues")
     assert response.status_code == 200
     assert "text/html" in response.headers["content-type"]
-    assert "최근 주요 ESG" in response.text
+    assert "이슈 분석" in response.text
     # 사건 데이터 내용이 동적으로 포함되어 있는지 확인
-    assert "피폭" in response.text or "누출" in response.text
+    assert 'data-ui-screen="issue-analysis"' in response.text
     # 과거 유사 사례가 정상적으로 연산 및 바인딩 되었는지 확인
-    assert "주가 회복 소요 기간" in response.text
+    assert "과거 유사 사례 영향 분석" in response.text

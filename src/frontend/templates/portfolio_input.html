@@ -83,8 +83,13 @@
                 },
             },
         }
-    }catch(_e){}}catch(_e){}</script></head><body class="bg-background text-on-surface min-h-screen flex flex-col items-center">
+    }catch(_e){}}catch(_e){}</script><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=block" rel="stylesheet"></head><body data-ui-screen="portfolio-input" class="bg-background text-on-surface min-h-screen flex flex-col items-center">
 
+    <form id="portfolio-analysis-form" method="post" action="/portfolio/optimize">
+        <input type="hidden" name="risk_priority" value="balanced">
+    </form>
+
+    {% if data_status in ["sample", "fallback"] %}<div class="fixed top-1 right-2 z-[100] rounded-full bg-[#F5E8DD] px-2 py-1 text-[10px] font-bold text-[#964B00]">{{ "샘플 데이터" if data_status == "sample" else "대체 데이터" }}</div>{% endif %}
     <!-- TopAppBar -->
     <header class="sticky top-0 w-full z-50 bg-[#FAF8F5] border-b border-[#E5DEC9] flex items-center px-margin-mobile h-16 max-w-[390px]">
         <button class="mr-4 p-2 rounded-full hover:bg-surface-container-high transition-colors active:opacity-80">
@@ -116,7 +121,7 @@
             <div class="space-y-gutter">
                 <div class="relative">
                     <label class="block font-label-md text-label-md uppercase text-on-surface-variant mb-2" style="font-size: 12px; color: rgb(122, 117, 113); font-weight: 500;">보유 수량</label>
-                    <input type="number" placeholder="0" class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-3 font-body-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all placeholder:text-outline-variant">
+                    <input form="portfolio-analysis-form" name="samsung_qty" min="0" required type="number" placeholder="0" class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-3 font-body-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all placeholder:text-outline-variant">
                 </div>
 
                 <div class="relative">
@@ -125,7 +130,7 @@
                         <button class="px-2 py-1 bg-camel-light text-primary text-[10px] rounded-lg font-bold hover:opacity-90 transition-all" style="background-color: rgb(245, 232, 221); color: rgb(150, 75, 0);">현재가 적용</button>
                     </div>
                     <div class="relative flex items-center">
-                        <input class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-3 font-body-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all placeholder:text-outline-variant" placeholder="0" type="number">
+                        <input form="portfolio-analysis-form" name="samsung_price" min="0" class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-3 font-body-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all placeholder:text-outline-variant" placeholder="0" type="number">
                         <span class="absolute right-4 font-body-md text-on-surface-variant">원</span>
                     </div>
                 </div>
@@ -147,7 +152,7 @@
             <div class="space-y-gutter">
                 <div class="relative">
                     <label class="block font-label-md text-label-md uppercase text-on-surface-variant mb-2" style="font-size: 12px; color: rgb(122, 117, 113); font-weight: 500;">보유 수량</label>
-                    <input type="number" placeholder="0" class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-3 font-body-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all placeholder:text-outline-variant">
+                    <input form="portfolio-analysis-form" name="sk_qty" min="0" required type="number" placeholder="0" class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-3 font-body-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all placeholder:text-outline-variant">
                 </div>
 
                 <div class="relative">
@@ -156,7 +161,7 @@
                         <button class="px-2 py-1 bg-camel-light text-primary text-[10px] rounded-lg font-bold hover:opacity-90 transition-all" style="background-color: rgb(245, 232, 221); color: rgb(150, 75, 0);">현재가 적용</button>
                     </div>
                     <div class="relative flex items-center">
-                        <input class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-3 font-body-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all placeholder:text-outline-variant" placeholder="0" type="number">
+                        <input form="portfolio-analysis-form" name="sk_price" min="0" class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-3 font-body-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all placeholder:text-outline-variant" placeholder="0" type="number">
                         <span class="absolute right-4 font-body-md text-on-surface-variant">원</span>
                     </div>
                 </div>
@@ -199,27 +204,27 @@
 
     <!-- Bottom Navigation Bar -->
     <nav class="fixed bottom-0 left-0 right-0 max-w-[390px] mx-auto bg-[#FAF8F5] border-t border-[#E5DEC9] z-50 h-16 grid grid-cols-4 items-center">
-  <button class="flex flex-col items-center justify-center gap-1 text-[#8A8A8A] hover:text-primary transition-colors bg-camel-light">
-    <span class="material-symbols-outlined" data-icon="home" style="color: rgb(150, 75, 0);">home</span>
-    <span class="text-[10px] font-label-sm">홈</span>
-  </button>
-  <button class="flex flex-col items-center justify-center gap-1 text-[#8A8A8A] hover:text-primary transition-colors">
-    <span class="material-symbols-outlined" data-icon="analytics">analytics</span>
-    <span class="text-[10px] font-label-sm">진단/최적화</span>
-  </button>
-  <button class="flex flex-col items-center justify-center gap-1 text-[#8A8A8A] hover:text-primary transition-colors">
-    <span class="material-symbols-outlined" data-icon="layers">layers</span>
-    <span class="text-[10px] font-label-sm">이슈 분석</span>
-  </button>
-  <button class="flex flex-col items-center justify-center gap-1 text-[#8A8A8A] hover:text-primary transition-colors">
-    <span class="material-symbols-outlined" data-icon="settings">settings</span>
-    <span class="text-[10px] font-label-sm">설정</span>
-  </button>
+  <a href="/home" class="flex flex-col items-center justify-center text-[#8A8A8A] hover:text-[#964B00] transition-colors py-1.5 mx-2">
+    <span class="material-symbols-outlined">home</span>
+    <span class="text-[12px] font-medium mt-0.5">홈</span>
+  </a>
+  <a href="/diagnosis/result" class="flex flex-col items-center justify-center text-[#8A8A8A] hover:text-[#964B00] transition-colors py-1.5 mx-2">
+    <span class="material-symbols-outlined">analytics</span>
+    <span class="text-[12px] font-medium mt-0.5">진단/최적화</span>
+  </a>
+  <a href="/issue/analysis" class="flex flex-col items-center justify-center text-[#8A8A8A] hover:text-[#964B00] transition-colors py-1.5 mx-2">
+    <span class="material-symbols-outlined">layers</span>
+    <span class="text-[12px] font-medium mt-0.5">이슈 분석</span>
+  </a>
+  <a href="/portfolio/edit" class="flex flex-col items-center justify-center text-[#964B00] bg-[#F5E8DD] rounded-xl py-1.5 mx-2">
+    <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">settings</span>
+    <span class="text-[12px] font-bold mt-0.5">설정</span>
+  </a>
 </nav>
 
     <!-- Analyze Button fixed above Nav -->
     <div class="fixed bottom-20 w-full max-w-[390px] px-margin-mobile z-40">
-        <button id="analyze-btn" class="w-full py-4 bg-primary text-on-primary rounded-xl font-headline-md font-bold hover:shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2" style="background-color: rgb(150, 75, 0); color: rgb(255, 255, 255);">
+        <button id="analyze-btn" form="portfolio-analysis-form" type="submit" class="w-full py-4 bg-primary text-on-primary rounded-xl font-headline-md font-bold hover:shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2" style="background-color: rgb(150, 75, 0); color: rgb(255, 255, 255);">
             <span class="material-symbols-outlined" data-icon="send">send</span>
             포트폴리오 분석 시작
         </button>
@@ -254,5 +259,13 @@
         propensityBtns.forEach(btn => {
             btn.addEventListener('click', () => {
                 propensityBtns.forEach(b => {
-                    b.classList.remove('border-2', 'border-primary</script>
-<!-- Raw Google Stitch draft; not loaded by FastAPI. -->
+                    b.classList.remove('border-2', 'border-primary');
+                    b.classList.add('border', 'border-outline-variant');
+                });
+                btn.classList.remove('border', 'border-outline-variant');
+                btn.classList.add('border-2', 'border-primary');
+            });
+        });
+    </script>
+</body>
+</html>

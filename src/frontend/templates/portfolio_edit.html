@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html class="light" lang="ko">
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>포트폴리오 관리 - Chip Buddy</title>
+    <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=block" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+        try {
+            tailwind.config = {
+                darkMode: "class",
+                theme: {
+                    extend: {
+                        colors: {
+                            "primary": "#964B00",
+                            "background": "#FAF8F5",
+                            "surface": "#FAF8F5",
+                            "on-surface": "#211a14",
+                            "on-surface-variant": "#544338",
+                            "outline-variant": "#E5DEC9"
+                        }
+                    }
+                }
+            }
+        } catch (_e) {}
+    </script>
+</head>
+<body data-ui-screen="portfolio-edit" class="bg-[#FAF8F5] text-on-surface flex justify-center items-start min-h-screen">
+    {% if data_status in ["sample", "fallback"] %}<div class="fixed top-1 right-2 z-[100] rounded-full bg-[#F5E8DD] px-2 py-1 text-[10px] font-bold text-[#964B00]">{{ "샘플 데이터" if data_status == "sample" else "대체 데이터" }}</div>{% endif %}
+    <!-- 390px Mobile App Container Shell -->
+    <div class="w-full max-w-[390px] min-h-screen flex flex-col relative shadow-2xl bg-[#FAF8F5] overflow-x-hidden">
+        
+        <!-- Header -->
+        <header class="bg-[#FAF8F5] sticky top-0 z-50 border-b border-[#E5DEC9] flex flex-col">
+            <div class="flex justify-between items-center w-full px-4 h-16">
+                <div class="flex items-center gap-2 cursor-pointer" onclick="window.history.back()">
+                    <span class="material-symbols-outlined text-[#964B00]" style="font-size: 24px;">arrow_back</span>
+                    <span class="font-bold text-[18px] leading-[24px] text-[#2A1800]">포트폴리오 관리</span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span class="material-symbols-outlined text-[#964B00]">notifications</span>
+                    <span class="material-symbols-outlined text-[#964B00]">account_circle</span>
+                </div>
+            </div>
+            
+            <!-- Top Tabs -->
+            <div class="flex w-full border-t border-[#E5DEC9]">
+                <a href="/diagnosis/result" class="flex-1 py-3 text-center text-[#8A8A8A] font-medium text-[14px]">
+                    진단 결과
+                </a>
+                <a href="/portfolio/edit" class="flex-1 py-3 text-center text-[#964B00] font-bold text-[14px] relative">
+                    포트폴리오
+                    <div class="absolute bottom-0 left-0 w-full h-[2px] bg-[#964B00]"></div>
+                </a>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="flex-1 px-4 pt-4 pb-32 flex flex-col gap-4">
+            <!-- Stock Input List -->
+            <section class="flex flex-col gap-4">
+                <div class="flex justify-between items-center mb-1">
+                    <h3 class="font-bold text-[16px] text-[#2A1800]">보유 종목 편집</h3>
+                    <span class="text-[14px] text-[#4A4746]">2개 종목</span>
+                </div>
+                
+                <!-- Stock Card 1: 삼성전자 -->
+                <div class="bg-white border border-[#E5DEC9] rounded-xl p-4 shadow-sm relative">
+                    <button class="absolute top-4 right-4 text-[#8A8A8A] hover:text-red-600 transition-colors">
+                        <span class="material-symbols-outlined">close</span>
+                    </button>
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center">
+                            <span class="text-xl">🔵</span>
+                        </div>
+                        <div>
+                            <span class="font-bold text-[16px] text-[#2A1800] block">삼성전자</span>
+                            <span class="font-medium text-[12px] text-[#7A7571]">005930</span>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 gap-3">
+                        <div>
+                            <label class="font-medium text-[12px] text-[#7A7571] uppercase mb-1 block">수량 (주)</label>
+                            <input class="w-full border border-[#E5DEC9] rounded-lg p-3 text-[15px] focus:ring-1 focus:ring-primary focus:border-primary outline-none" type="number" value="150">
+                        </div>
+                        <div>
+                            <label class="font-medium text-[12px] text-[#7A7571] uppercase mb-1 block">평균단가 (원)</label>
+                            <div class="flex gap-2">
+                                <input class="w-full border border-[#E5DEC9] rounded-lg p-3 text-[15px] focus:ring-1 focus:ring-primary focus:border-primary outline-none" type="number" value="72500">
+                                <button class="px-3 py-2 bg-[#F5E8DD] text-[#964B00] rounded-lg text-[12px] font-bold shrink-0 hover:bg-[#ebd9c8] transition-colors">현재가 적용</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stock Card 2: SK하이닉스 -->
+                <div class="bg-white border border-[#E5DEC9] rounded-xl p-4 shadow-sm relative">
+                    <button class="absolute top-4 right-4 text-[#8A8A8A] hover:text-red-600 transition-colors">
+                        <span class="material-symbols-outlined">close</span>
+                    </button>
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center">
+                            <span class="text-xl">🔴</span>
+                        </div>
+                        <div>
+                            <span class="font-bold text-[16px] text-[#2A1800] block">SK하이닉스</span>
+                            <span class="font-medium text-[12px] text-[#7A7571]">000660</span>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 gap-3">
+                        <div>
+                            <label class="font-medium text-[12px] text-[#7A7571] uppercase mb-1 block">수량 (주)</label>
+                            <input class="w-full border border-[#E5DEC9] rounded-lg p-3 text-[15px] focus:ring-1 focus:ring-primary focus:border-primary outline-none" type="number" value="30">
+                        </div>
+                        <div>
+                            <label class="font-medium text-[12px] text-[#7A7571] uppercase mb-1 block">평균단가 (원)</label>
+                            <div class="flex gap-2">
+                                <input class="w-full border border-[#E5DEC9] rounded-lg p-3 text-[15px] focus:ring-1 focus:ring-primary focus:border-primary outline-none" type="number" value="180000">
+                                <button class="px-3 py-2 bg-[#F5E8DD] text-[#964B00] rounded-lg text-[12px] font-bold shrink-0 hover:bg-[#ebd9c8] transition-colors">현재가 적용</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Add Stock Button -->
+                <button class="w-full py-5 border-2 border-dashed border-[#E5DEC9] rounded-xl flex items-center justify-center gap-2 text-[#7A7571] hover:border-primary hover:text-primary hover:bg-primary/5 transition-all">
+                    <span class="material-symbols-outlined">add_circle</span>
+                    <span class="font-bold text-[14px]">[+] 종목 추가하기</span>
+                </button>
+            </section>
+
+            <!-- Big Action Button -->
+            <a href="/diagnosis/result" class="w-full py-4 bg-[#964B00] text-white font-bold rounded-xl shadow-md hover:bg-[#7a3d00] transition-colors flex items-center justify-center gap-2 mt-2">
+                <span class="material-symbols-outlined">analytics</span>
+                수정 완료 및 진단받기
+            </a>
+        </main>
+
+        <!-- Bottom Navigation Bar (4 tabs: 홈, 진단/최적화, 이슈 분석, 설정) -->
+        <nav class="fixed bottom-0 left-0 right-0 max-w-[390px] mx-auto bg-[#FAF8F5] border-t border-[#E5DEC9] z-50 h-16 grid grid-cols-4 items-center">
+            <!-- 1. 홈 -->
+            <a href="/home" class="flex flex-col items-center justify-center text-[#8A8A8A] hover:text-[#964B00] transition-colors py-1.5 mx-2">
+                <span class="material-symbols-outlined">home</span>
+                <span class="text-[12px] font-medium mt-0.5">홈</span>
+            </a>
+            <!-- 2. 진단/최적화 -->
+            <a href="/diagnosis/result" class="flex flex-col items-center justify-center text-[#8A8A8A] hover:text-[#964B00] transition-colors py-1.5 mx-2">
+                <span class="material-symbols-outlined">analytics</span>
+                <span class="text-[12px] font-medium mt-0.5">진단/최적화</span>
+            </a>
+            <!-- 3. 이슈 분석 -->
+            <a href="/issue/analysis" class="flex flex-col items-center justify-center text-[#8A8A8A] hover:text-[#964B00] transition-colors py-1.5 mx-2">
+                <span class="material-symbols-outlined">layers</span>
+                <span class="text-[12px] font-medium mt-0.5">이슈 분석</span>
+            </a>
+            <!-- 4. 설정 (Active) -->
+            <a href="/portfolio/edit" class="flex flex-col items-center justify-center text-[#964B00] bg-[#F5E8DD] rounded-xl py-1.5 mx-2">
+                <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">settings</span>
+                <span class="text-[12px] font-bold mt-0.5">설정</span>
+            </a>
+        </nav>
+    </div>
+</body>
+</html>

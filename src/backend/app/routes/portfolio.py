@@ -18,8 +18,6 @@ from app.core.schemas import PurchaseReason, KnowledgeStage, RebalancingProfile,
 
 router = APIRouter()
 
-@router.get("/")
-@router.get("/portfolio/setup")
 def get_setup_page(request: Request):
     """
     최종 포트폴리오 자산 입력 페이지 반환 (세션 설정이 없을 경우 /diagnosis로 리다이렉트)
@@ -29,7 +27,7 @@ def get_setup_page(request: Request):
         
     return templates.TemplateResponse(
         request=request,
-        name="index.html",
+        name="portfolio_input.html",
         context={
             "purchase_reason": request.session.get("purchase_reason"),
             "knowledge_stage": request.session.get("knowledge_stage"),
@@ -39,14 +37,13 @@ def get_setup_page(request: Request):
         }
     )
 
-@router.get("/diagnosis", response_class=HTMLResponse)
 def get_diagnosis_question_page(request: Request):
     """
     1단계: 매수 이유 질문 페이지 반환
     """
     return templates.TemplateResponse(
         request=request,
-        name="diagnosis.html",
+        name="diagnosis_result.html",
         context={}
     )
 
@@ -70,7 +67,6 @@ def post_diagnosis_question(request: Request, purchase_reason: str = Form(...)):
     
     return RedirectResponse(url="/rebalancing-profile", status_code=303)
 
-@router.get("/rebalancing-profile", response_class=HTMLResponse)
 def get_rebalancing_profile_page(request: Request):
     """
     2단계: 포트폴리오 조정 기준 선택 페이지 반환
@@ -80,7 +76,7 @@ def get_rebalancing_profile_page(request: Request):
         
     return templates.TemplateResponse(
         request=request,
-        name="rebalancing_profile.html",
+        name="portfolio_edit.html",
         context={}
     )
 
@@ -106,7 +102,6 @@ def post_rebalancing_profile(request: Request, rebalancing_profile: str = Form(.
     
     return RedirectResponse(url="/settings-result", status_code=303)
 
-@router.get("/settings-result", response_class=HTMLResponse)
 def get_settings_result_page(request: Request):
     """
     3단계: 설정 완료 확인 페이지 반환
@@ -116,7 +111,7 @@ def get_settings_result_page(request: Request):
         
     return templates.TemplateResponse(
         request=request,
-        name="settings_result.html",
+        name="diagnosis_result.html",
         context={
             "purchase_reason": request.session.get("purchase_reason"),
             "knowledge_stage": request.session.get("knowledge_stage"),
@@ -316,8 +311,15 @@ def optimize_portfolio(
     # 8. HTML 조각 렌더링 응답 반환
     return templates.TemplateResponse(
         request=request,
-        name="components/risk_result.html", 
-        context={"data": opt_result, "knowledge_stage": session_knowledge_stage}
+        name="diagnosis_result.html",
+        context={
+            "data": opt_result,
+            # The approved visual template still contains sample presentation values.
+            # Keep the UI label explicit until its fields are fully data-bound.
+            "data_status": "sample",
+            "calculation_data_status": opt_result.get("data_status", "sample"),
+            "knowledge_stage": session_knowledge_stage,
+        }
     )
 
 @router.post("/portfolio/calculate")

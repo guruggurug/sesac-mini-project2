@@ -56,7 +56,8 @@
           },
         },
       }
-    }catch(_e){}}catch(_e){}</script><meta charset="utf-8"></head><body class="bg-brand-surface text-on-surface">
+    }catch(_e){}}catch(_e){}</script><meta charset="utf-8"></head><body data-ui-screen="portfolio-summary" class="bg-brand-surface text-on-surface">
+{% if data_status in ["sample", "fallback"] %}<div class="fixed top-1 right-2 z-[100] rounded-full bg-[#F5E8DD] px-2 py-1 text-[10px] font-bold text-[#964B00]">{{ "샘플 데이터" if data_status == "sample" else "대체 데이터" }}</div>{% endif %}
 <!-- Top App Bar -->
 <header class="fixed top-0 left-0 w-full z-50 flex items-center justify-between px-margin-mobile h-16 bg-[#FAF8F5] border-b border-[#E5DEC9]"><div class="flex items-center gap-4">
 <button class="material-symbols-outlined text-[#964B00] text-[24px]">arrow_back</button>
@@ -198,5 +199,4 @@
             card.addEventListener('touchend', () => {
                 card.classList.remove('bg-brand-</script>
 
-<!-- Raw Google Stitch draft; not loaded by FastAPI. -->
 </body></html>
