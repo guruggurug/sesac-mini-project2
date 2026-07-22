@@ -4,6 +4,7 @@
 
 | Task ID | Task | Status | Output | Blocker |
 |---|---|---|---|---|
+| INT-UI-01 | Intended Frontend UI Route Canonicalization | `done` | six approved UI templates wired to FastAPI | - |
 | INT-CLEANUP-01 | Canonical Data and Environment Cleanup | `done` | canonical data/config paths; frontend UI ownership restored | - |
 | INT-01 | End-to-End Test | `in_progress` | 실데이터 & 실시간 주가 API 활용 최종 화면 연동 검증 | - |
 | INT-02 | Data and Model Review | `done` | 실데이터 스키마 및 최적화 엔진 안정성 검수 완료 | - |
@@ -22,6 +23,57 @@
 | RT-B02 | DATA-B-RT-01 | Data B 동적 ESG·최적화 변경 미동기화 | Data B | 완료 후 통합 브랜치 동기화 | `in_progress` |
 
 ## Work Log
+
+### 2026-07-22 12:50 — Intended Frontend UI Route Canonicalization Start
+
+- **Role**: Integration
+- **Owner**: Codex
+- **Task ID**: `INT-UI-01`
+- **Status**: `in_progress`
+- **Finding**:
+  - The intended six-template frontend existed only in a disconnected Flask draft.
+  - FastAPI localhost routes rendered a separately generated Jinja UI set instead.
+- **Scope**:
+  - Wire the intended six designs to FastAPI route paths.
+  - Preserve calculation and JSON API behavior.
+  - Remove the unintended production UI templates and their exclusive assets.
+  - Add route-level regression tests that prevent the unintended UI from returning.
+- **Blockers**: None
+
+### 2026-07-22 17:30 — Intended Frontend UI Route Canonicalization Complete
+
+- **Role**: Integration / Frontend
+- **Owner**: Codex
+- **Task ID**: `INT-UI-01`
+- **Status**: `done`
+- **Completed**:
+  - Declared the six team-designed templates as the only canonical localhost UI screens.
+  - Connected canonical and compatibility URLs to those templates through the FastAPI UI router.
+  - Removed the disconnected legacy FastAPI templates, template fragments, and their exclusive static assets.
+  - Replaced direct `/templates/*.html` links with application routes and made portfolio input submit to the existing optimization endpoint.
+  - Added explicit sample/fallback labels and stable screen markers to prevent sample presentation values from appearing validated.
+  - Repaired the truncated portfolio-input script and Material Symbols font loading.
+- **Created files**:
+  - `src/backend/app/routes/ui.py`
+  - `src/backend/tests/test_ui_routes.py`
+- **Modified files**:
+  - `src/backend/app/main.py`
+  - `src/backend/app/routes/issues.py`
+  - `src/backend/app/routes/portfolio.py`
+  - `src/backend/tests/test_portfolio.py`
+  - the six canonical files under `src/frontend/templates/`
+- **Removed files**: legacy `diagnosis`, `index`, `issues`, `rebalancing_profile`, `settings_result`, old component fragments, and their exclusive `index.js`/`index.css` assets.
+- **Validation commands**:
+  - `pytest tests/test_ui_routes.py tests/test_portfolio.py -q`
+  - `pytest -q`
+  - In-app browser checks at 390 x 844 for all six canonical routes.
+- **Validation results**:
+  - Targeted UI and portfolio regression tests: `30 passed`.
+  - Full backend suite: `80 passed, 1 dependency deprecation warning`.
+  - All six routes rendered the expected `data-ui-screen`; no browser JavaScript errors remained.
+- **Remaining**: Replace the approved design's sample presentation values with complete API bindings in a separate frontend integration task.
+- **Blockers**: None.
+- **Next task**: Bind remaining approved-template sample fields to backend response data without changing the canonical designs.
 
 ### 2026-07-22 12:25 — Frontend UI Ownership Correction
 

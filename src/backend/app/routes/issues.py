@@ -14,7 +14,6 @@ from src.modeling.events import analyze_all_events
 
 router = APIRouter(tags=["Issues"])
 
-@router.get("/issues", response_class=HTMLResponse)
 def get_issues_page(request: Request):
     """
     이슈 분석 대시보드 HTML 페이지 반환
@@ -67,7 +66,7 @@ def get_issues_page(request: Request):
             
     return templates.TemplateResponse(
         request=request,
-        name="issues.html",
+        name="issue_analysis.html",
         context={
             "current_issues": current_issues,
             "historical_issues": clean_historical,

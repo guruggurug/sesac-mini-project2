@@ -1,215 +1,171 @@
 <!DOCTYPE html>
-
-<html class="light" lang="ko" style="width: 390px; min-height: 100vh; position: relative;"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=block" rel="stylesheet"/><script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script><script id="tailwind-config">try{
-        tailwind.config = {
-            darkMode: "class",
-            theme: {
-                extend: {
-                    "colors": {
-                        "surface-container-lowest": "#ffffff",
-                        "primary-fixed-dim": "#ffb77d",
-                        "inverse-surface": "#313030",
-                        "secondary-fixed-dim": "#e9c400",
-                        "on-secondary": "#ffffff",
-                        "surface": "#FAF8F5",
-                        "on-secondary-fixed": "#221b00",
-                        "surface-container-low": "#f6f3f2",
-                        "secondary": "#705d00",
-                        "surface-container-high": "#eae7e7",
-                        "outline-variant": "#ddc1ae",
-                        "on-primary-container": "#623200",
-                        "on-error-container": "#93000a",
-                        "on-error": "#ffffff",
-                        "inverse-on-surface": "#f3f0ef",
-                        "on-primary-fixed": "#2f1500",
-                        "on-surface": "#1c1b1b",
-                        "surface-variant": "#e5e2e1",
-                        "secondary-fixed": "#ffe16d",
-                        "primary-fixed": "#ffdcc3",
-                        "on-primary": "#ffffff",
-                        "tertiary-fixed": "#7efba4",
-                        "primary": "#964B00",
-                        "on-tertiary": "#ffffff",
-                        "on-background": "#1c1b1b",
-                        "background": "#FAF8F5",
-                        "on-tertiary-container": "#004922",
-                        "error": "#ba1a1a",
-                        "surface-container-highest": "#e5e2e1",
-                        "tertiary-container": "#3fc070",
-                        "primary-container": "#964B00",
-                        "surface-tint": "#964B00",
-                        "outline": "#897362",
-                        "on-tertiary-fixed": "#00210c",
-                        "surface-bright": "#FAF8F5",
-                        "surface-dim": "#dcd9d9",
-                        "on-tertiary-fixed-variant": "#005228",
-                        "tertiary-fixed-dim": "#61de8a",
-                        "secondary-container": "#fcd400",
-                        "on-surface-variant": "#564334",
-                        "surface-container": "#f0eded",
-                        "error-container": "#ffdad6",
-                        "tertiary": "#006d37",
-                        "on-primary-fixed-variant": "#6e3900",
-                        "on-secondary-container": "#6e5c00",
-                        "on-secondary-fixed-variant": "#544600",
-                        "inverse-primary": "#ffb77d"
-                    },
-                    "borderRadius": {
-                        "DEFAULT": "0.25rem",
-                        "lg": "0.5rem",
-                        "xl": "0.75rem",
-                        "full": "9999px"
-                    },
-                    "spacing": {
-                        "stack-lg": "24px",
-                        "gutter": "16px",
-                        "container-padding": "24px",
-                        "stack-md": "12px",
-                        "stack-sm": "4px",
-                        "base": "8px",
-                        "margin-mobile": "16px"
-                    },
-                    "fontFamily": {
-                        "headline-lg-mobile": ["Hanken Grotesk"],
-                        "headline-md": ["Hanken Grotesk"],
-                        "headline-lg": ["Hanken Grotesk"],
-                        "body-md": ["Hanken Grotesk"],
-                        "body-lg": ["Hanken Grotesk"],
-                        "label-sm": ["Hanken Grotesk"],
-                        "label-md": ["Hanken Grotesk"]
-                    },
-                    "fontSize": {
-                        "headline-lg-mobile": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
-                        "headline-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
-                        "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
-                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
-                        "body-lg": ["18px", {"lineHeight": "26px", "fontWeight": "400"}],
-                        "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
-                        "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "600"}]
+<html class="light" lang="ko">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>홈 - Chip Buddy</title>
+    <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=block" rel="stylesheet"/>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+        try {
+            tailwind.config = {
+                darkMode: "class",
+                theme: {
+                    extend: {
+                        colors: {
+                            "primary": "#964B00",
+                            "background": "#FAF8F5",
+                            "surface": "#FAF8F5",
+                            "on-surface": "#1c1b1b",
+                            "on-surface-variant": "#564334",
+                            "outline-variant": "#E5DEC9",
+                            "surface-container-low": "#f6f3f2",
+                            "surface-container-lowest": "#ffffff",
+                            "secondary-container": "#fcd400",
+                            "surface-dim": "#dcd9d9",
+                            "error": "#ba1a1a"
+                        },
+                        spacing: {
+                            "margin-mobile": "16px",
+                            "stack-lg": "24px"
+                        }
                     }
-                },
-            },
-        }
-    }catch(_e){}</script></head><body class="bg-background text-on-surface font-body-md pb-28">
-<!-- 1. TopAppBar -->
-<header class="w-full sticky top-0 bg-[#FAF8F5] z-50 flex items-center justify-between px-margin-mobile h-16 border-b border-[#E5DEC9]">
-<div class="flex items-center gap-2">
-<span class="material-symbols-outlined text-primary text-[28px]" data-icon="waves">waves</span>
-<h1 class="font-bold text-[18px] leading-[24px] text-[#2A1800] tracking-tight">Chip Buddy</h1>
-</div>
-<div class="flex items-center gap-3">
-<div class="flex items-center gap-2">
-<button class="text-[#964B00] flex items-center justify-center">
-<span class="material-symbols-outlined">notifications</span>
-</button>
-<button class="text-[#964B00] flex items-center justify-center">
-<span class="material-symbols-outlined">account_circle</span>
-</button>
-</div>
-</div>
-</header>
-<main class="max-w-[390px] mx-auto px-margin-mobile space-y-4 mt-4">
-<!-- 3. Risk Assessment (Traffic Light) - Moved up per request order -->
-<section class="bg-surface-container-lowest rounded-xl p-6 border border-outline-variant shadow-sm relative overflow-hidden">
-<div class="flex items-center justify-between">
-<div class="space-y-1.5">
-<span class="font-medium text-[12px] text-[#7A7571] uppercase tracking-wider">Risk Assessment</span>
-<h2 class="font-bold text-[16px] text-[#2A1800]">현재 투자 위험도</h2>
-<p class="font-normal text-[14px] text-[#4A4746]">주의: 중등도 위험 (Yellow)</p>
-</div>
-<div class="flex flex-col gap-2 bg-surface-container-low p-2 rounded-full border border-outline-variant shadow-inner">
-<div class="w-8 h-8 rounded-full bg-surface-dim/40"></div>
-<div class="w-8 h-8 rounded-full bg-secondary-container shadow-[0_0_15px_rgba(252,212,0,0.8)] border border-white/50 animate-pulse"></div>
-<div class="w-8 h-8 rounded-full bg-surface-dim/40"></div>
-</div>
-</div>
-</section>
-<!-- 1. Top Index Capsule -->
-<section class="bg-primary/10 border border-[#E5DEC9] rounded-full py-2.5 px-4 flex items-center justify-center gap-4">
-<div class="flex items-center gap-1.5">
-<span class="text-label-md text-on-surface-variant">코스피</span>
-<span class="text-body-md font-bold text-error">6,747.95</span>
-<span class="text-[12px] font-bold text-error">+3.56%</span>
-</div>
-<div class="w-px h-3 bg-outline-variant"></div>
-<div class="flex items-center gap-1.5">
-<span class="text-label-md text-on-surface-variant">코스닥</span>
-<span class="text-body-md font-bold text-[#0066FF]">749.41</span>
-<span class="text-[12px] font-bold text-[#0066FF]">-5.36%</span>
-</div>
-</section>
-<!-- 2. Real-time Stock Cards -->
-<section class="bg-surface-container-lowest rounded-xl border border-[#E5DEC9] shadow-sm flex overflow-hidden">
-<div class="flex-1 p-4 space-y-1">
-<h3 class="text-label-sm text-on-surface-variant font-medium">삼성전자</h3>
-<div class="flex flex-col">
-<span class="text-headline-md font-bold text-on-surface">78,500원</span>
-<span class="text-[13px] font-semibold text-[#E53E3E]">▲ 1,200 (+1.55%)</span>
-</div>
-</div>
-<div class="w-px bg-[#E5DEC9] my-4"></div>
-<div class="flex-1 p-4 space-y-1">
-<h3 class="text-label-sm text-on-surface-variant font-medium">SK하이닉스</h3>
-<div class="flex flex-col">
-<span class="text-headline-md font-bold text-on-surface">185,000원</span>
-<span class="text-[13px] font-semibold text-[#3182CE]">▼ 2,100 (-1.12%)</span>
-</div>
-</div>
-</section><section class="mb-stack-lg p-stack-lg bg-white border border-[#E5DEC9] rounded-2xl shadow-sm overflow-hidden relative p-6 mt-4">
-<div class="relative z-10">
-<h3 class="font-bold text-[16px] text-[#2A1800] mb-4">자산 구성비</h3>
-<div class="flex items-center justify-center py-4">
-<div class="relative w-40 h-40">
-<div class="absolute inset-0 rounded-full border-[16px] border-primary/5"></div>
-<div class="absolute inset-0 rounded-full border-[16px] border-primary border-t-transparent border-l-transparent" style="transform: rotate(45deg);"></div>
-<div class="absolute inset-0 flex flex-col items-center justify-center">
-<span class="text-label-sm text-on-surface-variant">안전</span>
-<span class="text-headline-md text-primary">72%</span>
-</div>
-</div>
-</div>
-<div class="space-y-3 mt-4">
-<div class="flex justify-between items-center text-label-md">
-<div class="flex items-center gap-2">
-<div class="w-2 h-2 rounded-full bg-primary"></div>
-<span class="text-on-surface">삼성전자</span>
-</div>
-<span class="font-bold">10,875,000원</span>
-</div>
-<div class="flex justify-between items-center text-label-md">
-<div class="flex items-center gap-2">
-<div class="w-2 h-2 rounded-full bg-primary/40"></div>
-<span class="text-on-surface">SK하이닉스</span>
-</div>
-<span class="font-bold">8,332,500원</span>
-</div>
-</div>
-</div>
-</section>
-<!-- 4. AI Portfolio Summary -->
-<!-- 5. Core Analysis Tools -->
-<section class="space-y-3">
-<div class="space-y-3">
-</div>
-</section>
-</main>
-<!-- 6. BottomNavBar -->
-<nav class="fixed bottom-0 left-0 right-0 max-w-[390px] mx-auto bg-[#FAF8F5] border-t border-[#E5DEC9] z-50 h-16 grid grid-cols-4 items-center">
-<a class="flex flex-col items-center justify-center text-[#964B00] bg-[#F5E8DD] rounded-xl py-1.5 mx-2" href="#">
-<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">home</span>
-<span class="text-[12px] font-bold mt-0.5">홈</span>
-</a>
-<a class="flex flex-col items-center justify-center text-[#8A8A8A]" href="#">
-<span class="material-symbols-outlined">analytics</span>
-<span class="text-[12px] mt-0.5">진단/최적화</span>
-</a>
-<a class="flex flex-col items-center justify-center text-[#8A8A8A]" href="#">
-<span class="material-symbols-outlined">layers</span>
-<span class="text-[12px] mt-0.5">이슈 분석</span>
-</a>
-<a class="flex flex-col items-center justify-center text-[#8A8A8A]" href="#">
-<span class="material-symbols-outlined">settings</span>
-<span class="text-[12px] mt-0.5">설정</span>
-</a>
-</nav>
-</body></html>
+                }
+            }
+        } catch (_e) {}
+    </script>
+</head>
+<body data-ui-screen="home" class="bg-[#FAF8F5] text-on-surface flex justify-center items-start min-h-screen">
+    {% if data_status in ["sample", "fallback"] %}<div class="fixed top-1 right-2 z-[100] rounded-full bg-[#F5E8DD] px-2 py-1 text-[10px] font-bold text-[#964B00]">{{ "샘플 데이터" if data_status == "sample" else "대체 데이터" }}</div>{% endif %}
+    <!-- 390px Mobile App Container Shell -->
+    <div class="w-full max-w-[390px] min-h-screen flex flex-col relative shadow-2xl bg-[#FAF8F5] overflow-x-hidden">
+        
+        <!-- 1. TopAppBar -->
+        <header class="w-full sticky top-0 bg-[#FAF8F5] z-50 flex items-center justify-between px-4 h-16 border-b border-[#E5DEC9]">
+            <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary text-[28px]">waves</span>
+                <h1 class="font-bold text-[18px] leading-[24px] text-[#2A1800] tracking-tight">Chip Buddy</h1>
+            </div>
+            <div class="flex items-center gap-3">
+                <button class="text-[#964B00] flex items-center justify-center">
+                    <span class="material-symbols-outlined">notifications</span>
+                </button>
+                <button class="text-[#964B00] flex items-center justify-center">
+                    <span class="material-symbols-outlined">account_circle</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="flex-1 px-4 space-y-4 mt-4 pb-24">
+            <!-- 3. Risk Assessment (Traffic Light) -->
+            <section class="bg-white rounded-xl p-5 border border-[#E5DEC9] shadow-sm relative overflow-hidden">
+                <div class="flex items-center justify-between">
+                    <div class="space-y-1.5">
+                        <span class="font-medium text-[12px] text-[#7A7571] uppercase tracking-wider">Risk Assessment</span>
+                        <h2 class="font-bold text-[16px] text-[#2A1800]">현재 투자 위험도</h2>
+                        <p class="font-normal text-[14px] text-[#4A4746]">주의: 중등도 위험 (Yellow)</p>
+                    </div>
+                    <div class="flex flex-col gap-2 bg-[#f6f3f2] p-2 rounded-full border border-[#E5DEC9] shadow-inner">
+                        <div class="w-8 h-8 rounded-full bg-gray-200"></div>
+                        <div class="w-8 h-8 rounded-full bg-[#fcd400] shadow-[0_0_15px_rgba(252,212,0,0.8)] border border-white/50 animate-pulse"></div>
+                        <div class="w-8 h-8 rounded-full bg-gray-200"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 1. Top Index Capsule -->
+            <section class="bg-[#964B00]/10 border border-[#E5DEC9] rounded-full py-2.5 px-4 flex items-center justify-center gap-4">
+                <div class="flex items-center gap-1.5">
+                    <span class="text-[14px] font-medium text-[#564334]">코스피</span>
+                    <span class="text-[16px] font-bold text-[#ba1a1a]">6,747.95</span>
+                    <span class="text-[12px] font-bold text-[#ba1a1a]">+3.56%</span>
+                </div>
+                <div class="w-px h-3 bg-[#E5DEC9]"></div>
+                <div class="flex items-center gap-1.5">
+                    <span class="text-[14px] font-medium text-[#564334]">코스닥</span>
+                    <span class="text-[16px] font-bold text-[#0066FF]">749.41</span>
+                    <span class="text-[12px] font-bold text-[#0066FF]">-5.36%</span>
+                </div>
+            </section>
+
+            <!-- 2. Real-time Stock Cards -->
+            <section class="bg-white rounded-xl border border-[#E5DEC9] shadow-sm flex overflow-hidden">
+                <div class="flex-1 p-4 space-y-1">
+                    <h3 class="text-[12px] text-[#564334] font-medium">삼성전자</h3>
+                    <div class="flex flex-col">
+                        <span class="text-[20px] font-bold text-[#1c1b1b]">78,500원</span>
+                        <span class="text-[13px] font-semibold text-[#E53E3E]">▲ 1,200 (+1.55%)</span>
+                    </div>
+                </div>
+                <div class="w-px bg-[#E5DEC9] my-4"></div>
+                <div class="flex-1 p-4 space-y-1">
+                    <h3 class="text-[12px] text-[#564334] font-medium">SK하이닉스</h3>
+                    <div class="flex flex-col">
+                        <span class="text-[20px] font-bold text-[#1c1b1b]">185,000원</span>
+                        <span class="text-[13px] font-semibold text-[#3182CE]">▼ 2,100 (-1.12%)</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Asset Breakdown Card -->
+            <section class="bg-white border border-[#E5DEC9] rounded-2xl shadow-sm overflow-hidden relative p-5">
+                <div class="relative z-10">
+                    <h3 class="font-bold text-[16px] text-[#2A1800] mb-4">자산 구성비</h3>
+                    <div class="flex items-center justify-center py-2">
+                        <div class="relative w-36 h-36">
+                            <div class="absolute inset-0 rounded-full border-[14px] border-[#964B00]/10"></div>
+                            <div class="absolute inset-0 rounded-full border-[14px] border-primary border-t-transparent border-l-transparent" style="transform: rotate(45deg);"></div>
+                            <div class="absolute inset-0 flex flex-col items-center justify-center">
+                                <span class="text-[12px] text-[#564334]">안전</span>
+                                <span class="text-[20px] font-bold text-primary">72%</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="space-y-2 mt-3">
+                        <div class="flex justify-between items-center text-[14px]">
+                            <div class="flex items-center gap-2">
+                                <div class="w-2.5 h-2.5 rounded-full bg-primary"></div>
+                                <span class="text-[#1c1b1b]">삼성전자</span>
+                            </div>
+                            <span class="font-bold text-[#1c1b1b]">10,875,000원</span>
+                        </div>
+                        <div class="flex justify-between items-center text-[14px]">
+                            <div class="flex items-center gap-2">
+                                <div class="w-2.5 h-2.5 rounded-full bg-primary/40"></div>
+                                <span class="text-[#1c1b1b]">SK하이닉스</span>
+                            </div>
+                            <span class="font-bold text-[#1c1b1b]">8,332,500원</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- 6. BottomNavBar -->
+        <nav class="fixed bottom-0 left-0 right-0 max-w-[390px] mx-auto bg-[#FAF8F5] border-t border-[#E5DEC9] z-50 h-16 grid grid-cols-4 items-center">
+            <!-- 1. 홈 (현재 화면) -->
+            <a href="/home" class="flex flex-col items-center justify-center text-[#964B00] bg-[#F5E8DD] rounded-xl py-1.5 mx-2">
+                <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">home</span>
+                <span class="text-[12px] font-bold mt-0.5">홈</span>
+            </a>
+            <!-- 2. 진단/최적화 -->
+            <a href="/diagnosis/result" class="flex flex-col items-center justify-center text-[#8A8A8A] hover:text-[#964B00] transition-colors py-1.5 mx-2">
+                <span class="material-symbols-outlined">analytics</span>
+                <span class="text-[12px] font-medium mt-0.5">진단/최적화</span>
+            </a>
+            <!-- 3. 이슈 분석 -->
+            <a href="/issue/analysis" class="flex flex-col items-center justify-center text-[#8A8A8A] hover:text-[#964B00] transition-colors py-1.5 mx-2">
+                <span class="material-symbols-outlined">layers</span>
+                <span class="text-[12px] font-medium mt-0.5">이슈 분석</span>
+            </a>
+            <!-- 4. 설정 -->
+            <a href="/portfolio/edit" class="flex flex-col items-center justify-center text-[#8A8A8A] hover:text-[#964B00] transition-colors py-1.5 mx-2">
+                <span class="material-symbols-outlined">settings</span>
+                <span class="text-[12px] font-medium mt-0.5">설정</span>
+            </a>
+        </nav>
+    </div>
+</body>
+</html>

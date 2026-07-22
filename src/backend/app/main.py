@@ -13,6 +13,7 @@ from app.routes.portfolio import router as portfolio_router
 from app.routes.risk import router as risk_router
 from app.routes.issues import router as issues_router
 from app.routes.data import router as data_router
+from app.routes.ui import router as ui_router
 
 
 @asynccontextmanager
@@ -51,6 +52,7 @@ app.add_exception_handler(CSVValidationError, csv_validation_exception_handler)
 app.mount("/static", StaticFiles(directory=FRONTEND_STATIC_DIR), name="static")
 
 # 라우터 등록
+app.include_router(ui_router)
 app.include_router(health_router)
 app.include_router(portfolio_router)  # GET / 와 POST /portfolio/optimize 포함
 app.include_router(risk_router)
