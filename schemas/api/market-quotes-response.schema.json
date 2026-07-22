@@ -7,6 +7,7 @@
   "additionalProperties": false,
   "required": [
     "quotes",
+    "polling_enabled",
     "refresh_interval_seconds",
     "data_status",
     "generated_at",
@@ -25,10 +26,9 @@
         { "contains": { "properties": { "instrument_id": { "const": "000660" } }, "required": ["instrument_id"] }, "minContains": 1, "maxContains": 1 }
       ]
     },
+    "polling_enabled": { "type": "boolean" },
     "refresh_interval_seconds": {
-      "type": "integer",
-      "minimum": 10,
-      "maximum": 30
+      "type": ["integer", "null"]
     },
     "data_status": {
       "type": "string",
@@ -55,7 +55,7 @@
         "previous_close",
         "change",
         "change_rate",
-        "currency",
+        "unit",
         "market_status",
         "price_status",
         "as_of",
@@ -77,7 +77,7 @@
         "previous_close": { "type": "number", "exclusiveMinimum": 0 },
         "change": { "type": "number" },
         "change_rate": { "type": "number" },
-        "currency": { "type": "string", "const": "KRW" },
+        "unit": { "type": "string", "enum": ["points", "KRW"] },
         "market_status": {
           "type": "string",
           "enum": ["open", "closed", "delayed", "unavailable"]
@@ -94,11 +94,21 @@
       "allOf": [
         {
           "if": { "properties": { "instrument_id": { "enum": ["KOSPI", "KOSDAQ"] } }, "required": ["instrument_id"] },
-          "then": { "properties": { "instrument_type": { "const": "index" } } }
+          "then": {
+            "properties": {
+              "instrument_type": { "const": "index" },
+              "unit": { "const": "points" }
+            }
+          }
         },
         {
           "if": { "properties": { "instrument_id": { "enum": ["005930", "000660"] } }, "required": ["instrument_id"] },
-          "then": { "properties": { "instrument_type": { "const": "equity" } } }
+          "then": {
+            "properties": {
+              "instrument_type": { "const": "equity" },
+              "unit": { "const": "KRW" }
+            }
+          }
         },
         {
           "if": { "properties": { "price_status": { "const": "live" } }, "required": ["price_status"] },
@@ -110,5 +120,41 @@
         }
       ]
     }
-  }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": { "polling_enabled": { "const": true } },
+        "required": ["polling_enabled"]
+      },
+      "then": {
+        "properties": {
+          "quotes": {
+            "contains": {
+              "properties": {
+                "market_status": { "enum": ["open", "delayed"] }
+              },
+              "required": ["market_status"]
+            },
+            "minContains": 1
+          },
+          "refresh_interval_seconds": {
+            "type": "integer",
+            "minimum": 10,
+            "maximum": 30
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "quotes": {
+            "items": {
+              "properties": { "market_status": { "const": "closed" } }
+            }
+          },
+          "refresh_interval_seconds": { "type": "null" }
+        }
+      }
+    }
+  ]
 }

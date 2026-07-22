@@ -305,7 +305,7 @@
       "status": "confirmed",
       "enforcement_action": "investigation",
       "severity": 4,
-      "severity_rule_version": "1.0.0",
+      "severity_rule_version": "1.1.0",
       "authority_confirmed": true,
       "official_source_url": "https://example.com/official",
       "news_url": "https://example.com/news",

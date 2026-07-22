@@ -75,6 +75,8 @@
 
 `COMMON-RT-02` 계약과 검증 예시는 `schemas/api/README.md`, `schemas/api/*summary*.schema.json`, `schemas/api/market-quotes-response.schema.json`, `schemas/api/sync-*.schema.json`, `schemas/api/examples/`에 작성되었다. 계약 테스트는 통과했지만 Data A는 `review`, Data B·Backend·Frontend는 `pending`이므로 전 역할 승인 전까지 `review`를 유지한다.
 
+Data A는 `data/docs/data_a_human_review_checklist.md`에 따라 G01~G03의 18개 `unavailable` 행과 비전공자용 상태 문구를 검토한다. 자동 스키마·상태 전이·severity 검증은 Integration이 담당하며 사람 검토 범위에 포함하지 않는다.
+
 ## Integration Checkpoints
 - **CHECKPOINT-01 (Day 1 시작)**: Initial Parallel-Work Readiness (공통 스키마 및 샘플 데이터 합의) - *완료*
 - **CHECKPOINT-02 (Day 1 종료)**: Mock-Based End-to-End Verification (Mock API 기반 프론트-백 연동 완료) - *완료*
