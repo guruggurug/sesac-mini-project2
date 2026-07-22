@@ -189,9 +189,10 @@ def calculate_esg_risk(
             if not evt_df.empty:
                 company_events = evt_df[
                     (evt_df["company_id"] == company) & 
-                    (evt_df["linked_indicator_id"] == ind_id) & 
-                    (evt_df["review_status"] == "approved")
+                    (evt_df["linked_indicator_id"] == ind_id)
                 ]
+                if "review_status" in company_events.columns:
+                    company_events = company_events[company_events["review_status"] == "approved"]
                 
                 for _, evt in company_events.iterrows():
                     status = str(evt.get("status", "confirmed"))

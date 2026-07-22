@@ -54,7 +54,8 @@ def parse_and_cast_row(row: dict, schema: dict) -> dict:
     
     for key, val in row.items():
         if key not in properties:
-            cast_row[key] = val
+            # Skip fields not defined in the JSON schema properties to support backward-compatibility
+            # and ignore deprecated columns (e.g. review_status)
             continue
             
         prop_info = properties[key]

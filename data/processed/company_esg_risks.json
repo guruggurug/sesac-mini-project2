@@ -1,9 +1,9 @@
 {
   "005930": {
     "company_id": "005930",
-    "esg_risk_score": 0.1393,
-    "environment_risk": 0.1302,
-    "social_risk": 0.1301,
+    "esg_risk_score": 0.1339,
+    "environment_risk": 0.127,
+    "social_risk": 0.1166,
     "governance_risk": 0.1605,
     "data_confidence": "medium",
     "data_completeness": 1.0,
@@ -69,9 +69,9 @@
         "exposure": 0.5,
         "management": 0.2,
         "residual_risk": 0.4,
-        "controversy_penalty": 0.036,
+        "controversy_penalty": 0.0144,
         "data_uncertainty": 0.05,
-        "issue_risk": 0.486,
+        "issue_risk": 0.4644,
         "materiality_weight": 0.06
       },
       {
@@ -82,9 +82,9 @@
         "exposure": 0.5,
         "management": 1.0,
         "residual_risk": 0.0,
-        "controversy_penalty": 0.075,
+        "controversy_penalty": 0.03,
         "data_uncertainty": 0.05,
-        "issue_risk": 0.125,
+        "issue_risk": 0.08,
         "materiality_weight": 0.09
       },
       {
@@ -169,10 +169,10 @@
   },
   "000660": {
     "company_id": "000660",
-    "esg_risk_score": 0.1058,
-    "environment_risk": 0.1556,
+    "esg_risk_score": 0.0983,
+    "environment_risk": 0.1394,
     "social_risk": 0.05,
-    "governance_risk": 0.0953,
+    "governance_risk": 0.0917,
     "data_confidence": "high",
     "data_completeness": 1.0,
     "scope_mismatch": false,
@@ -237,9 +237,9 @@
         "exposure": 0.5,
         "management": 0.2,
         "residual_risk": 0.4,
-        "controversy_penalty": 0.18,
+        "controversy_penalty": 0.072,
         "data_uncertainty": 0.05,
-        "issue_risk": 0.63,
+        "issue_risk": 0.522,
         "materiality_weight": 0.06
       },
       {
@@ -328,9 +328,9 @@
         "exposure": 0.5,
         "management": 1.0,
         "residual_risk": 0.0,
-        "controversy_penalty": 0.015,
+        "controversy_penalty": 0.006,
         "data_uncertainty": 0.05,
-        "issue_risk": 0.065,
+        "issue_risk": 0.056,
         "materiality_weight": 0.12
       }
     ]
