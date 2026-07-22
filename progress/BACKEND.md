@@ -12,7 +12,8 @@
 | BE-06 | Fallback and Contract Tests | `done` | `test_portfolio.py` 수정 및 예외 폴백 로직 검증 | BE-04, BE-05 완료 |
 | BE-RT-00 | ESG Schema Validator and Sample Contract Compatibility Recovery | `done` | processed/sample ESG·event 계약, nullable 캐스팅, 회귀 테스트 | 없음 |
 | BE-RT-01 | KOSPI·KOSDAQ·Samsung·SK hynix Market Quote Service and Cache | `review` | 내부 provider/adapter, TTL 캐시, timeout, mock 단위 테스트 | `COMMON-RT-02` 승인 전 공개 API 계약 확정 금지 |
-| BE-RT-03 | Daily Issue Scheduler, Manual Sync, Lock and Status API | `in_progress` | SQLite 단일 활성 sync lock·상태·재시작 복구 내부 계층 | scheduler·공개 API는 `COMMON-RT-02` 승인 대기 |
+| BE-RT-03 | Daily Issue Scheduler, Manual Sync, Lock and Status API | `in_progress` | 공통 coordinator, SQLite 일일 선점, 서울시간 scheduler, lifespan 제어 | 실제 수집 workflow·공개 API는 `COMMON-RT-02` 승인 대기 |
+| BE-RT-03A | Open DART Adapter and Candidate Normalization | `review` | DART provider, runtime raw·rejected 보존, candidate 정규화·Data A 검증, mock 테스트 | Data A 교차 검토와 실제 키 smoke test 필요 |
 | BE-RT-04 | Last-Known-Good Market and Issue Fallback | `review` | SQLite 시장 LKG 저장·KIS 장애 fallback | 실제 KIS smoke test와 공개 상태 표시는 승인 대기 |
 
 ## Active Blockers
@@ -22,6 +23,161 @@
 | - | - | 현재 없음 | - | - | - |
 
 ## Work Log
+
+### 2026-07-22 18:01 — BE-RT-03A: Implementation Complete, Cross-Review Required
+
+- **Role**: Backend
+- **Owner**: Backend
+- **Task ID**: `BE-RT-03A`
+- **Status**: `review`
+- **Completed**:
+  - 삼성전자(`00126380`)·SK하이닉스(`00164779`) 대상 Open DART `list.json` provider를 구현했다.
+  - timeout·network·HTTP·DART 상태 코드를 분류하고, timeout과 `020/800/900`만 지수 backoff로 재시도하도록 제한했다.
+  - `013`을 정상 빈 결과로 처리하고 인증·입력 오류는 재시도하지 않도록 했다.
+  - 예외 문자열과 코드에 API 키, 요청 URL, 외부 응답 메시지를 포함하지 않았다.
+  - 성공 응답을 `data/runtime/issues/raw/dart/`에 먼저 원자적으로 저장한 뒤 candidate 정규화를 수행하도록 했다.
+  - candidate를 기존 `event-candidates.schema.json` 형식으로 변환하고 접수번호·회사·URL·content hash·dedup key를 결정론적으로 생성·검증했다.
+  - 신규 공시는 `pending`으로 유지하여 사건·ESG 점수에 자동 반영하지 않고, malformed·중복 후보는 `rejected` CSV로 보존했다.
+  - 기존 Data A candidate/source 검증에 14자리 DART 접수번호와 viewer URL `rcpNo` 일치 검사를 연결했다.
+- **Created files**:
+  - `src/backend/app/services/dart_disclosures.py`
+  - `src/backend/tests/test_dart_disclosures.py`
+- **Modified files**:
+  - `.env.example`
+  - `.gitignore`
+  - `src/backend/app/core/config.py`
+  - `src/backend/app/utils/csv_validator.py`
+  - `progress/BACKEND.md`
+- **Validation commands**:
+  - `.venv\\Scripts\\python.exe -m pytest -p no:cacheprovider -q src/backend/tests/test_dart_disclosures.py src/backend/tests/test_issue_pipeline_contracts.py src/backend/tests/test_csv_validator.py`
+  - `.venv\\Scripts\\python.exe -m pytest -p no:cacheprovider -q tests src/backend/tests --ignore=src/backend/tests/test_portfolio.py --ignore=src/backend/tests/test_ui_routes.py`
+  - `.venv\\Scripts\\python.exe -m compileall -q src/backend/app`
+  - `git diff --check`
+- **Validation results**:
+  - DART adapter·Data A 계약 집중 테스트: `28 passed`.
+  - UI route 수집 테스트를 제외한 Backend·모델 전체 회귀: `86 passed`.
+  - Python compile 및 whitespace 검사 통과.
+  - 전체 suite는 최신 `main`에 `src/frontend/static/` 디렉터리가 없어 `test_portfolio.py`, `test_ui_routes.py` import 단계에서 중단됨. 이번 변경과 무관한 기준선 문제로 확인했다.
+- **Remaining**:
+  - Data A가 rejected 후보의 중복 보존 정책과 강화된 DART source 검사를 교차 검토해야 한다.
+  - 실제 API 키 smoke test는 키·응답 원문을 출력하지 않고 회사별 수집 건수와 검증 결과만 확인해야 한다.
+  - atomic snapshot publisher와 coordinator workflow 주입은 후속 작업으로 유지한다.
+- **Blockers**:
+  - 전체 회귀 실행을 위해 최신 `main`의 `src/frontend/static/` 기준선 복구가 필요하다.
+- **Next task**: Data A 교차 검토 후 atomic publisher 브랜치에서 staging bundle 검증과 활성 snapshot 교체를 구현한다.
+
+### 2026-07-22 17:55 — BE-RT-03A: Open DART Adapter and Candidate Normalization
+
+- **Role**: Backend
+- **Owner**: Backend
+- **Task ID**: `BE-RT-03A`
+- **Status**: `in_progress`
+- **Scope**:
+  - 삼성전자·SK하이닉스 Open DART 공시 조회 adapter
+  - timeout·재시도·호출 오류 분류와 비밀정보 비노출
+  - 외부 응답의 runtime raw 선저장
+  - `event-candidates.schema.json` 기반 pending/rejected 후보 정규화와 Data A 검증 연결
+- **Assumptions**:
+  - DART 수집 후보는 공식 공시라는 이유만으로 기존 사건에 자동 연결하지 않고 `pending`으로 유지한다.
+  - malformed 후보는 점수 경로로 보내지 않고 `rejected` 상태와 기계 판정 사유를 보존한다.
+  - atomic snapshot publisher, coordinator 실제 workflow 주입, scheduler 활성화와 공개 `/sync/*` API는 이번 작업에서 제외한다.
+- **Validation plan**:
+  - provider mock 단위 테스트
+  - candidate schema·URL·접수번호·dedup 검증 테스트
+  - 기존 Data A 및 Backend 회귀 테스트
+- **Next task**: provider와 raw/candidate 변환 구현 후 검증 결과 기록.
+
+### 2026-07-22 — BE-RT-03: Project Environment Loading
+
+- **Role**: Backend
+- **Owner**: Backend
+- **Task ID**: `BE-RT-03`
+- **Status**: `in_progress`
+- **Assumptions**:
+  - 실제 비밀값은 로컬 `.env`에만 보관하고 테스트·로그·Git 출력에 노출하지 않는다.
+  - 운영체제 또는 배포 Secret Manager가 주입한 환경변수는 `.env` 값보다 우선한다.
+- **Completed**:
+  - 프로젝트 루트 `.env`를 Backend 설정 import 시 자동으로 로드하도록 연결했다.
+  - KIS·DART·뉴스·Gemini 키를 내부 설정으로 노출하되 실제 값은 출력하지 않았다.
+  - 운영체제·배포 환경변수가 `.env`보다 우선하도록 `override=False`를 적용했다.
+  - 상대 SQLite 경로를 shell 현재 위치가 아닌 프로젝트 루트 기준으로 정규화했다.
+  - `.env` 파일은 읽기 대상일 뿐 수정하거나 Git 추적하지 않았다.
+- **Allowed files**:
+  - `src/backend/app/core/config.py`
+  - `src/backend/requirements.txt`
+  - `src/backend/tests/test_config_environment.py`
+  - `progress/BACKEND.md`
+- **Do not modify**:
+  - `.env`
+  - 공유 API·데이터 스키마
+  - 다른 역할의 진행 로그
+- **Created files**:
+  - `src/backend/tests/test_config_environment.py`
+- **Modified files**:
+  - `src/backend/app/core/config.py`
+  - `src/backend/requirements.txt`
+  - `progress/BACKEND.md`
+- **Validation commands**:
+  - `.venv\Scripts\python.exe -m pytest -p no:cacheprovider -q src/backend/tests/test_config_environment.py src/backend/tests/test_kis_market_data.py src/backend/tests/test_market_quotes.py`
+  - 실제 값을 출력하지 않는 KIS·DART·Gemini 설정 smoke test
+  - `.venv\Scripts\python.exe -m pytest -p no:cacheprovider -q`
+- **Validation results**:
+  - 환경 로딩·runtime 경로·KIS 관련 테스트 `25 passed`.
+  - KIS·DART·Gemini 설정이 모두 비어 있지 않음을 값 노출 없이 확인했다.
+  - `NEWS_API_KEY`는 비어 있으나 뉴스 provider가 아직 미선정이므로 현재 실행의 blocker로 처리하지 않는다.
+  - 전체 회귀 `92 passed`, 기존 Starlette deprecation warning 1개.
+- **Remaining**:
+  - DART와 Gemini 키는 설정에 연결됐지만 실제 provider·설명 서비스 호출은 아직 구현하지 않았다.
+  - `BE-RT-03` 전체 작업은 실제 수집 workflow와 공개 계약 승인이 남아 `in_progress`를 유지한다.
+- **Blockers**: 없음
+- **Next task**: DART 수집 adapter와 mock 계약 테스트 구현
+
+### 2026-07-22 — BE-RT-03: Internal Sync Coordinator and Daily Scheduler
+
+- **Role**: Backend
+- **Owner**: Backend
+- **Task ID**: `BE-RT-03`
+- **Status**: `in_progress`
+- **Completed**:
+  - manual·scheduled 실행이 동일한 `IssueSyncCoordinator`와 SQLite 단일 lock을 사용하도록 구현했다.
+  - 기존 active 작업이 있으면 새 workflow를 실행하지 않고 기존 `sync_id`와 상태를 반환한다.
+  - workflow stage heartbeat와 success·partial_success·failed terminal 기록을 연결했다.
+  - 수집 workflow 미구성 시 `ISSUE_SYNC_WORKFLOW_NOT_CONFIGURED` 실패로 기록하여 거짓 성공을 방지했다.
+  - 서울 시간 기준 일일 scheduler와 SQLite 날짜별 atomic claim을 구현해 다중 프로세스 중복 실행을 방지했다.
+  - scheduler는 기본 비활성화하고 `ENABLE_ISSUE_SCHEDULER=true`일 때만 FastAPI lifespan에서 시작·종료한다.
+  - 공개 `/sync/issues`, `/sync/status`, 기존 `/data/refresh` 동작과 공유 스키마는 변경하지 않았다.
+- **Created files**:
+  - `src/backend/app/services/sync_coordinator.py`
+  - `src/backend/app/services/issue_scheduler.py`
+  - `src/backend/tests/test_sync_coordinator.py`
+  - `src/backend/tests/test_issue_scheduler.py`
+- **Modified files**:
+  - `.env.example`
+  - `README.md`
+  - `src/backend/app/core/config.py`
+  - `src/backend/app/core/runtime.py`
+  - `src/backend/app/main.py`
+  - `src/backend/app/repositories/runtime_state_repository.py`
+  - `src/backend/tests/test_portfolio.py`
+  - `src/backend/tests/test_runtime_state_repository.py`
+  - `progress/BACKEND.md`
+- **Validation commands**:
+  - `.venv\Scripts\python.exe -m pytest -p no:cacheprovider -q src/backend/tests/test_runtime_state_repository.py src/backend/tests/test_sync_coordinator.py src/backend/tests/test_issue_scheduler.py`
+  - `.venv\Scripts\python.exe -m pytest -p no:cacheprovider -q src/backend/tests/test_runtime_state_repository.py src/backend/tests/test_sync_coordinator.py src/backend/tests/test_issue_scheduler.py src/backend/tests/test_portfolio.py -k "runtime or sync or scheduler or startup or health"`
+  - `.venv\Scripts\python.exe -m pytest -p no:cacheprovider -q`
+  - `git diff --check`
+- **Validation results**:
+  - coordinator·scheduler·runtime 테스트 `13 passed`.
+  - lifespan 연동 포함 관련 회귀 `17 passed`, `13 deselected`, 기존 warning 1개.
+  - 전체 테스트 `89 passed`, 기존 Starlette deprecation warning 1개 유지.
+  - 전체 테스트 시간 `27분 24초`; 지연은 기존 포트폴리오 계산 구간에서 발생했고 신규 관련 테스트는 `2.44초`에 통과.
+  - whitespace 오류 없음.
+- **Remaining**:
+  - Data A 실제 수집·자동 검증·원자적 발행 workflow 구현 및 coordinator 주입.
+  - Data B 재계산 workflow 연결.
+  - `COMMON-RT-02` 승인 후 수동 실행·상태 공개 API 연결.
+- **Blockers**: 실제 수집 workflow와 전 역할 공개 계약 승인 필요
+- **Next task**: 전체 회귀 검증 후 내부 구현을 `review`로 유지
 
 ### 2026-07-22 — BE-RT-03/04: SQLite Runtime State and Durable Lock
 

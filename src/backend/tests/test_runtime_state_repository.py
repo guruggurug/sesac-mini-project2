@@ -140,3 +140,16 @@ def test_restart_recovery_fails_active_run_and_releases_lock(tmp_path):
         now=NOW + timedelta(minutes=1),
     )
     assert next_run.acquired is True
+
+
+def test_daily_schedule_claim_survives_repository_recreation(tmp_path):
+    database = tmp_path / "runtime.db"
+    first = RuntimeStateRepository(database)
+    assert first.claim_daily_schedule(
+        schedule_key="daily-issues", schedule_date=NOW.date(), now=NOW
+    ) is True
+
+    second = RuntimeStateRepository(database)
+    assert second.claim_daily_schedule(
+        schedule_key="daily-issues", schedule_date=NOW.date(), now=NOW
+    ) is False

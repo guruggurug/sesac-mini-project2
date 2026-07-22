@@ -485,6 +485,8 @@ FRONTEND_API_BASE_URL=http://localhost:8000
 
 `RUNTIME_STATE_DB_PATH`의 SQLite 파일에는 마지막 정상 시장 가격과 단일 활성 이슈 동기화 lock을 저장합니다. 서버 재시작 시 진행 중이던 동기화는 `failed`로 종료하고 lock을 해제하며, 마지막 정상 가격은 유지합니다.
 
+이슈 scheduler는 `ENABLE_ISSUE_SCHEDULER=true`일 때만 서울 시간 `ISSUE_SYNC_HOUR_KST`:`ISSUE_SYNC_MINUTE_KST`에 실행됩니다. 실제 수집·검증·원자적 발행 workflow가 연결되기 전에는 활성화하지 않습니다.
+
 ---
 
 ## 13. 권장 실행 명령

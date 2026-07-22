@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from pathlib import Path
 import sqlite3
 
@@ -283,6 +283,26 @@ class RuntimeStateRepository:
             ).fetchone()
         return dict(row) if row is not None else None
 
+    def claim_daily_schedule(
+        self,
+        *,
+        schedule_key: str,
+        schedule_date: date,
+        now: datetime | None = None,
+    ) -> bool:
+        """Atomically claim a scheduled execution date across processes."""
+        timestamp = _require_aware(now or datetime.now(timezone.utc), "now").isoformat()
+        with self._connect() as connection:
+            inserted = connection.execute(
+                """
+                INSERT OR IGNORE INTO scheduler_claims (
+                    schedule_key, schedule_date, claimed_at
+                ) VALUES (?, ?, ?)
+                """,
+                (schedule_key, schedule_date.isoformat(), timestamp),
+            ).rowcount
+        return inserted == 1
+
     def _connect(self) -> sqlite3.Connection:
         self._ensure_initialized()
         connection = sqlite3.connect(self._database_path, timeout=5.0)
@@ -326,6 +346,12 @@ class RuntimeStateRepository:
                     acquired_at TEXT NOT NULL,
                     heartbeat_at TEXT NOT NULL,
                     FOREIGN KEY (sync_id) REFERENCES sync_runs(sync_id)
+                );
+                CREATE TABLE IF NOT EXISTS scheduler_claims (
+                    schedule_key TEXT NOT NULL,
+                    schedule_date TEXT NOT NULL,
+                    claimed_at TEXT NOT NULL,
+                    PRIMARY KEY (schedule_key, schedule_date)
                 );
                 """
             )
