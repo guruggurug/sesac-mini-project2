@@ -6,7 +6,35 @@
     <title>홈 - Chip Buddy</title>
     <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=block" rel="stylesheet"/>
-    <link rel="stylesheet" href="{{ url_for('static', path='css/index.css') }}">
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+        try {
+            tailwind.config = {
+                darkMode: "class",
+                theme: {
+                    extend: {
+                        colors: {
+                            "primary": "#964B00",
+                            "background": "#FAF8F5",
+                            "surface": "#FAF8F5",
+                            "on-surface": "#1c1b1b",
+                            "on-surface-variant": "#564334",
+                            "outline-variant": "#E5DEC9",
+                            "surface-container-low": "#f6f3f2",
+                            "surface-container-lowest": "#ffffff",
+                            "secondary-container": "#fcd400",
+                            "surface-dim": "#dcd9d9",
+                            "error": "#ba1a1a"
+                        },
+                        spacing: {
+                            "margin-mobile": "16px",
+                            "stack-lg": "24px"
+                        }
+                    }
+                }
+            }
+        } catch (_e) {}
+    </script>
 </head>
 <body data-ui-screen="home" class="bg-[#FAF8F5] text-on-surface flex justify-center items-start min-h-screen">
     {% if data_status in ["sample", "fallback"] %}<div class="fixed top-1 right-2 z-[100] rounded-full bg-[#F5E8DD] px-2 py-1 text-[10px] font-bold text-[#964B00]">{{ "샘플 데이터" if data_status == "sample" else "대체 데이터" }}</div>{% endif %}
