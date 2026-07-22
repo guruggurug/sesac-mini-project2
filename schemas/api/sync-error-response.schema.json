@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.local/schemas/api/sync-error-response.schema.json",
+  "title": "Issue Sync Error Response",
+  "description": "수동 이슈 동기화 쿨다운 오류 응답",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["error_code", "message", "retry_after_seconds", "next_allowed_at"],
+  "properties": {
+    "error_code": { "type": "string", "const": "SYNC_COOLDOWN_ACTIVE" },
+    "message": { "type": "string", "minLength": 1, "maxLength": 500 },
+    "retry_after_seconds": { "type": "integer", "minimum": 1, "maximum": 600 },
+    "next_allowed_at": { "type": "string", "format": "date-time" }
+  }
+}

@@ -129,7 +129,12 @@ def calculate_event_severity(
 
     for rule in severity_rules["keyword_rules"]:
         for keyword in rule["keywords"]:
-            if keyword.lower() in text:
+            keyword_text = text
+            for phrase in severity_rules.get("negated_keyword_phrases", {}).get(
+                keyword, []
+            ):
+                keyword_text = keyword_text.replace(phrase.lower(), "")
+            if keyword.lower() in keyword_text:
                 score = max(score, rule["score"])
                 matched_keywords.append(keyword)
 

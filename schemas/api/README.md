@@ -12,7 +12,7 @@ This document defines the shared contract. It does not mean that the producer or
 ## Common conventions
 
 - All timestamps use ISO 8601 with an explicit timezone. Production responses use Asia/Seoul (`+09:00`).
-- Monetary values use KRW. Rates and weights use decimal notation: `0.01` means 1%.
+- Equity prices use `unit: KRW`; KOSPI and KOSDAQ index values use `unit: points`. Rates and weights use decimal notation: `0.01` means 1%.
 - `data_status` describes the runtime state of the payload: `sample`, automatically `validated`, or `fallback`.
 - `price_status` describes quote freshness: `live`, `cached`, or `fallback`.
 - Every response exposes source time (`as_of` or `prices_as_of`) separately from response time (`generated_at`).
@@ -26,7 +26,8 @@ Returns exactly four dashboard quotes: KOSPI, KOSDAQ, Samsung Electronics, and S
 
 - Response: `market-quotes-response.schema.json`
 - Success: `200 OK`
-- The frontend polls at the returned `refresh_interval_seconds`, which must be between 10 and 30 seconds while the market is open.
+- While the market is open, the frontend polls only when `polling_enabled: true` and uses `refresh_interval_seconds`, which must be between 10 and 30 seconds.
+- When the market is closed, the server returns `polling_enabled: false` and `refresh_interval_seconds: null`. The frontend stops automatic polling and refreshes once when the page is opened again or the user explicitly requests it.
 - Outside market hours the last official close may be returned with `market_status: closed` and `price_status: cached`.
 - If the provider fails, return the last known good value when available, set `price_status: fallback`, set `is_stale: true`, and add a warning. Do not present fallback data as live.
 - If no current or fallback quote exists for all four instruments, return `503 Service Unavailable` rather than inventing a price.
@@ -66,9 +67,10 @@ Requests an on-demand check for new disclosures, news, and ESG issue status chan
 - Response: `sync-status-response.schema.json`
 - New job accepted: `202 Accepted`, `status: queued`
 - Existing queued/running job reused: `200 OK`, the existing `sync_id`, and `is_existing_run: true`
+- A completed manual run starts a 10-minute server-side cooldown. Requests during that window return `429 Too Many Requests`, a `Retry-After` header, and `sync-error-response.schema.json`.
 - Invalid request: `422 Unprocessable Entity`
 
-The daily scheduler and manual refresh call the same synchronization service. Only one issue synchronization job may run at a time. `client_request_id` supports client retry deduplication; the server-side active-job lock remains authoritative.
+The daily scheduler and manual refresh call the same synchronization service. Only one issue synchronization job may run at a time. `client_request_id` supports client retry deduplication; the server-side active-job lock remains authoritative. The frontend disables manual refresh until `manual_refresh_available_at` and uses `retry_after_seconds` when a `429` response is returned.
 
 External refresh writes to `raw` or `candidate` first. The service then runs schema, official-source, event-status, evidence, and deduplication checks. Records that pass are atomically published to `processed` without a human-review step. `reported` events are news-only warnings and never affect scores. `confirmed` and `resolved` events can affect ESG risk only when official-source verification succeeds. Rumor-like records are discarded at the raw stage. Enforcement outcomes such as a fine or sanction are stored separately in `enforcement_action`.
 
@@ -92,12 +94,16 @@ State timestamps follow these rules:
 Terminal result semantics:
 
 - `success`: collection and candidate validation completed; if valid changes existed, atomic processed publication also succeeded. No new data is still a success with `snapshot_updated: false`.
-- `partial_success`: one or more sources failed, but all collected candidates were validated and any usable changes were safely published.
+- `partial_success`: one or more sources failed, but all collected candidates were validated and any usable changes were safely published; or publication succeeded but downstream recalculation failed.
 - `failed`: collection could not produce a usable result, automatic validation failed as a system operation, or atomic publication failed. The previous processed snapshot remains intact.
+
+`success` requires an empty `failed_sources` list and cannot contain a failed recalculation. `partial_success` requires at least one failed source or `recalculation_status: failed`. `failed` requires a non-null `failure_stage`.
 
 `collected_items`, `candidate_items`, `validated_items`, `rejected_items`, and `published_items` expose each pipeline boundary. `snapshot_updated`, `published_snapshot_version`, and `published_at` prove whether publication occurred. Rejected candidates are a normal validation result and do not by themselves make the job fail.
 
 `recalculation_triggered`, `recalculation_status`, and `recalculated_at` distinguish issue publication from ESG and optimization recalculation. A sync may succeed without recalculation when no model-eligible event changed.
+
+If publication succeeds but recalculation fails, return `status: partial_success`, `failure_stage: recalculating`, `data_status: fallback`, and `previous_result_retained: true`. The UI keeps the previous validated risk and recommendation result and clearly states that the latest recalculation failed.
 
 Recalculation is triggered only after an atomic processed snapshot is published and at least one scoring-relevant input changes:
 
@@ -112,7 +118,7 @@ Recalculation is triggered only after an atomic processed snapshot is published 
 
 ## Ownership and review checklist
 
-- Data A (`review`): remediation artifacts exist, but the role log still records unavailable governance data and cross-role implementation dependencies.
+- Data A (`review`): complete `data/docs/data_a_human_review_checklist.md`, including the 18 unavailable governance rows and the non-expert UI copy review, then record `approved` or `needs_revision` in the role log.
 - Data B (`pending`): confirm scoring-relevant recalculation triggers, result/version handling, and validated-mode missing-score behavior.
 - Backend (`pending`): confirm provider/cache/error behavior, locks, scheduler/manual service reuse, and state persistence implementability.
 - Frontend (`pending`): confirm polling behavior, timestamps, loading/error/fallback labels, manual refresh, and status consumption.

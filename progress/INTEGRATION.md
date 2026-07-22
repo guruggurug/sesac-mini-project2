@@ -333,3 +333,54 @@
 - **Remaining**: `COMMON-RT-02`는 Data A `review`, Data B·Backend·Frontend `pending`이므로 전 역할 명시 승인 후에만 `done` 처리.
 - **Blockers**: 없음.
 - **Next task**: 역할별 `COMMON-RT-02` 계약 검토와 명시 승인 수집.
+
+### 2026-07-22 11:23 — COMMON-RT-02 Automated Contract Remediation and Human Review Split
+
+- **Role**: Integration / Team Lead
+- **Owner**: Team Lead / Codex
+- **Task ID**: `COMMON-RT-02`, `DATA-A-RT-01`, `DATA-A-RT-02`
+- **Status**: `review`
+- **Completed**:
+  - 코스피·코스닥 단위를 `points`, 주식 가격 단위를 `KRW`로 분리했다.
+  - 장중에만 10~30초 폴링하고 장 마감 시 자동 폴링을 중지하는 계약을 추가했다.
+  - 수동 이슈 동기화에 600초 서버 쿨다운, `429`, `Retry-After`, 재시도 가능 시각 계약을 추가했다.
+  - `success`, `partial_success`, `failed`와 실패 출처·실패 단계·재계산 실패의 모순 상태를 스키마로 차단했다.
+  - 재계산 실패 시 이전 정상 결과를 `fallback`으로 유지하는 계약을 추가했다.
+  - 3일·Jaccard 0.65 사건 중복 기준을 MVP 정책으로 확정했다.
+  - `사망 없음` 등 명시적 부정 문구가 severity 5점을 만들지 않도록 규칙 버전 1.1.0과 테스트를 추가했다.
+  - Data A 사람 검토 범위를 G01~G03 unavailable 18행과 비전공자용 사용자 문구로 한정한 체크리스트를 작성했다.
+- **Created files**:
+  - `schemas/api/sync-error-response.schema.json`
+  - `schemas/api/examples/sync-error-response.example.json`
+  - `data/docs/data_a_human_review_checklist.md`
+- **Modified files**:
+  - `schemas/api/README.md`
+  - `schemas/api/market-quotes-response.schema.json`
+  - `schemas/api/sync-status-response.schema.json`
+  - `schemas/api/examples/market-quotes-response.example.json`
+  - `schemas/api/examples/sync-status-response.example.json`
+  - `schemas/data/issue-pipeline-rules.json`
+  - `schemas/data/issue-pipeline-rules.schema.json`
+  - `schemas/data/events.schema.json`
+  - `src/backend/app/utils/issue_rules.py`
+  - `src/backend/tests/test_realtime_api_contracts.py`
+  - `src/backend/tests/test_issue_pipeline_contracts.py`
+  - `data/processed/events.csv`
+  - `data/sample/events.sample.csv`
+  - `data/docs/issue_pipeline_contract.md`
+  - `data/docs/data_quality_report.md`
+  - `ROADMAP.md`, `PROGRESS.md`, `progress/INTEGRATION.md`
+- **Validation commands**:
+  - `.venv\Scripts\python.exe -m pytest -p no:cacheprovider -q src/backend/tests/test_realtime_api_contracts.py src/backend/tests/test_issue_pipeline_contracts.py src/backend/tests/test_csv_validator.py`
+  - `.venv\Scripts\python.exe -m pytest -p no:cacheprovider -q`
+  - `git diff --check`
+- **Validation results**:
+  - 계약·Data A 집중 테스트 `40 passed`.
+  - 전체 회귀 테스트 `92 passed, 1 warning` (387.23초).
+  - whitespace 오류 없음. 기존 CRLF 변환 안내만 확인.
+- **Remaining**:
+  - Data A가 사람 검토 체크리스트를 완료하고 역할 로그에 승인 또는 수정 필요를 기록한다.
+  - Data B·Backend·Frontend가 수정된 계약을 각 역할 로그에서 명시적으로 승인한다.
+  - Backend가 공개 Realtime API와 실제 10분 쿨다운을 구현한다.
+- **Blockers**: 역할별 승인과 Backend 공개 API 구현 대기.
+- **Next task**: Data A 체크리스트 전달과 역할별 계약 승인 수집.

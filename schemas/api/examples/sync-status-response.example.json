@@ -9,6 +9,8 @@
   "completed_at": "2026-07-21T10:20:14+09:00",
   "last_success_at": "2026-07-21T10:20:14+09:00",
   "next_scheduled_at": "2026-07-22T06:00:00+09:00",
+  "manual_refresh_cooldown_seconds": 600,
+  "manual_refresh_available_at": "2026-07-21T10:30:00+09:00",
   "collected_items": 5,
   "candidate_items": 4,
   "validated_items": 3,
@@ -24,6 +26,7 @@
   "recalculated_at": "2026-07-21T10:20:14+09:00",
   "failure_stage": null,
   "failed_sources": [],
+  "previous_result_retained": false,
   "data_status": "sample",
   "message": "새 이슈 2건과 상태 변경 1건을 후보 데이터에 반영했습니다.",
   "warnings": ["자동 검증을 통과하지 못한 후보 이벤트는 ESG 점수에 반영되지 않습니다."]

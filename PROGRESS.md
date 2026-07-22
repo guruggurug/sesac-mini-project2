@@ -5,7 +5,7 @@
 - Project phase: Realtime Market & Daily Issue Sync Contract Review
 - Overall status: `in_progress`
 - Project duration: 4 days
-- Last updated: 2026-07-22 04:15 KST
+- Last updated: 2026-07-22 11:23 KST
 - Current integration checkpoint: `CHECKPOINT-05`
 - Data mode: `validated` (Fallback: `sample`)
 - Root progress owner: Team Lead
@@ -279,10 +279,10 @@ schemas/api/examples/sync-status-response.example.json
 
 | Reviewer | Review Focus | Result | Notes |
 |---|---|---|---|
-| Data A | raw→candidate→자동 검증→processed 경계와 출처 보존 | `review` | 보완 산출물은 있으나 unavailable 18행, Backend 발행 게이트와 Data B 교차 검토가 남음 |
+| Data A | raw→candidate→자동 검증→processed 경계와 출처 보존 | `review` | `data_a_human_review_checklist.md`의 unavailable 18행과 사용자 문구 검토가 배정됨 |
 | Data B | 자동 검증 통과 이벤트 이후 ESG·추천 비중 재계산 트리거 | `pending` | 역할 로그에 COMMON-RT-02 검토·승인 기록 없음 |
 | Backend | 가격 캐시·동기화 잠금·상태 전이·오류 구현 가능성 | `pending` | 역할 로그에 COMMON-RT-02 검토가 Remaining으로 기록됨 |
-| Frontend | 폴링·기준 시각·지연/폴백·동기화 상태 표현 가능성 | `pending` | 역할 로그에 Realtime 계약 검토·승인 기록 없음 |
+| Frontend | 폴링·기준 시각·지연/폴백·동기화 상태 표현 가능성 | `pending` | 장중 폴링·장 마감 중지·10분 쿨다운·fallback 계약은 자동 검증 통과, 역할 로그 승인 필요 |
 
 `COMMON-RT-02`는 계약 초안과 자동 검증은 통과했지만 역할별 명시적 승인이 완료되지 않아 `review` 상태다.
 
@@ -292,16 +292,17 @@ schemas/api/examples/sync-status-response.example.json
 
 | Blocker ID | Related Task | Description | Owner | Required Action | Status |
 |---|---|---|---|---|---|
-| RT-B01 | COMMON-RT-02 | Data A 보완 검토와 Data B·Backend·Frontend의 명시적 계약 승인이 필요 | Team Lead / All Roles | 역할별 로그에 검토 결과와 승인 기록 | `review` |
+| RT-B01 | COMMON-RT-02 | Data A 사람 검토 체크리스트와 Data B·Backend·Frontend의 명시적 계약 승인이 필요 | Team Lead / All Roles | Data A 체크리스트 완료 및 역할별 로그에 승인 기록 | `review` |
 | RT-B02 | DATA-B-RT-01 | Data B 동적 ESG·최적화 변경이 현재 브랜치에 미동기화 | Data B | 작업 완료 후 통합 브랜치 동기화 | `in_progress` |
 
 ---
 
 ## 9. Immediate Next Actions
 
-1. Data A, Data B, Backend, Frontend가 `COMMON-RT-02` 계약을 각 역할 로그에서 검토하고 명시적으로 승인한다.
-2. Data A 잔여 데이터 조건과 Data B·Backend·Frontend 구현 관점의 계약 쟁점을 반영한다.
-3. 기존 `INT-01`과 신규 `INT-RT-01`의 E2E 범위를 통합한다.
+1. Data A가 `data/docs/data_a_human_review_checklist.md`의 공식자료 18행과 사용자 문구를 검토한다.
+2. Data B·Backend·Frontend가 수정된 쿨다운·폴링·부분 성공·fallback 계약을 역할 로그에서 승인한다.
+3. Backend가 공개 Realtime API와 10분 서버 쿨다운을 구현한다.
+4. 기존 `INT-01`과 신규 `INT-RT-01`의 E2E 범위를 통합한다.
 
 ---
 

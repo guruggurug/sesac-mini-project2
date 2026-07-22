@@ -34,7 +34,7 @@
 * **지표 연결 완료 여부 (`linked_indicator_id`)**: 3건 전체 연결 완료 (S01, E05, S04 각 1건)
 * **후보 자동 검증 결과**: 6건 중 `validated` 3건, `rejected` 3건
 * **출처 계약 결과**: 출처 6건 및 사건-출처 연결 4건 스키마·raw hash 검증 통과, 사건 3건 모두 공식 1차 출처 정확히 1건 보유
-* **자동 severity 분포 (`severity_rule_version = 1.0.0`)**:
+* **자동 severity 분포 (`severity_rule_version = 1.1.0`)**:
   - 4점: 1건
   - 3점: 1건
   - 2점: 1건

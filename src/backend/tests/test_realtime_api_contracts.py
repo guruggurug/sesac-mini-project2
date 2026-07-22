@@ -16,6 +16,7 @@ CONTRACTS = [
     ("portfolio-summary-response.schema.json", "portfolio-summary-response.example.json"),
     ("sync-issues-request.schema.json", "sync-issues-request.example.json"),
     ("sync-status-response.schema.json", "sync-status-response.example.json"),
+    ("sync-error-response.schema.json", "sync-error-response.example.json"),
 ]
 
 
@@ -38,6 +39,34 @@ def test_market_quotes_example_has_exact_required_instruments() -> None:
 
     assert set(instrument_ids) == {"KOSPI", "KOSDAQ", "005930", "000660"}
     assert len(instrument_ids) == len(set(instrument_ids)) == 4
+
+
+def test_market_quote_units_distinguish_indices_from_equities() -> None:
+    example = load_json(EXAMPLE_DIR / "market-quotes-response.example.json")
+    units = {quote["instrument_id"]: quote["unit"] for quote in example["quotes"]}
+
+    assert units["KOSPI"] == units["KOSDAQ"] == "points"
+    assert units["005930"] == units["000660"] == "KRW"
+
+
+def test_closed_market_disables_polling() -> None:
+    schema = load_json(SCHEMA_DIR / "market-quotes-response.schema.json")
+    validator = Draft202012Validator(schema, format_checker=FormatChecker())
+    closed = load_json(EXAMPLE_DIR / "market-quotes-response.example.json")
+    closed["polling_enabled"] = False
+    closed["refresh_interval_seconds"] = None
+    for quote in closed["quotes"]:
+        quote["market_status"] = "closed"
+        quote["price_status"] = "cached"
+
+    validator.validate(closed)
+
+    closed["refresh_interval_seconds"] = 15
+    assert list(validator.iter_errors(closed))
+
+    closed["refresh_interval_seconds"] = None
+    closed["quotes"][0]["market_status"] = "open"
+    assert list(validator.iter_errors(closed))
 
 
 def test_fallback_market_quote_must_be_marked_stale() -> None:
@@ -123,3 +152,63 @@ def test_sync_snapshot_update_requires_publication_evidence() -> None:
     invalid["published_snapshot_version"] = None
 
     assert list(validator.iter_errors(invalid))
+
+
+def test_sync_success_rejects_failed_sources_and_failed_recalculation() -> None:
+    schema = load_json(SCHEMA_DIR / "sync-status-response.schema.json")
+    validator = Draft202012Validator(schema, format_checker=FormatChecker())
+    success = load_json(EXAMPLE_DIR / "sync-status-response.example.json")
+
+    with_failed_source = deepcopy(success)
+    with_failed_source["failed_sources"] = [
+        {"source_id": "news-provider", "message": "timeout"}
+    ]
+    assert list(validator.iter_errors(with_failed_source))
+
+    with_failed_recalculation = deepcopy(success)
+    with_failed_recalculation["recalculation_status"] = "failed"
+    assert list(validator.iter_errors(with_failed_recalculation))
+
+
+def test_partial_success_requires_failure_evidence() -> None:
+    schema = load_json(SCHEMA_DIR / "sync-status-response.schema.json")
+    validator = Draft202012Validator(schema, format_checker=FormatChecker())
+    invalid = load_json(EXAMPLE_DIR / "sync-status-response.example.json")
+    invalid["status"] = "partial_success"
+
+    assert list(validator.iter_errors(invalid))
+
+    invalid["failed_sources"] = [
+        {"source_id": "news-provider", "message": "timeout"}
+    ]
+    invalid["failure_stage"] = "collecting"
+    validator.validate(invalid)
+
+
+def test_recalculation_failure_retains_previous_result_as_fallback() -> None:
+    schema = load_json(SCHEMA_DIR / "sync-status-response.schema.json")
+    validator = Draft202012Validator(schema, format_checker=FormatChecker())
+    partial = load_json(EXAMPLE_DIR / "sync-status-response.example.json")
+    partial.update(
+        {
+            "status": "partial_success",
+            "recalculation_status": "failed",
+            "failure_stage": "recalculating",
+            "data_status": "fallback",
+            "previous_result_retained": True,
+        }
+    )
+
+    validator.validate(partial)
+
+    partial["previous_result_retained"] = False
+    assert list(validator.iter_errors(partial))
+
+
+def test_manual_sync_contract_exposes_ten_minute_cooldown() -> None:
+    status = load_json(EXAMPLE_DIR / "sync-status-response.example.json")
+    error = load_json(EXAMPLE_DIR / "sync-error-response.example.json")
+
+    assert status["manual_refresh_cooldown_seconds"] == 600
+    assert status["manual_refresh_available_at"]
+    assert 1 <= error["retry_after_seconds"] <= 600

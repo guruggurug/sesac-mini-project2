@@ -185,3 +185,40 @@ def test_severity_uses_highest_matching_rule_without_addition():
     assert calculate_event_severity(fatal_event, rules) == calculate_event_severity(
         fatal_event, rules
     )
+
+
+@pytest.mark.parametrize(
+    "summary",
+    [
+        "사고가 발생했지만 사망 없음",
+        "사망자는 없었으며 경상자만 확인됨",
+        "사망으로 이어지지 않음",
+    ],
+)
+def test_severity_ignores_explicitly_negated_fatality_keyword(summary):
+    rules = load_issue_rules()
+    event = {
+        "enforcement_action": "investigation",
+        "summary": summary,
+        "severity_evidence": "집중점검 착수",
+        "responsibility_evidence": "",
+        "persistence_evidence": "",
+    }
+
+    score, matched_keywords = calculate_event_severity(event, rules)
+
+    assert score == 2
+    assert "사망" not in matched_keywords
+
+
+def test_severity_still_counts_separate_non_negated_fatality_occurrence():
+    rules = load_issue_rules()
+    event = {
+        "enforcement_action": "investigation",
+        "summary": "초기 발표에서는 사망 없음으로 알려졌으나 이후 작업자 1명 사망 확인",
+        "severity_evidence": "",
+        "responsibility_evidence": "",
+        "persistence_evidence": "",
+    }
+
+    assert calculate_event_severity(event, rules)[0] == 5
