@@ -18,7 +18,7 @@
       "abnormal_return_3d": -0.0163,
       "abnormal_return_5d": 0.0083,
       "benchmark_name": "SOX",
-      "status": "sanctioned",
+      "status": "resolved",
       "summary": "삼성전자 기흥사업장 XRF 분석장비 인터락 임의조작으로 인한 방사선 피폭 사고 (원안위 과태료 1050만원 처분)",
       "chart_data": [
         {
@@ -96,7 +96,7 @@
       "abnormal_return_3d": 0.0084,
       "abnormal_return_5d": 0.0294,
       "benchmark_name": "SOX",
-      "status": "sanctioned",
+      "status": "resolved",
       "summary": "삼성전자 화성사업장 유해화학물질 관리 시정명령 및 행정처분",
       "chart_data": [
         {
@@ -174,7 +174,7 @@
       "abnormal_return_3d": -0.0665,
       "abnormal_return_5d": -0.0389,
       "benchmark_name": "SOX",
-      "status": "sanctioned",
+      "status": "resolved",
       "summary": "SK하이닉스 청주 4캠퍼스 가스룸 불화수소(불소) 누출 사고 및 고용노동부 기획점검 시정명령",
       "chart_data": [
         {
@@ -252,7 +252,7 @@
       "abnormal_return_3d": 0.0061,
       "abnormal_return_5d": 0.0121,
       "benchmark_name": "SOX",
-      "status": "sanctioned",
+      "status": "resolved",
       "summary": "공정거래위원회 하도급거래 공정화 관련 시정명령 및 경고 조치",
       "chart_data": [
         {
