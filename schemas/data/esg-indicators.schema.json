@@ -27,7 +27,6 @@
     "availability",
     "data_confidence",
     "risk_direction",
-    "review_status",
     "note",
     "target_value",
     "target_unit",
@@ -167,15 +166,6 @@
         "qualitative"
       ]
     },
-    "review_status": {
-      "type": "string",
-      "enum": [
-        "pending",
-        "needs_review",
-        "approved",
-        "rejected"
-      ]
-    },
     "note": {
       "type": "string"
     },
@@ -308,7 +298,6 @@
       "availability": "available",
       "data_confidence": "high",
       "risk_direction": "higher_is_worse",
-      "review_status": "approved",
       "note": "원문 확인 완료",
       "target_value": 10.0,
       "target_unit": "tCO2e/억원",

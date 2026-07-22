@@ -14,13 +14,15 @@
     "event_date",
     "event_date_type",
     "business_unit",
+    "detection_source_type",
     "status",
+    "enforcement_action",
     "severity",
+    "severity_rule_version",
     "authority_confirmed",
     "official_source_url",
     "news_url",
     "summary",
-    "review_status",
     "note",
     "linked_indicator_id",
     "severity_evidence",
@@ -102,17 +104,36 @@
     "status": {
       "type": "string",
       "enum": [
-        "rumor",
         "reported",
         "confirmed",
-        "sanctioned",
         "resolved"
+      ]
+    },
+    "detection_source_type": {
+      "type": "string",
+      "enum": [
+        "dart_disclosure",
+        "news"
+      ]
+    },
+    "enforcement_action": {
+      "type": "string",
+      "enum": [
+        "no_action",
+        "investigation",
+        "corrective_order",
+        "fine",
+        "sanctioned"
       ]
     },
     "severity": {
       "type": "integer",
       "minimum": 1,
       "maximum": 5
+    },
+    "severity_rule_version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
     },
     "authority_confirmed": {
       "type": "boolean"
@@ -143,15 +164,6 @@
       "type": "string",
       "minLength": 1,
       "maxLength": 1000
-    },
-    "review_status": {
-      "type": "string",
-      "enum": [
-        "pending",
-        "needs_review",
-        "approved",
-        "rejected"
-      ]
     },
     "note": {
       "type": "string"
@@ -212,7 +224,6 @@
           "status": {
             "enum": [
               "confirmed",
-              "sanctioned",
               "resolved"
             ]
           }
@@ -234,10 +245,7 @@
       "if": {
         "properties": {
           "status": {
-            "enum": [
-              "rumor",
-              "reported"
-            ]
+            "const": "reported"
           }
         }
       },
@@ -252,16 +260,32 @@
     {
       "if": {
         "properties": {
-          "review_status": {
-            "const": "approved"
+          "status": {
+            "const": "resolved"
           }
         }
       },
       "then": {
         "properties": {
-          "summary": {
+          "resolved_date": {
             "type": "string",
-            "minLength": 1
+            "format": "date"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "enum": ["reported", "confirmed"]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "resolved_date": {
+            "type": "null"
           }
         }
       }
@@ -277,20 +301,22 @@
       "event_date": "2024-03-15",
       "event_date_type": "first_public_report_date",
       "business_unit": "semiconductor",
+      "detection_source_type": "news",
       "status": "confirmed",
+      "enforcement_action": "investigation",
       "severity": 4,
+      "severity_rule_version": "1.0.0",
       "authority_confirmed": true,
       "official_source_url": "https://example.com/official",
       "news_url": "https://example.com/news",
       "summary": "반도체 사업장 안전사고",
-      "review_status": "approved",
       "note": "공식 발표와 기사 교차검증 완료",
       "linked_indicator_id": "S01",
       "severity_evidence": "고용노동부 조사 및 조치 사항에 근거하여 4점 산정",
       "responsibility_evidence": "해당 정비 작업 시 관리자 부재",
       "persistence_evidence": "일주일 내 개선 완료",
       "evidence_confidence": "high",
-      "resolved_date": "2024-03-22",
+      "resolved_date": null,
       "market_event_date": "2024-03-15",
       "market_event_date_type": "first_public_report_date"
     }
