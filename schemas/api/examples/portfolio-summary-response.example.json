@@ -1,0 +1,37 @@
+{
+  "positions": [
+    {
+      "ticker": "005930",
+      "stock_name": "삼성전자",
+      "quantity": 70,
+      "average_price": 70000,
+      "current_price": 78000,
+      "purchase_value": 4900000,
+      "market_value": 5460000,
+      "unrealized_profit_loss": 560000,
+      "return_rate": 0.114286,
+      "current_weight": 0.482759
+    },
+    {
+      "ticker": "000660",
+      "stock_name": "SK하이닉스",
+      "quantity": 30,
+      "average_price": 180000,
+      "current_price": 195000,
+      "purchase_value": 5400000,
+      "market_value": 5850000,
+      "unrealized_profit_loss": 450000,
+      "return_rate": 0.083333,
+      "current_weight": 0.517241
+    }
+  ],
+  "total_purchase_value": 10300000,
+  "total_market_value": 11310000,
+  "total_unrealized_profit_loss": 1010000,
+  "total_return_rate": 0.098058,
+  "prices_as_of": "2026-07-21T10:15:30+09:00",
+  "price_status": "live",
+  "data_status": "sample",
+  "generated_at": "2026-07-21T10:15:31+09:00",
+  "warnings": ["예시 응답이며 실제 투자 판단에 사용할 수 없습니다."]
+}

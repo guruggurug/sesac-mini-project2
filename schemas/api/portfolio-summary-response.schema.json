@@ -1,0 +1,84 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.local/schemas/api/portfolio-summary-response.schema.json",
+  "title": "Portfolio Summary Response",
+  "description": "삼성전자·SK하이닉스 실시간 현재가 기반 자산 평가 응답",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "positions",
+    "total_purchase_value",
+    "total_market_value",
+    "total_unrealized_profit_loss",
+    "total_return_rate",
+    "prices_as_of",
+    "price_status",
+    "data_status",
+    "generated_at",
+    "warnings"
+  ],
+  "properties": {
+    "positions": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 2,
+      "items": { "$ref": "#/$defs/position" },
+      "allOf": [
+        { "contains": { "properties": { "ticker": { "const": "005930" } }, "required": ["ticker"] }, "minContains": 0, "maxContains": 1 },
+        { "contains": { "properties": { "ticker": { "const": "000660" } }, "required": ["ticker"] }, "minContains": 0, "maxContains": 1 }
+      ]
+    },
+    "total_purchase_value": { "type": "number", "minimum": 0 },
+    "total_market_value": { "type": "number", "minimum": 0 },
+    "total_unrealized_profit_loss": { "type": "number" },
+    "total_return_rate": { "type": "number" },
+    "prices_as_of": { "type": "string", "format": "date-time" },
+    "price_status": { "type": "string", "enum": ["live", "cached", "fallback"] },
+    "data_status": { "type": "string", "enum": ["sample", "validated", "fallback"] },
+    "generated_at": { "type": "string", "format": "date-time" },
+    "warnings": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1, "maxLength": 500 }
+    }
+  },
+  "$defs": {
+    "position": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ticker",
+        "stock_name",
+        "quantity",
+        "average_price",
+        "current_price",
+        "purchase_value",
+        "market_value",
+        "unrealized_profit_loss",
+        "return_rate",
+        "current_weight"
+      ],
+      "properties": {
+        "ticker": { "type": "string", "enum": ["005930", "000660"] },
+        "stock_name": { "type": "string", "enum": ["삼성전자", "SK하이닉스"] },
+        "quantity": { "type": "number", "exclusiveMinimum": 0 },
+        "average_price": { "type": "number", "exclusiveMinimum": 0 },
+        "current_price": { "type": "number", "exclusiveMinimum": 0 },
+        "purchase_value": { "type": "number", "minimum": 0 },
+        "market_value": { "type": "number", "minimum": 0 },
+        "unrealized_profit_loss": { "type": "number" },
+        "return_rate": { "type": "number" },
+        "current_weight": { "type": "number", "minimum": 0, "maximum": 1 }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "ticker": { "const": "005930" } }, "required": ["ticker"] },
+          "then": { "properties": { "stock_name": { "const": "삼성전자" } } }
+        },
+        {
+          "if": { "properties": { "ticker": { "const": "000660" } }, "required": ["ticker"] },
+          "then": { "properties": { "stock_name": { "const": "SK하이닉스" } } }
+        }
+      ]
+    }
+  }
+}

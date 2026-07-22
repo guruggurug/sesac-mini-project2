@@ -1,0 +1,5 @@
+event_id,source_id,source_role,is_primary,note
+EVT-0001,SRC-0006,official_confirmation,true,원안위 제201회 회의 조사결과 및 처분 자료
+EVT-0001,SRC-0001,context,false,삼성전자 DS ESG·안전관리 배경자료
+EVT-0003,SRC-0008,official_confirmation,true,고용노동부 집중 점검 착수 공식 보도자료
+EVT-0005,SRC-0010,official_confirmation,true,개인정보위 삼성전자 제재 공식 보도자료

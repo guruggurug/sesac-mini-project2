@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.local/schemas/data/sources.schema.json",
+  "title": "Validated Source Registry CSV Row",
+  "description": "ESG 지표와 사건의 자동 검증에 사용된 출처 레지스트리",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "source_id",
+    "company_id",
+    "organization_name",
+    "source_type",
+    "document_title",
+    "publication_year",
+    "external_id",
+    "file_name",
+    "url",
+    "validation_method",
+    "content_hash",
+    "validated",
+    "note"
+  ],
+  "properties": {
+    "source_id": { "type": "string", "pattern": "^SRC-[0-9]{4,}$" },
+    "company_id": {
+      "oneOf": [
+        { "type": "string", "enum": ["005930", "000660"] },
+        { "type": "null" }
+      ]
+    },
+    "organization_name": { "type": "string", "minLength": 1, "maxLength": 200 },
+    "source_type": {
+      "type": "string",
+      "enum": [
+        "government",
+        "regulator",
+        "company_report",
+        "company_disclosure",
+        "company_press_release",
+        "exchange",
+        "court",
+        "news",
+        "research",
+        "other"
+      ]
+    },
+    "document_title": { "type": "string", "minLength": 1, "maxLength": 500 },
+    "publication_year": { "type": "integer", "minimum": 1900, "maximum": 2100 },
+    "external_id": { "type": ["string", "null"], "maxLength": 200 },
+    "file_name": { "type": "string", "minLength": 1, "maxLength": 500 },
+    "url": { "type": "string", "format": "uri", "maxLength": 1000 },
+    "validation_method": {
+      "type": "string",
+      "enum": ["dart_receipt", "official_domain", "news_canonical_url"]
+    },
+    "content_hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "validated": { "const": true },
+    "note": { "type": "string", "maxLength": 1000 }
+  }
+}

@@ -121,7 +121,7 @@ src/
     ├── data/
     │   ├── sample/
     │   ├── raw/
-    │   ├── reviewed/
+    │   ├── candidate/
     │   └── processed/
     ├── tests/
     │   ├── test_health.py
@@ -267,7 +267,7 @@ http://127.0.0.1:8000/docs
 
 # 8. 3단계: API 목록 고정
 
-2일 MVP 기준 최소 API는 다음과 같다.
+4일 MVP 기준 최소 API는 다음과 같다.
 
 | 기능 | 메서드 | 경로 |
 |---|---|---|
@@ -278,9 +278,13 @@ http://127.0.0.1:8000/docs
 | 추천 비중 계산 | POST | `/portfolio/optimize` |
 | 현재 이슈 조회 | GET | `/issues/current` |
 | 과거 사건 조회 | GET | `/issues/historical` |
-| 데이터 갱신 | POST | `/data/refresh` |
+| 시장 가격 조회 | GET | `/market/quotes` |
+| 실시간 포트폴리오 평가 | POST | `/portfolio/summary` |
+| 이슈 수동 동기화 | POST | `/sync/issues` |
+| 이슈 동기화 상태 | GET | `/sync/status` |
+| 레거시 데이터 갱신 호환 경로 | POST | `/data/refresh` |
 
-`/data/refresh`는 시간이 부족하면 마지막 순위로 둔다.
+Realtime API는 `schemas/api/README.md`와 JSON Schema 승인을 기준으로 구현한다. `/data/refresh`는 `BE-RT-03` 구현 전까지 HTTP 501을 반환하고, 구현 후에도 `/sync/issues`와 동일한 내부 동기화 서비스를 재사용해야 한다.
 
 ---
 
@@ -505,7 +509,7 @@ event_id 중복
 company_id 허용값
 status 허용값
 공식 URL 존재 여부
-confirmed 또는 sanctioned 필터 가능 여부
+자동 검증된 confirmed 또는 resolved 필터 가능 여부
 ```
 
 ## 12.3 주가 CSV 검사
@@ -542,13 +546,13 @@ confirmed 또는 sanctioned 필터 가능 여부
 
 ```text
 data/raw/
-외부 API나 뉴스 검색으로 가져온 미검수 후보
+외부 API나 뉴스 검색으로 가져온 원본
 
-data/reviewed/
-데이터 A가 원문과 공식 출처를 확인한 승인 데이터
+data/candidate/
+원본을 정규화한 자동 검증 대상 후보
 
 data/processed/
-데이터 B의 계산 결과
+스키마·공식 출처·상태·근거·중복 검증을 통과해 원자적으로 발행된 데이터
 
 data/sample/
 개발·데모용 샘플 데이터
@@ -557,10 +561,10 @@ data/sample/
 권장 파일:
 
 ```text
-data/raw/news_candidates.csv
-data/reviewed/esg_indicators.csv
-data/reviewed/events.csv
-data/reviewed/stock_prices.csv
+data/candidate/news_candidates.csv
+data/processed/esg_indicators.csv
+data/processed/events.csv
+data/processed/stock_prices.csv
 data/processed/risk_results.json
 data/processed/optimization_results.json
 ```
@@ -568,9 +572,10 @@ data/processed/optimization_results.json
 ## 중요한 규칙
 
 ```text
-raw 데이터 → 모델에 직접 사용 금지
+raw·candidate 데이터 → 모델에 직접 사용 금지
 reported 사건 → 점수 반영 금지
-confirmed 또는 sanctioned 사건 → 모델 반영 가능
+confirmed 또는 resolved 사건 → 자동 스키마·공식 출처 검증 통과 시 모델 반영 가능
+sanctioned → 사건 상태가 아니라 enforcement_action 값
 ```
 
 ---
@@ -581,10 +586,10 @@ confirmed 또는 sanctioned 사건 → 모델 반영 가능
 
 ```text
 data/sample/esg_scores_sample.csv
-→ data/reviewed/esg_indicators.csv
+→ data/processed/esg_indicators.csv
 
 data/sample/events_sample.csv
-→ data/reviewed/events.csv
+→ data/processed/events.csv
 ```
 
 ## 연결 전에 확인
@@ -592,7 +597,7 @@ data/sample/events_sample.csv
 ```text
 필수 열이 있는가
 파일이 비어 있지 않은가
-approved 데이터만 포함되는가
+자동 검증을 통과한 validated 데이터만 포함되는가
 reported 사건이 분리되는가
 삼성전자 DS와 전사 범위가 표시되는가
 결측값을 임의로 채우지 않았는가
@@ -602,7 +607,7 @@ reported 사건이 분리되는가
 
 ```text
 data_status = sample
-→ data_status = reviewed
+→ data_status = validated
 ```
 
 ---
@@ -717,9 +722,9 @@ CSV 열 이름 불일치
 권장 흐름:
 
 ```text
-reviewed 데이터 사용 시도
+최신 processed 데이터 사용 시도
 → 실패
-→ 마지막 processed 결과 사용
+→ 마지막 정상 processed 스냅샷 사용
 → 실패
 → sample 데이터 사용
 → 응답에 상태와 경고 포함
@@ -738,11 +743,11 @@ reviewed 데이터 사용 시도
 
 ```text
 sample
-reviewed
-processed
+validated
 fallback
-unavailable
 ```
+
+`unavailable`은 응답 전체의 `data_status`가 아니라 개별 값의 `availability`에만 사용한다.
 
 ---
 
@@ -837,7 +842,7 @@ CSV 정상
 ```text
 reported 사건은 점수 반영 제외
 confirmed 사건은 조회 가능
-sanctioned 사건은 조회 가능
+confirmed/resolved 사건은 자동 검증 통과 시 조회·모델 반영 가능하고 sanctioned는 enforcement_action으로만 노출
 중복 사건 제외
 ```
 
@@ -883,9 +888,10 @@ OpenDART 공시 목록
 
 ```text
 외부 데이터 수집
-→ raw 폴더 저장
-→ 자동 승인하지 않음
-→ 데이터 A 검수 후 reviewed로 이동
+→ raw 또는 candidate 폴더 저장
+→ 스키마·공식 출처·상태·근거·중복 자동 검증
+→ 검증 전체 통과 시 processed 스냅샷 원자적 발행
+→ 검증 실패 후보는 rejected로 유지하고 기존 processed 스냅샷 보존
 ```
 
 외부 데이터가 곧바로 모델 입력을 덮어쓰면 안 된다.
@@ -964,7 +970,7 @@ CSV 로더
 
 ```text
 데이터 A CSV 연결
-sample → reviewed 전환
+sample → validated 전환
 reported 사건 필터
 ```
 
@@ -1007,7 +1013,7 @@ README 정리
 ## 데이터
 
 - [ ] 샘플 데이터로 먼저 동작한다.
-- [ ] reviewed와 raw 데이터가 분리된다.
+- [ ] raw·candidate·processed 데이터가 분리된다.
 - [ ] CSV 필수 열을 검증한다.
 - [ ] reported 사건을 모델에서 제외한다.
 - [ ] 결측값을 임의로 채우지 않는다.
@@ -1024,7 +1030,7 @@ README 정리
 
 - [ ] 요청과 응답 스키마가 고정되어 있다.
 - [ ] 개발 B에게 응답 예시를 전달했다.
-- [ ] 샘플·reviewed·fallback 상태가 구분된다.
+- [ ] sample·validated·fallback 상태가 구분된다.
 - [ ] 오류 메시지가 구체적이다.
 
 ## 통합

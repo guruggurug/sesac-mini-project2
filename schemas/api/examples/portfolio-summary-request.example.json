@@ -1,0 +1,14 @@
+{
+  "holdings": [
+    {
+      "ticker": "005930",
+      "quantity": 70,
+      "average_price": 70000
+    },
+    {
+      "ticker": "000660",
+      "quantity": 30,
+      "average_price": 180000
+    }
+  ]
+}

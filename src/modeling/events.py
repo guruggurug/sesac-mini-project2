@@ -59,7 +59,7 @@ def analyze_single_event_reaction(
         raise ValueError(f"주가 데이터에서 종목 코드 '{ticker}'를 찾을 수 없습니다.")
 
     event_id = str(event.get("event_id", ""))
-    event_date_str = str(event.get("event_date", ""))
+    event_date_str = str(event.get("market_event_date") or event.get("event_date", ""))
 
     trading_dates = prices_df.index
     reaction_start_dt = find_reaction_start_date(event_date_str, trading_dates)
@@ -112,7 +112,8 @@ def analyze_single_event_reaction(
         "event_id": event_id,
         "company_id": ticker,
         "company_name": COMPANY_NAME_MAP.get(ticker, str(event.get("company_name", ticker))),
-        "event_date": event_date_str,
+        "event_date": str(event.get("event_date", event_date_str)),
+        "market_event_date": event_date_str,
         "reaction_start_date": str(reaction_start_dt)[:10],
         "return_1d": r1d,
         "return_3d": r3d,
@@ -129,16 +130,17 @@ def analyze_all_events(
     events_input: Union[str, Path, pd.DataFrame],
     price_data: Union[str, Path, pd.DataFrame],
     window_days: int = 10,
-    filter_approved_only: bool = True
+    filter_model_eligible_only: bool = True
 ) -> List[Dict[str, Any]]:
     """
-    Run post-event reaction analysis for all approved events in the events dataset.
+    Run post-event reaction analysis for automatically verified, model-eligible events.
 
     Args:
         events_input: Path to events CSV or pandas DataFrame.
         price_data: Path to stock prices CSV or validated prices DataFrame.
         window_days: Window length in trading days (default 10).
-        filter_approved_only: Whether to filter review_status == 'approved' (default True).
+        filter_model_eligible_only: Whether to require a verified status, authority confirmation,
+            and an official source URL (default True).
 
     Returns:
         List[Dict[str, Any]]: List of event reaction analysis results.
@@ -159,9 +161,15 @@ def analyze_all_events(
     # Validate & pivot price data
     prices_df = validate_price_data(price_data)
 
-    # Filter approved events if requested
-    if filter_approved_only and "review_status" in events_df.columns:
-        events_df = events_df[events_df["review_status"] == "approved"]
+    # Apply the automatic model-eligibility gate used by the backend repository.
+    if filter_model_eligible_only:
+        eligible_statuses = {"confirmed", "resolved"}
+        events_df = events_df[
+            events_df["status"].isin(eligible_statuses)
+            & (events_df["authority_confirmed"] == True)
+            & events_df["official_source_url"].notna()
+            & (events_df["official_source_url"].astype(str).str.len() > 0)
+        ]
 
     results = []
     for _, row in events_df.iterrows():
@@ -174,6 +182,7 @@ def analyze_all_events(
                 "event_id": str(row.get("event_id", "")),
                 "company_id": str(row.get("company_id", row.get("ticker", ""))).zfill(6),
                 "event_date": str(row.get("event_date", "")),
+                "market_event_date": str(row.get("market_event_date", row.get("event_date", ""))),
                 "status": str(row.get("status", "unknown")),
                 "error": str(exc),
                 "analyzed": False,
