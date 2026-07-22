@@ -4,7 +4,7 @@
 
 | Task ID | Task | Status | Output | Blocker |
 |---|---|---|---|---|
-| INT-CLEANUP-01 | Canonical Data, Environment and Frontend Draft Cleanup | `done` | canonical paths and isolated Stitch drafts | - |
+| INT-CLEANUP-01 | Canonical Data and Environment Cleanup | `done` | canonical data/config paths; frontend UI ownership restored | - |
 | INT-01 | End-to-End Test | `in_progress` | 실데이터 & 실시간 주가 API 활용 최종 화면 연동 검증 | - |
 | INT-02 | Data and Model Review | `done` | 실데이터 스키마 및 최적화 엔진 안정성 검수 완료 | - |
 | INT-03 | Demo Preparation | `todo` | 투자 성향/보유 정보 입력에 따른 재계산 데모 구성 | INT-01 완료 대기 |
@@ -22,6 +22,23 @@
 | RT-B02 | DATA-B-RT-01 | Data B 동적 ESG·최적화 변경 미동기화 | Data B | 완료 후 통합 브랜치 동기화 | `in_progress` |
 
 ## Work Log
+
+### 2026-07-22 12:25 — Frontend UI Ownership Correction
+
+- **Role**: Integration
+- **Owner**: Codex
+- **Task ID**: `INT-CLEANUP-01`
+- **Status**: `done`
+- **Correction**:
+  - The six files previously classified as raw Stitch drafts are active frontend UI assets.
+  - Restored all six files to `src/frontend/templates/` without content changes.
+  - Removed the incorrect `stitch-export/raw/README.md` classification notice.
+  - Data and environment canonicalization remains unchanged.
+- **Validation commands**:
+  - `.venv\\Scripts\\python.exe -m pytest -q`
+  - frontend file location and hash verification
+  - `git diff --check`
+- **Blockers**: None
 
 ### 2026-07-22 11:30 — Repository Canonicalization Cleanup Start
 
