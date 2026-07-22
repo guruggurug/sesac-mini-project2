@@ -1,0 +1,24 @@
+# Risk Profile Objective Function Weights
+# alpha: Downside Risk (CVaR) weight
+# beta: ESG Management Risk weight
+# gamma: Turnover Penalty weight
+
+loss_minimization:
+  alpha: 0.72
+  beta: 0.18
+  gamma: 0.10
+
+balanced:
+  alpha: 0.63
+  beta: 0.27
+  gamma: 0.10
+
+esg_focused:
+  alpha: 0.45
+  beta: 0.45
+  gamma: 0.10
+
+conservative:
+  alpha: 0.72
+  beta: 0.18
+  gamma: 0.10
