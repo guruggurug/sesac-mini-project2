@@ -33,7 +33,7 @@ def get_issues_page(request: Request):
     elif event_status == "fallback" or price_status == "fallback":
         data_mode = "fallback"
     else:
-        data_mode = "reviewed"
+        data_mode = "validated"
         
     events_df = pd.DataFrame(events)
     
@@ -55,7 +55,7 @@ def get_issues_page(request: Request):
             events_input=events_df,
             price_data=price_df,
             window_days=10,
-            filter_approved_only=True
+            filter_model_eligible_only=True
         )
     except Exception:
         analyzed_events = []
@@ -116,7 +116,7 @@ def get_historical_issues():
     elif event_status == "fallback" or price_status == "fallback":
         data_mode = "fallback"
     else:
-        data_mode = "reviewed"
+        data_mode = "validated"
         
     events_df = pd.DataFrame(events)
     
@@ -125,7 +125,7 @@ def get_historical_issues():
             events_input=events_df,
             price_data=price_df,
             window_days=10,
-            filter_approved_only=True
+            filter_model_eligible_only=True
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"사건 반응 분석 중 오류 발생: {str(e)}")
@@ -151,4 +151,3 @@ def get_historical_issues():
         response["warnings"] = list(set(warnings))
         
     return response
-

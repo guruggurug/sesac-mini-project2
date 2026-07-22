@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.local/schemas/api/sync-issues-request.schema.json",
+  "title": "Issue Sync Request",
+  "description": "사용자가 최신 공시·뉴스·ESG 이슈 확인을 요청하는 수동 동기화 계약",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["requested_by", "reason"],
+  "properties": {
+    "requested_by": { "type": "string", "const": "user" },
+    "reason": { "type": "string", "const": "manual_refresh" },
+    "client_request_id": {
+      "type": "string",
+      "minLength": 8,
+      "maxLength": 100,
+      "pattern": "^[A-Za-z0-9._-]+$"
+    }
+  }
+}

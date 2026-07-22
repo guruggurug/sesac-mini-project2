@@ -188,7 +188,7 @@ def optimize_portfolio(
     elif esg_status == "fallback" or price_status == "fallback":
         data_mode = "fallback"
     else:
-        data_mode = "reviewed"
+        data_mode = "validated"
 
     warnings = []
     if esg_warn:
@@ -361,7 +361,7 @@ def calculate_current_portfolio(
     elif esg_status == "fallback" or price_status == "fallback":
         data_mode = "fallback"
     else:
-        data_mode = "reviewed"
+        data_mode = "validated"
 
     return {
         "current_weights": current_weights,

@@ -1,9 +1,12 @@
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
 
 from app.core.config import FRONTEND_STATIC_DIR
+from app.core.runtime import recover_runtime_state_after_restart
 from app.core.exceptions import CSVValidationError, csv_validation_exception_handler
 from app.routes.health import router as health_router
 from app.routes.portfolio import router as portfolio_router
@@ -11,10 +14,18 @@ from app.routes.risk import router as risk_router
 from app.routes.issues import router as issues_router
 from app.routes.data import router as data_router
 
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    recover_runtime_state_after_restart()
+    yield
+
+
 app = FastAPI(
     title="Chip Buddy API",
     description="삼성전자와 SK하이닉스 투자 위험 분석 및 포트폴리오 최적화 API MVP",
-    version="0.1.0"
+    version="0.1.0",
+    lifespan=lifespan,
 )
 
 # 세션 미들웨어 설정 (암호화 쿠키 세션)

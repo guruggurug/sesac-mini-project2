@@ -78,12 +78,38 @@ def test_analyze_single_event_reaction():
     assert result["chart_data"][0]["cumulative_return"] == 0.0
 
 
+def test_analyze_single_event_uses_market_event_date():
+    prices_df = pd.DataFrame(
+        {"005930": [100.0, 110.0, 121.0]},
+        index=pd.date_range("2024-01-01", periods=3),
+    )
+    event = {
+        "event_id": "EVT-MARKET-DATE",
+        "company_id": "005930",
+        "event_date": "2024-01-01",
+        "market_event_date": "2024-01-02",
+        "status": "confirmed",
+        "summary": "시장 공개일 검증",
+    }
+
+    result = analyze_single_event_reaction(event, prices_df, window_days=1)
+
+    assert result["event_date"] == "2024-01-01"
+    assert result["market_event_date"] == "2024-01-02"
+    assert result["reaction_start_date"] == "2024-01-02"
+    assert result["return_1d"] == 0.1
+
+
 def test_analyze_all_events_sample():
     """Integration test for analyze_all_events with sample files."""
     assert SAMPLE_PRICES_PATH.exists()
     assert SAMPLE_EVENTS_PATH.exists()
 
-    results = analyze_all_events(SAMPLE_EVENTS_PATH, SAMPLE_PRICES_PATH, filter_approved_only=True)
+    results = analyze_all_events(
+        SAMPLE_EVENTS_PATH,
+        SAMPLE_PRICES_PATH,
+        filter_model_eligible_only=True,
+    )
 
     assert isinstance(results, list)
     assert len(results) >= 1

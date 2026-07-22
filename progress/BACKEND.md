@@ -7,9 +7,13 @@
 | BE-01 | FastAPI Skeleton | `done` | `src/backend/app/main.py` 등 | COMMON-01 완료 |
 | BE-02 | Data Loader and Validation | `done` | `src/backend/app/utils/csv_validator.py` | COMMON-02, COMMON-03 승인 |
 | BE-03 | Mock API | `done` | `src/backend/app/routes/` 내 Mocking | BE-01, BE-02 완료 |
-| BE-04 | Real Data Integration | `done` | `data/reviewed/` 디렉토리 연동 완료 | DATA-A-05, BE-02 완료 |
+| BE-04 | Real Data Integration | `done` | `data/processed/` 자동 검증 스냅샷 연동 완료 | DATA-A-05, BE-02 완료 |
 | BE-05 | Model Integration | `done` | `src/backend/app/routes/` 내 실제 계산 모듈 연동 | DATA-B-05, BE-03 완료 |
 | BE-06 | Fallback and Contract Tests | `done` | `test_portfolio.py` 수정 및 예외 폴백 로직 검증 | BE-04, BE-05 완료 |
+| BE-RT-00 | ESG Schema Validator and Sample Contract Compatibility Recovery | `done` | processed/sample ESG·event 계약, nullable 캐스팅, 회귀 테스트 | 없음 |
+| BE-RT-01 | KOSPI·KOSDAQ·Samsung·SK hynix Market Quote Service and Cache | `review` | 내부 provider/adapter, TTL 캐시, timeout, mock 단위 테스트 | `COMMON-RT-02` 승인 전 공개 API 계약 확정 금지 |
+| BE-RT-03 | Daily Issue Scheduler, Manual Sync, Lock and Status API | `in_progress` | SQLite 단일 활성 sync lock·상태·재시작 복구 내부 계층 | scheduler·공개 API는 `COMMON-RT-02` 승인 대기 |
+| BE-RT-04 | Last-Known-Good Market and Issue Fallback | `review` | SQLite 시장 LKG 저장·KIS 장애 fallback | 실제 KIS smoke test와 공개 상태 표시는 승인 대기 |
 
 ## Active Blockers
 
@@ -18,6 +22,171 @@
 | - | - | 현재 없음 | - | - | - |
 
 ## Work Log
+
+### 2026-07-22 — BE-RT-03/04: SQLite Runtime State and Durable Lock
+
+- **Role**: Backend
+- **Owner**: Backend
+- **Task IDs**: `BE-RT-03`, `BE-RT-04`
+- **Status**: `in_progress` / `review`
+- **Completed**:
+  - SQLite WAL 기반 runtime 저장소를 추가했다.
+  - KIS 성공 시 KOSPI·KOSDAQ·삼성전자·SK하이닉스 마지막 정상 가격과 원천 시각을 upsert한다.
+  - KIS 실패 시 네 항목 모두 SQLite last-known-good를 우선 사용하고, 저장값이 없는 주식만 검증 종가 fallback을 사용한다.
+  - 단일 `issues` sync lock을 SQLite 트랜잭션으로 획득하고 다른 프로세스·저장소 인스턴스의 중복 실행을 거부한다.
+  - owner token 검증, queued→running, heartbeat, terminal 완료와 lock 해제를 구현했다.
+  - 서버 재시작 시 queued/running 작업을 `SERVER_RESTART_INTERRUPTED` 실패로 종료하고 lock을 해제하는 lifespan 복구 hook을 구현했다.
+  - 공개 `/sync/*`와 `/market/quotes` 라우트 및 공유 스키마는 변경하지 않았다.
+- **Created files**:
+  - `src/backend/app/core/runtime.py`
+  - `src/backend/app/repositories/runtime_state_repository.py`
+  - `src/backend/tests/test_runtime_state_repository.py`
+- **Modified files**:
+  - `.env.example`
+  - `README.md`
+  - `src/backend/app/core/config.py`
+  - `src/backend/app/main.py`
+  - `src/backend/app/services/kis_market_data.py`
+  - `src/backend/app/services/market_quotes.py`
+  - `src/backend/app/utils/realtime_price.py`
+  - `src/backend/tests/test_market_quotes.py`
+  - `src/backend/tests/test_portfolio.py`
+  - `progress/BACKEND.md`
+- **Validation commands**:
+  - `.venv\Scripts\python.exe -m pytest -p no:cacheprovider -q src/backend/tests/test_runtime_state_repository.py`
+  - `.venv\Scripts\python.exe -m pytest -p no:cacheprovider -q src/backend/tests/test_market_quotes.py src/backend/tests/test_runtime_state_repository.py src/backend/tests/test_kis_market_data.py`
+  - `.venv\Scripts\python.exe -m pytest -p no:cacheprovider -q src/backend/tests/test_runtime_state_repository.py src/backend/tests/test_market_quotes.py src/backend/tests/test_kis_market_data.py src/backend/tests/test_portfolio.py -k "runtime or market or kis or health"`
+  - `.venv\Scripts\python.exe -m pytest -p no:cacheprovider -q`
+  - `git diff --check`
+- **Validation results**:
+  - runtime 저장소 단위 테스트 `6 passed`.
+  - KIS·시장·runtime 관련 테스트 `21 passed`.
+  - startup recovery 포함 관련 회귀 `22 passed`, `14 deselected`.
+  - 전체 테스트 `81 passed`, 기존 Starlette deprecation warning 1개 유지.
+  - whitespace 오류 없음. 실제 `data/runtime/` 파일 미생성 확인.
+- **Remaining**:
+  - 실제 scheduler와 수집·검증·원자적 발행 service 연결.
+  - `COMMON-RT-02` 승인 후 수동 sync 및 상태 공개 API 연결.
+  - 실제 KIS 키 smoke test와 last-known-good 공개 상태 표시.
+- **Blockers**: 공개 계약 승인과 실제 KIS 키 필요
+- **Next task**: 전체 회귀 테스트 후 내부 sync coordinator 구현 또는 계약 승인 대기
+
+### 2026-07-22 — BE-RT-01: KIS Provider Confirmed and Adapter Implemented
+
+- **Role**: Backend
+- **Owner**: Backend
+- **Task ID**: `BE-RT-01`
+- **Status**: `review`
+- **Decision**:
+  - 팀 리드가 MVP 주 시장 provider를 한국투자증권 KIS REST API로 확정했다.
+  - yfinance는 운영·보조 provider로 사용하지 않는다.
+- **Completed**:
+  - KIS OAuth 접근토큰 발급과 만료 전 재사용을 구현했다.
+  - 삼성전자·SK하이닉스는 공식 주식현재가 endpoint와 TR ID로 매핑했다.
+  - KOSPI(`0001`)·KOSDAQ(`1001`)은 공식 국내업종 현재지수 endpoint와 TR ID로 매핑했다.
+  - 모든 KIS 요청에 서비스 timeout을 전달하고 KIS 오류·누락·0 이하 가격을 명시적 실패로 처리했다.
+  - KIS 키가 모두 있을 때만 provider를 활성화하고, 키가 없으면 외부 호출 없는 provider와 기존 로컬 fallback을 유지한다.
+  - 실제 키나 외부 호출 없이 검증하는 mock HTTP 테스트를 추가했다.
+- **Created files**:
+  - `src/backend/app/services/kis_market_data.py`
+  - `src/backend/tests/test_kis_market_data.py`
+- **Modified files**:
+  - `.env.example`
+  - `README.md`
+  - `IDEA_ALIGNMENT_REPORT.md`
+  - `src/backend/app/core/config.py`
+  - `src/backend/app/utils/realtime_price.py`
+  - `progress/BACKEND.md`
+- **Validation commands**:
+  - `.venv\Scripts\python.exe -m pytest -p no:cacheprovider -q src/backend/tests/test_kis_market_data.py src/backend/tests/test_market_quotes.py`
+  - `.venv\Scripts\python.exe -m pytest -p no:cacheprovider -q`
+  - `git diff --check`
+- **Validation results**:
+  - KIS adapter와 시장 서비스 관련 테스트 `13 passed`.
+  - 전체 테스트 `72 passed`, 기존 Starlette deprecation warning 1개 유지.
+- **Remaining**:
+  - 실제 KIS 키를 이용한 네 종목 smoke test.
+  - SQLite last-known-good와 영속 sync lock 구현.
+  - `COMMON-RT-02` 승인 후 공개 `/market/quotes` 통합.
+- **Blockers**: 실제 KIS smoke test에는 팀 소유 KIS App Key·Secret이 필요함
+- **Next task**: 전체 회귀 테스트 후 SQLite runtime state 내부 계층 구현
+
+### 2026-07-22 — BE-RT-01: yfinance Excluded from MVP
+
+- **Role**: Backend
+- **Owner**: Backend
+- **Task ID**: `BE-RT-01`
+- **Status**: `review`
+- **Decision**:
+  - 팀 리드 지시에 따라 yfinance를 MVP 의존성과 운영 호출 경로에서 제외했다.
+  - 승인된 국내 시장 provider가 연결되기 전까지 외부 provider 호출은 비활성화한다.
+- **Completed**:
+  - yfinance adapter와 import를 제거했다.
+  - `requirements.txt`에서 yfinance 의존성을 제거했다.
+  - provider별 심볼 매핑을 서비스에서 제거하고 provider adapter가 종목 매핑을 소유할 수 있게 경계를 정리했다.
+  - 기본 provider를 외부 호출 없는 명시적 unavailable provider로 교체했다.
+  - 삼성전자·SK하이닉스 기존 호출부는 검증 가격 저장소 fallback으로 동작하며, KOSPI·KOSDAQ은 승인 provider 전까지 값을 생성하지 않는다.
+- **Modified files**:
+  - `src/backend/requirements.txt`
+  - `src/backend/app/services/market_quotes.py`
+  - `src/backend/app/utils/realtime_price.py`
+  - `src/backend/tests/test_market_quotes.py`
+  - `IDEA_ALIGNMENT_REPORT.md`
+  - `progress/BACKEND.md`
+- **Validation commands**:
+  - `.venv\Scripts\python.exe -m pytest -p no:cacheprovider -q src/backend/tests/test_market_quotes.py`
+  - `.venv\Scripts\python.exe -m pytest -p no:cacheprovider -q`
+  - `rg -n -i "yfinance|YFinanceProvider|yf\\." src/backend/app src/backend/tests src/backend/requirements.txt -g "!*.pyc"`
+  - `git diff --check`
+- **Validation results**:
+  - 시장 가격 서비스 테스트 `7 passed`.
+  - 전체 테스트 `66 passed`, 기존 Starlette deprecation warning 1개 유지.
+  - 활성 소스·테스트·의존성에서 yfinance 참조 없음. 과거 진행 로그는 이력 보존.
+- **Remaining**: 승인된 KIS adapter 구현 및 실제 키 smoke test
+- **Blockers**: `COMMON-RT-02` provider 및 공개 계약 승인 대기
+- **Next task**: mock·로컬 fallback 회귀 검증 후 `review` 유지
+
+### 2026-07-22 — BE-RT-01: Internal Market Quote Provider and Cache
+
+- **Role**: Backend
+- **Owner**: Backend
+- **Task ID**: `BE-RT-01`
+- **Status**: `review`
+- **Assumptions**:
+  - `COMMON-RT-02` 전 역할 승인 전에는 공개 요청·응답 모델과 `/market/quotes` 계약을 구현하지 않는다.
+  - 이번 작업은 내부 provider/adapter, TTL 캐시, timeout, 로컬 가격 fallback 및 mock 기반 단위 테스트로 한정한다.
+- **Completed**:
+  - KOSPI·KOSDAQ·삼성전자·SK하이닉스 provider 심볼을 내부 계층에 매핑했다.
+  - 승인된 외부 provider를 주입하고 timeout을 전달할 수 있는 내부 경계를 구현했다.
+  - monotonic clock 기반 TTL 캐시와 테스트용 clock/provider 주입 구조를 구현했다.
+  - 외부 provider 실패 시 삼성전자·SK하이닉스만 기존 검증 가격 저장소의 최신 종가를 사용하도록 제한했다.
+  - 출처 없는 고정가격 fallback을 제거하고, provider와 로컬 가격이 모두 없으면 명시적 내부 예외를 발생시킨다.
+  - 기존 API 회귀 테스트를 외부망과 분리하는 mock quote fixture를 추가했다.
+- **Created files**:
+  - `src/backend/app/services/__init__.py`
+  - `src/backend/app/services/market_quotes.py`
+  - `src/backend/tests/test_market_quotes.py`
+- **Modified files**:
+  - `.env.example`
+  - `src/backend/app/core/config.py`
+  - `src/backend/app/utils/realtime_price.py`
+  - `src/backend/tests/test_portfolio.py`
+  - `progress/BACKEND.md`
+- **Validation commands**:
+  - `.venv\Scripts\python.exe -m pytest -p no:cacheprovider -q src/backend/tests/test_market_quotes.py src/backend/tests/test_portfolio.py`
+  - `.venv\Scripts\python.exe -m pytest -p no:cacheprovider -q`
+  - `.venv\Scripts\python.exe -m pytest -p no:cacheprovider -q src/backend/tests/test_market_quotes.py`
+  - `.venv\Scripts\python.exe -m pytest --collect-only -q -p no:cacheprovider`
+  - `git diff --check`
+- **Validation results**:
+  - 시장 가격 서비스 단위 테스트 7개 통과.
+  - 전체 회귀 테스트 65개 통과 후 provider adapter 경계 테스트도 별도 통과. 당시 총 66개 테스트 수집 확인.
+  - whitespace 오류 없음. 줄바꿈 형식 안내만 확인.
+- **Remaining**:
+  - 공개 `/market/quotes` 요청·응답 계약과 fallback 표시는 구현하지 않았다.
+  - `COMMON-RT-02` 승인 후 공개 API 통합 및 계약 테스트가 필요하다.
+- **Blockers**: 공개 API 통합은 `COMMON-RT-02` 전 역할 승인 대기
+- **Next task**: `COMMON-RT-02` 승인 후 `BE-RT-01` 공개 통합 검토 또는 승인 전 `BE-RT-03` 내부 scheduler/lock 기반 구조 착수
 
 ### 2026-07-21 13:20 — Common Schema & Sample Approval & BE-01 Start
 
@@ -116,7 +285,7 @@
   - `README.md`
   - `AGENTS.md`
   - `개발 A GUIDELINE.md`
-  - `팀원 B. GUIDELINE.md`
+  - `데이터 B GUIDELINE.md`
   - `skills/semiconductor-project-coordinator/SKILL.md`
   - `progress/BACKEND.md`
 - **Validation commands**:
@@ -191,4 +360,36 @@
 - **Validation results**:
   - 26 passed, 1 warning (100% Pass)
 - **Next task**: E2E 2단계 (대시보드 종합 건강 점수 및 3색 위험 신호등 구현) 착수
+
+### 2026-07-21 21:37 — BE-RT-00: ESG Schema Contract Recovery
+
+- **Role**: Backend
+- **Owner**: Backend
+- **Task ID**: `BE-RT-00`
+- **Status**: `done`
+- **Completed**:
+  - JSON Schema의 `type: [number, null]` nullable union을 CSV 숫자로 캐스팅하도록 검증기 보완.
+  - sample ESG·event CSV를 최신 필수 열과 타입에 맞게 동기화.
+  - reviewed ESG 72행, reviewed 사건 5건, sample ESG 2행, sample 사건 2행의 동일 검증기 통과 확인.
+  - ESG repository와 `/risk/esg` 회귀 테스트 복구.
+- **Created files**:
+  - `src/backend/tests/test_csv_validator.py`
+- **Modified files**:
+  - `src/backend/app/utils/csv_validator.py`
+  - `data/sample/esg_indicators.sample.csv`
+  - `data/sample/events.sample.csv`
+  - `data/sample/sample-validation-report.json`
+  - `progress/BACKEND.md`
+- **Validation commands**:
+  - reviewed/sample ESG·event 직접 `validate_csv_file` 검증
+  - `.venv\Scripts\python.exe -m pytest -p no:cacheprovider -q src/backend/tests/test_csv_validator.py src/backend/tests/test_portfolio.py -k "csv_validator or esg_repository or event_repository or risk_esg"`
+  - `.venv\Scripts\python.exe -m pytest -p no:cacheprovider -q tests src/backend/tests`
+- **Validation results**:
+  - 직접 검증 4종 모두 통과.
+  - 관련 회귀 테스트 6 passed.
+  - 전체 테스트 29 passed, 1 warning.
+- **Remaining**:
+  - `COMMON-RT-02` 시장·포트폴리오·동기화 API 계약 검토.
+- **Blockers**: 없음
+- **Next task**: `COMMON-RT-02` 계약 검토 후 `BE-RT-01` 시장 가격 서비스 구현.
 

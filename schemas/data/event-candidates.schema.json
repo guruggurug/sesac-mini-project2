@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.local/schemas/data/event-candidates.schema.json",
+  "title": "Disclosure and News Event Candidate CSV Row",
+  "description": "OpenDART 전자공시 또는 뉴스에서 탐지해 자동 검증하는 사건 후보",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "candidate_id",
+    "company_id",
+    "company_name",
+    "detection_source_type",
+    "source_name",
+    "external_id",
+    "query",
+    "title",
+    "normalized_title",
+    "published_at",
+    "collected_at",
+    "url",
+    "canonical_url",
+    "description",
+    "content_hash",
+    "validation_status",
+    "matched_event_id",
+    "rejection_reason"
+  ],
+  "properties": {
+    "candidate_id": { "type": "string", "pattern": "^CND-[0-9]{4,}$" },
+    "company_id": { "type": "string", "enum": ["005930", "000660"] },
+    "company_name": { "type": "string", "enum": ["삼성전자", "SK하이닉스"] },
+    "detection_source_type": { "type": "string", "enum": ["dart_disclosure", "news"] },
+    "source_name": { "type": "string", "minLength": 1, "maxLength": 200 },
+    "external_id": { "type": ["string", "null"], "maxLength": 200 },
+    "query": { "type": "string", "minLength": 1, "maxLength": 300 },
+    "title": { "type": "string", "minLength": 1, "maxLength": 500 },
+    "normalized_title": { "type": "string", "minLength": 1, "maxLength": 500 },
+    "published_at": { "type": "string", "format": "date" },
+    "collected_at": { "type": "string", "format": "date-time" },
+    "url": { "type": "string", "format": "uri", "maxLength": 1000 },
+    "canonical_url": { "type": "string", "format": "uri", "maxLength": 1000 },
+    "description": { "type": "string", "minLength": 1, "maxLength": 2000 },
+    "content_hash": {
+      "description": "company_id, normalized title, published_at으로 계산한 후보 identity SHA-256; 원문 hash는 sources.content_hash에 저장",
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "validation_status": { "type": "string", "enum": ["pending", "validated", "rejected"] },
+    "matched_event_id": { "type": ["string", "null"], "pattern": "^EVT-[0-9]{4,}$" },
+    "rejection_reason": { "type": ["string", "null"], "maxLength": 500 }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "validation_status": { "const": "validated" } }, "required": ["validation_status"] },
+      "then": {
+        "properties": {
+          "matched_event_id": { "type": "string", "pattern": "^EVT-[0-9]{4,}$" },
+          "rejection_reason": { "type": "null" }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "validation_status": { "const": "rejected" } }, "required": ["validation_status"] },
+      "then": {
+        "properties": {
+          "matched_event_id": { "type": "null" },
+          "rejection_reason": { "type": "string", "minLength": 1, "maxLength": 500 }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "validation_status": { "const": "pending" } }, "required": ["validation_status"] },
+      "then": {
+        "properties": {
+          "matched_event_id": { "type": "null" },
+          "rejection_reason": { "type": "null" }
+        }
+      }
+    }
+  ]
+}

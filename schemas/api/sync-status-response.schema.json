@@ -1,0 +1,202 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.local/schemas/api/sync-status-response.schema.json",
+  "title": "Issue Sync Status Response",
+  "description": "수집·정규화·자동 검증·발행·재계산 단계와 결과를 구분하는 이슈 동기화 상태",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "sync_id",
+    "sync_type",
+    "status",
+    "stage",
+    "is_existing_run",
+    "requested_at",
+    "started_at",
+    "completed_at",
+    "last_success_at",
+    "next_scheduled_at",
+    "collected_items",
+    "candidate_items",
+    "validated_items",
+    "rejected_items",
+    "published_items",
+    "new_items",
+    "updated_items",
+    "snapshot_updated",
+    "published_snapshot_version",
+    "published_at",
+    "recalculation_triggered",
+    "recalculation_status",
+    "recalculated_at",
+    "failure_stage",
+    "failed_sources",
+    "data_status",
+    "message",
+    "warnings"
+  ],
+  "properties": {
+    "sync_id": {
+      "type": "string",
+      "pattern": "^SYNC-[0-9]{8}-[A-Za-z0-9-]+$",
+      "maxLength": 50
+    },
+    "sync_type": { "type": "string", "enum": ["scheduled", "manual"] },
+    "status": {
+      "type": "string",
+      "enum": ["queued", "running", "success", "partial_success", "failed"]
+    },
+    "stage": {
+      "type": "string",
+      "enum": ["queued", "collecting", "normalizing", "validating", "publishing", "recalculating", "completed"]
+    },
+    "is_existing_run": { "type": "boolean" },
+    "requested_at": { "type": "string", "format": "date-time" },
+    "started_at": { "type": ["string", "null"], "format": "date-time" },
+    "completed_at": { "type": ["string", "null"], "format": "date-time" },
+    "last_success_at": { "type": ["string", "null"], "format": "date-time" },
+    "next_scheduled_at": { "type": "string", "format": "date-time" },
+    "collected_items": { "type": "integer", "minimum": 0 },
+    "candidate_items": { "type": "integer", "minimum": 0 },
+    "validated_items": { "type": "integer", "minimum": 0 },
+    "rejected_items": { "type": "integer", "minimum": 0 },
+    "published_items": { "type": "integer", "minimum": 0 },
+    "new_items": { "type": "integer", "minimum": 0 },
+    "updated_items": { "type": "integer", "minimum": 0 },
+    "snapshot_updated": { "type": "boolean" },
+    "published_snapshot_version": { "type": ["string", "null"], "maxLength": 100 },
+    "published_at": { "type": ["string", "null"], "format": "date-time" },
+    "recalculation_triggered": { "type": "boolean" },
+    "recalculation_status": {
+      "type": "string",
+      "enum": ["not_requested", "queued", "running", "success", "failed"]
+    },
+    "recalculated_at": { "type": ["string", "null"], "format": "date-time" },
+    "failure_stage": {
+      "oneOf": [
+        {
+          "type": "string",
+          "enum": ["collecting", "normalizing", "validating", "publishing", "recalculating"]
+        },
+        { "type": "null" }
+      ]
+    },
+    "failed_sources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["source_id", "message"],
+        "properties": {
+          "source_id": { "type": "string", "minLength": 1, "maxLength": 100 },
+          "message": { "type": "string", "minLength": 1, "maxLength": 500 }
+        }
+      }
+    },
+    "data_status": { "type": "string", "enum": ["sample", "validated", "fallback"] },
+    "message": { "type": "string", "minLength": 1, "maxLength": 500 },
+    "warnings": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1, "maxLength": 500 }
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "status": { "const": "queued" } }, "required": ["status"] },
+      "then": {
+        "properties": {
+          "stage": { "const": "queued" },
+          "started_at": { "type": "null" },
+          "completed_at": { "type": "null" },
+          "snapshot_updated": { "const": false },
+          "published_items": { "const": 0 },
+          "published_snapshot_version": { "type": "null" },
+          "published_at": { "type": "null" },
+          "recalculation_triggered": { "const": false },
+          "recalculation_status": { "const": "not_requested" },
+          "recalculated_at": { "type": "null" },
+          "failure_stage": { "type": "null" }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "status": { "const": "running" } }, "required": ["status"] },
+      "then": {
+        "properties": {
+          "stage": {
+            "enum": ["collecting", "normalizing", "validating", "publishing", "recalculating"]
+          },
+          "started_at": { "type": "string", "format": "date-time" },
+          "completed_at": { "type": "null" },
+          "failure_stage": { "type": "null" }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": { "enum": ["success", "partial_success", "failed"] }
+        },
+        "required": ["status"]
+      },
+      "then": {
+        "properties": {
+          "stage": { "const": "completed" },
+          "started_at": { "type": "string", "format": "date-time" },
+          "completed_at": { "type": "string", "format": "date-time" }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "status": { "const": "success" } }, "required": ["status"] },
+      "then": { "properties": { "failure_stage": { "type": "null" } } }
+    },
+    {
+      "if": { "properties": { "snapshot_updated": { "const": true } }, "required": ["snapshot_updated"] },
+      "then": {
+        "properties": {
+          "published_items": { "type": "integer", "minimum": 1 },
+          "published_snapshot_version": { "type": "string", "minLength": 1, "maxLength": 100 },
+          "published_at": { "type": "string", "format": "date-time" }
+        }
+      },
+      "else": {
+        "properties": {
+          "published_items": { "const": 0 },
+          "published_snapshot_version": { "type": "null" },
+          "published_at": { "type": "null" }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": { "recalculation_triggered": { "const": false } },
+        "required": ["recalculation_triggered"]
+      },
+      "then": {
+        "properties": {
+          "recalculation_status": { "const": "not_requested" },
+          "recalculated_at": { "type": "null" }
+        }
+      },
+      "else": {
+        "properties": {
+          "recalculation_status": { "enum": ["queued", "running", "success", "failed"] }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "recalculation_status": { "enum": ["success", "failed"] }
+        },
+        "required": ["recalculation_status"]
+      },
+      "then": {
+        "properties": {
+          "recalculated_at": { "type": "string", "format": "date-time" }
+        }
+      }
+    }
+  ]
+}

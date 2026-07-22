@@ -1,0 +1,254 @@
+<!DOCTYPE html><html class="light" lang="ko" style=""><head></head><body class="bg-background text-on-background selection:bg-primary-container selection:text-on-primary-container"><svg class="inline-defs-container" aria-hidden="true" style="position:absolute;width:0;height:0;overflow:hidden"></svg><meta charset="utf-8"><meta content="width=390, initial-scale=1.0" name="viewport"><link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&amp;display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=block" rel="stylesheet"><script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script><script id="tailwind-config">try{
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary-fixed-variant": "#005228",
+                        "on-primary-fixed": "#2f1500",
+                        "outline": "#897362",
+                        "primary-fixed-dim": "#ffb77d",
+                        "surface-container-high": "#eae7e7",
+                        "outline-variant": "#ddc1ae",
+                        "secondary-fixed-dim": "#e9c400",
+                        "on-secondary-container": "#6e5c00",
+                        "on-surface": "#1c1b1b",
+                        "on-tertiary": "#ffffff",
+                        "surface-variant": "#e5e2e1",
+                        "inverse-surface": "#313030",
+                        "on-secondary-fixed-variant": "#544600",
+                        "secondary-fixed": "#ffe16d",
+                        "on-tertiary-fixed": "#00210c",
+                        "surface-container": "#f0eded",
+                        "surface-container-highest": "#e5e2e1",
+                        "on-primary-container": "#623200",
+                        "secondary": "#705d00",
+                        "on-error": "#ffffff",
+                        "tertiary-container": "#3fc070",
+                        "error-container": "#ffdad6",
+                        "surface-tint": "#964B00",
+                        "primary": "#964B00",
+                        "inverse-on-surface": "#f3f0ef",
+                        "on-secondary-fixed": "#221b00",
+                        "inverse-primary": "#ffb77d",
+                        "surface-container-lowest": "#ffffff",
+                        "on-tertiary-container": "#004922",
+                        "primary-fixed": "#ffdcc3",
+                        "surface": "#fcf9f8",
+                        "background": "#fcf9f8",
+                        "surface-bright": "#fcf9f8",
+                        "error": "#ba1a1a",
+                        "on-error-container": "#93000a",
+                        "on-surface-variant": "#564334",
+                        "secondary-container": "#fcd400",
+                        "tertiary-fixed": "#7efba4",
+                        "tertiary": "#006d37",
+                        "on-secondary": "#ffffff",
+                        "on-primary": "#ffffff",
+                        "surface-container-low": "#f6f3f2"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "container-padding": "24px",
+                        "gutter": "16px",
+                        "stack-md": "12px",
+                        "stack-sm": "4px",
+                        "base": "8px",
+                        "stack-lg": "24px",
+                        "margin-mobile": "16px"
+                    },
+                    "fontFamily": {
+                        "headline-lg-mobile": ["Hanken Grotesk"],
+                        "body-md": ["Hanken Grotesk"],
+                        "label-sm": ["Hanken Grotesk"],
+                        "body-lg": ["Hanken Grotesk"],
+                        "headline-md": ["Hanken Grotesk"],
+                        "headline-lg": ["Hanken Grotesk"],
+                        "label-md": ["Hanken Grotesk"]
+                    },
+                    "fontSize": {
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "700" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "fontWeight": "500" }],
+                        "body-lg": ["18px", { "lineHeight": "26px", "fontWeight": "400" }],
+                        "headline-md": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "600" }]
+                    }
+                },
+            },
+        }
+    }catch(_e){}</script>
+<!-- TopAppBar -->
+<header class="w-full top-0 sticky bg-[#FAF8F5] border-b border-[#E5DEC9] transition-colors duration-200 z-50">
+<div class="flex items-center justify-between px-margin-mobile h-16 w-full max-w-full">
+<div class="flex items-center">
+<button class="mr-4 p-1 hover:bg-surface-variant rounded-full transition-colors">
+<span class="material-symbols-outlined text-[#964B00] text-[24px]" data-original-icon="arrow_back">arrow_back</span>
+</button>
+<h1 class="font-bold text-[18px] leading-[24px] text-[#2A1800]">이슈 분석</h1>
+</div>
+<div class="flex items-center gap-3">
+
+<span class="material-symbols-outlined text-[#964B00]">notifications</span>
+<span class="material-symbols-outlined text-[#964B00]">account_circle</span>
+</div>
+</div>
+</header>
+<nav class="w-full bg-[#FAF8F5] border-b border-[#E5DEC9] sticky top-16 z-40">
+<div class="flex w-full">
+<button class="flex-1 py-3 relative flex flex-col items-center justify-center">
+<span class="font-bold text-[12px] text-[#964B00]">삼성전자</span>
+<div class="absolute bottom-0 w-full h-[2px] bg-[#964B00]"></div>
+</button>
+<button class="flex-1 py-3 flex flex-col items-center justify-center">
+<span class="font-medium text-[12px] text-[#8A8A8A]">SK하이닉스</span>
+</button>
+</div>
+</nav>
+<main class="px-margin-mobile pt-6 pb-32 space-y-6">
+<!-- Recent Compliance & ESG Issues Card -->
+<section class="bg-surface-container-lowest border rounded-xl overflow-hidden shadow-sm border-[#E5DEC9]">
+<div class="p-stack-lg">
+<div class="flex items-center justify-between mb-4">
+<div class="flex -space-x-2">
+<div class="w-10 h-10 rounded-full border-2 border-surface-container-lowest overflow-hidden bg-white shadow-sm">
+<img class="w-full h-full object-contain p-1" src="https://lh3.googleusercontent.com/aida/AP1WRLv0DgIVj4s_l01ARsUFHzuC11SK1bp_UQTfkguL2vozNem1VVNBd_SZcgVAsulclG_bAIE7_m6Nqoq1QYIKFvR5dl9LP1BXqw2Hqcm7eMXzz7fHRQ7gbjv16W3MZd9cJSsB7p3OKp5PTXg-XPNC8XJHx7c2YY8vF_GGLsHtqSY3h3A8_OAt8Jxe9BPqyfTea7zV3PHCy-vWh79RARyqE4LpmQ-E55VwWnxpICAL28vN_T3rB9tAP7D0IY4">
+</div>
+<div class="w-10 h-10 rounded-full border-2 border-surface-container-lowest overflow-hidden bg-white shadow-sm">
+<img class="w-full h-full object-contain p-1" src="https://lh3.googleusercontent.com/aida/AP1WRLtJ2OympxwMpwvJdq_RIRM8FFys6ojcXHEEN2dbU70vkE18SqmRrmieSXmOA20PhhiZxIBUczB8oVnWwWGRISQFkHGefQRcy7M8wE3rCM9BTQs5Qsdo4gFOQ2Vb6iNRjyClzV9GyFfZauNN0wHP68kUchbahvq8ercUfMv8t7PnMJUDK1AovoPgjrVbesIwIssFwuvAIsfzFwyMzThear0wN3zMEeUIFFobBoDjvMwWJ2DwB5RmxWDojt8">
+</div>
+</div>
+<span class="font-medium text-[12px] text-[#7A7571]">분석 중</span>
+</div>
+<div class="space-y-3">
+<p class="font-medium text-[12px] text-[#7A7571]">2024.05.20</p>
+<h2 class="font-bold text-[16px] text-[#2A1800] leading-tight">삼성전자 HBM 공급망 관련 공정거래 이슈</h2>
+<!-- ESG Risk Description Accordion -->
+<details class="group bg-surface-container-low rounded-lg border border-outline-variant/30">
+<summary class="flex items-center justify-between p-3 cursor-pointer list-none">
+<span class="font-medium text-[12px] text-[#7A7571]">리스크 상세 분석</span>
+<span class="material-symbols-outlined transition-transform group-open:rotate-180 text-on-surface-variant">expand_more</span>
+</summary>
+<div class="px-3 pb-3 pt-1">
+<p class="font-normal text-[14px] text-[#4A4746] leading-relaxed">
+                            고대역폭 메모리(HBM) 시장 내 경쟁 우위 확보 과정에서의 독점 규제 및 기술 유출 방지 관련 규제 당국의 조사가 착수되었습니다. 현재 공정거래위원회는 주요 고객사와의 장기 공급 계약 조건에 부당한 경쟁 제한 요소가 포함되어 있는지 여부를 집중적으로 확인하고 있는 것으로 파악됩니다.
+                        </p>
+</div>
+</details>
+</div>
+<div class="mt-6">
+<button class="font-medium text-[12px] text-[#7A7571]">
+                    공식 출처 확인
+                    <span class="material-symbols-outlined text-[16px]">open_in_new</span>
+</button>
+</div>
+</div>
+</section>
+<!-- New Comparison Card -->
+<section class="bg-surface-container-low border rounded-xl p-4 border-[#E5DEC9]"><div class="flex flex-col py-2 items-center">
+  <div class="inline-flex flex-col items-start">
+    <div class="flex items-center gap-2 mb-2">
+      <span class="w-3 h-3 rounded-full bg-primary"></span>
+      <span class="font-headline-md text-on-surface">삼성전자</span>
+    </div>
+    <div class="flex items-baseline gap-3">
+      <span class="text-[32px] font-bold text-on-surface leading-none">78,200</span>
+      <span class="text-[#3182CE] font-bold text-[20px] flex items-center">
+        <span class="material-symbols-outlined text-[24px]">arrow_drop_down</span>
+        1.2%
+      </span>
+    </div>
+  </div>
+</div></section>
+<!-- Historical Case Impact Card -->
+<section class="bg-surface-container-lowest border rounded-xl overflow-hidden shadow-sm border-[#E5DEC9]">
+<div class="p-stack-lg">
+<h2 class="font-bold text-[16px] text-[#2A1800] leading-tight">과거 유사 사례 영향 분석</h2>
+<!-- Stats Grid -->
+<div class="grid grid-cols-3 gap-2 mb-8">
+<div class="bg-surface-container p-3 rounded-lg border border-outline-variant/30 text-center">
+<p class="font-medium text-[12px] text-[#7A7571]">Day+1 수익률</p>
+<p class="font-bold text-[16px] text-[#3182CE]">-1.8%</p>
+</div>
+<div class="bg-surface-container p-3 rounded-lg border border-outline-variant/30 text-center">
+<p class="font-medium text-[12px] text-[#7A7571]">Day+3 누적</p>
+<p class="font-bold text-[16px] text-[#3182CE]">-4.2%</p>
+</div>
+<div class="bg-surface-container p-3 rounded-lg border border-outline-variant/30 text-center">
+<p class="font-medium text-[12px] text-[#7A7571]">최대 낙폭</p>
+<p class="font-bold text-[16px] text-[#3182CE]">-6.1%</p>
+</div>
+</div>
+<!-- Chart Placeholder -->
+<div class="relative h-48 w-full mt-4">
+<svg class="w-full h-full overflow-visible" viewBox="0 0 340 150">
+<defs>
+<linearGradient id="lineGradient" x1="0%" x2="0%" y1="0%" y2="100%">
+<stop offset="0%" stop-color="#964B00" stop-opacity="0.2"></stop>
+<stop offset="100%" stop-color="#964B00" stop-opacity="0"></stop>
+</linearGradient>
+</defs>
+<!-- Grid Lines -->
+<line stroke="#ddc1ae" stroke-dasharray="2,2" x1="0" x2="340" y1="30" y2="30"></line>
+<line stroke="#ddc1ae" stroke-dasharray="2,2" x1="0" x2="340" y1="75" y2="75"></line>
+<line stroke="#ddc1ae" stroke-dasharray="2,2" x1="0" x2="340" y1="120" y2="120"></line>
+<!-- Area -->
+<path d="M 0 30 L 80 50 L 160 110 L 250 125 L 340 100 V 150 H 0 Z" fill="url(#lineGradient)" class=""></path>
+<!-- Line -->
+<path d="M 0 30 L 80 50 L 160 110 L 250 125 L 340 100" fill="none" stroke="#964B00" stroke-width="2" class=""></path>
+<!-- Dots -->
+<circle cx="0" cy="30" fill="#964B00" r="4" class=""></circle>
+<circle cx="160" cy="110" fill="#ba1a1a" r="4" class=""></circle>
+<circle cx="250" cy="125" fill="#ba1a1a" r="4" class=""></circle>
+</svg>
+<div class="font-medium text-[12px] text-[#7A7571]">
+<span class="">이슈 발생</span>
+<span class="">T+3</span>
+<span class="">T+7</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Disclaimer -->
+<footer class="mt-8 px-4 pb-8">
+<div class="bg-surface-container p-4 rounded-lg border border-[#E5DEC9] flex gap-3">
+<span class="material-symbols-outlined text-secondary shrink-0 text-[20px]">info</span>
+<p class="font-body-md text-[12px] leading-relaxed text-on-surface-variant">
+                과거 사례의 주가 흐름은 현재 사건의 결과를 보장하지 않습니다. 본 분석은 참고용이며 최종 투자 결정은 본인의 책임하에 이루어져야 합니다.
+            </p>
+</div>
+</footer>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 right-0 max-w-[390px] mx-auto bg-[#FAF8F5] border-t border-[#E5DEC9] z-50 h-16 grid grid-cols-4 items-center">
+  <a href="#" class="flex flex-col items-center justify-center gap-1 text-[#8A8A8A]">
+    <span class="material-symbols-outlined">home</span>
+    <span class="text-[12px] font-medium">홈</span>
+  </a>
+  <a href="#" class="flex flex-col items-center justify-center gap-1 text-[#8A8A8A]">
+    <span class="material-symbols-outlined">analytics</span>
+    <span class="text-[12px] font-medium">진단/최적화</span>
+  </a>
+  <a href="#" class="flex flex-col items-center justify-center">
+    <div class="bg-[#F5E8DD] rounded-full px-4 py-1 flex flex-col items-center justify-center gap-1 text-[#964B00]">
+      <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">layers</span>
+      <span class="text-[12px] font-bold">이슈 분석</span>
+    </div>
+  </a>
+  <a href="#" class="flex flex-col items-center justify-center gap-1 text-[#8A8A8A]">
+    <span class="material-symbols-outlined">settings</span>
+    <span class="text-[12px] font-medium">설정</span>
+  </a>
+</nav>
+
+
+
+
+
+</body></html>

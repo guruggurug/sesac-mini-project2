@@ -13,12 +13,20 @@ SAMPLE_CSV_PATH = Path("data/sample/stock_prices.sample.csv")
 
 
 def test_load_esg_scores():
-    """Verify default ESG scores loading."""
-    esg = load_esg_scores()
+    """Verify sample-only default ESG scores loading."""
+    esg = load_esg_scores(allow_sample_defaults=True)
     assert "005930" in esg
     assert "000660" in esg
     assert 0.0 <= esg["005930"] <= 1.0
     assert 0.0 <= esg["000660"] <= 1.0
+
+
+def test_load_esg_scores_rejects_missing_scores_in_validated_mode():
+    with pytest.raises(ValueError, match="ESG risk score unavailable"):
+        load_esg_scores()
+
+    with pytest.raises(ValueError, match="missing tickers: 000660"):
+        load_esg_scores({"005930": 0.42})
 
 
 def test_optimize_portfolio_sample():

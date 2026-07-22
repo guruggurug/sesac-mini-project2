@@ -1,0 +1,86 @@
+{
+  "version": "1.0.0",
+  "automated_validation": {
+    "required_contracts": ["event-candidates", "sources", "event-sources", "events"],
+    "publishable_candidate_statuses": ["validated"],
+    "model_eligible_event_statuses": ["confirmed", "resolved"],
+    "required_primary_source_role": "official_confirmation",
+    "primary_source_count_per_event": 1,
+    "official_domains": [
+      "samsung.com",
+      "images.samsung.com",
+      "skhynix.com",
+      "nssc.go.kr",
+      "moel.go.kr",
+      "pipc.go.kr"
+    ],
+    "failure_action": "retain_rejected_candidate"
+  },
+  "candidate_deduplication": {
+    "key_priority": [
+      ["detection_source_type", "source_name", "external_id"],
+      ["canonical_url"],
+      ["company_id", "content_hash"]
+    ],
+    "canonical_url": {
+      "lowercase_host": true,
+      "remove_fragment": true,
+      "remove_query_parameters": ["utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content"]
+    }
+  },
+  "source_deduplication": {
+    "external_id_key": ["validation_method", "external_id"],
+    "fallback_key": ["validation_method", "url", "document_title"]
+  },
+  "event_deduplication": {
+    "identity_fields": ["company_id", "event_category", "linked_indicator_id"],
+    "date_field": "market_event_date",
+    "date_tolerance_days": 3,
+    "text_fields": ["summary", "severity_evidence"],
+    "minimum_token_similarity": 0.65,
+    "status_precedence": ["reported", "confirmed", "resolved"],
+    "enforcement_precedence": ["no_action", "investigation", "corrective_order", "fine", "sanctioned"],
+    "merge_policy": {
+      "market_event_date": "earliest",
+      "resolved_date": "latest_non_null",
+      "status": "highest_precedence",
+      "enforcement_action": "highest_precedence",
+      "sources": "union",
+      "severity": "recalculate"
+    },
+    "conflict_fields": ["company_id", "event_category", "linked_indicator_id"],
+    "conflict_action": "reject_new_candidate"
+  },
+  "severity": {
+    "method": "maximum_rule_score",
+    "default_score": 1,
+    "maximum_score": 5,
+    "text_fields": ["summary", "severity_evidence", "responsibility_evidence", "persistence_evidence"],
+    "enforcement_base_score": {
+      "no_action": 1,
+      "investigation": 2,
+      "corrective_order": 3,
+      "fine": 3,
+      "sanctioned": 4
+    },
+    "keyword_rules": [
+      {
+        "score": 5,
+        "keywords": ["사망", "공장 전체 셧다운", "사업장 폐쇄", "형사 기소"]
+      },
+      {
+        "score": 4,
+        "keywords": ["중상", "다수 부상", "다수 작업자", "방사선 피폭", "조업 정지", "대규모 유출", "핵심기술 유출"]
+      },
+      {
+        "score": 3,
+        "keywords": ["시정명령", "과징금", "과태료", "화학물질 누출", "개인정보 유출"]
+      },
+      {
+        "score": 2,
+        "keywords": ["경고", "집중점검", "일시 지연", "경미"]
+      }
+    ],
+    "no_match_action": "use_enforcement_base_or_default"
+  }
+}

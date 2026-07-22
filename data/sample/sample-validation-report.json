@@ -3,5 +3,8 @@
   "event_headers_match_required": true,
   "price_headers_match_required": true,
   "optimization_result_schema_valid": true,
-  "optimization_result_errors": []
+  "optimization_result_errors": [],
+  "esg_rows_validated": 2,
+  "event_rows_validated": 2,
+  "schema_contract_version": "2026-07-21"
 }

@@ -2,11 +2,12 @@
 
 ## 1. Current Status
 
-- Project phase: End-to-End Integration & Demo Prep
+- Project phase: Realtime Market & Daily Issue Sync Contract Review
 - Overall status: `in_progress`
-- Last updated: 2026-07-21
-- Current integration checkpoint: `CHECKPOINT-04`
-- Data mode: `reviewed` (Fallback: `sample`)
+- Project duration: 4 days
+- Last updated: 2026-07-22 04:15 KST
+- Current integration checkpoint: `CHECKPOINT-05`
+- Data mode: `validated` (Fallback: `sample`)
 - Root progress owner: Team Lead
 
 > 루트 `PROGRESS.md`는 프로젝트 전체 요약 문서이며 팀 리드만 수정한다.  
@@ -108,6 +109,16 @@
 | INT-01 | End-to-End Test | `in_progress` | DATA-B-05, BE-05, FE-04 |
 | INT-02 | Data and Model Review | `done` | DATA-A-05, DATA-B-06 |
 | INT-03 | Demo Preparation | `todo` | INT-01, INT-02 |
+
+### Day 3-4 Realtime & Daily Sync
+
+| Task ID | Task | Status | Dependency |
+|---|---|---|---|
+| COMMON-RT-01 | Realtime and Daily Sync Requirements Definition | `done` | Team Lead decision |
+| COMMON-RT-02 | Market, Portfolio Summary and Sync API Contract Review | `review` | Data A review and Data B, Backend, Frontend explicit approval required |
+| COMMON-RT-03 | Human Review Removal and Automated Validation Contract Migration | `done` | Team Lead realtime pipeline decision |
+| BE-RT-00 | ESG Schema Validator and Sample Contract Compatibility Recovery | `done` | Updated ESG·event schemas |
+| INT-RT-01 | Market·Portfolio·Daily Sync End-to-End Test | `todo` | COMMON-RT-02 and Realtime role implementations |
 
 ---
 
@@ -232,18 +243,65 @@ data/sample/sample-validation-report.json
 
 ---
 
+## 7.5 COMMON-RT-02 Contract Review
+
+### Review Targets
+
+```text
+schemas/data/data-enums.yaml
+schemas/api/README.md
+schemas/api/market-quotes-response.schema.json
+schemas/api/portfolio-summary-request.schema.json
+schemas/api/portfolio-summary-response.schema.json
+schemas/api/sync-issues-request.schema.json
+schemas/api/sync-status-response.schema.json
+schemas/api/examples/market-quotes-response.example.json
+schemas/api/examples/portfolio-summary-request.example.json
+schemas/api/examples/portfolio-summary-response.example.json
+schemas/api/examples/sync-issues-request.example.json
+schemas/api/examples/sync-status-response.example.json
+```
+
+### Current Validation Results
+
+- JSON Schema Draft 2020-12 자체 검증: `passed`
+- 시장 가격·포트폴리오·동기화 예시 계약 검증: `passed`
+- 필수 4개 시장 항목 및 중복 종목 차단 검증: `passed`
+- 포트폴리오 합계·비중 산술 정합성 검증: `passed`
+- 동기화 상태별 시작·완료 시각 규칙 검증: `passed`
+- 사람 검수 필드 제거, `processed/validated` 로딩과 자동 사건 필터 검증: `passed`
+- 사건 상태·제재 결과 분리, ESG unavailable/null, 동기화 단계·발행 증거 계약: `passed`
+- fallback 가격의 `is_stale=true` 강제와 재계산 트리거 계약: `passed`
+- 계약·이슈 파이프라인 집중 테스트: `23 passed`
+- 전체 회귀 테스트: `passed` (`59 tests collected`)
+
+### Role Review Checklist
+
+| Reviewer | Review Focus | Result | Notes |
+|---|---|---|---|
+| Data A | raw→candidate→자동 검증→processed 경계와 출처 보존 | `review` | 보완 산출물은 있으나 unavailable 18행, Backend 발행 게이트와 Data B 교차 검토가 남음 |
+| Data B | 자동 검증 통과 이벤트 이후 ESG·추천 비중 재계산 트리거 | `pending` | 역할 로그에 COMMON-RT-02 검토·승인 기록 없음 |
+| Backend | 가격 캐시·동기화 잠금·상태 전이·오류 구현 가능성 | `pending` | 역할 로그에 COMMON-RT-02 검토가 Remaining으로 기록됨 |
+| Frontend | 폴링·기준 시각·지연/폴백·동기화 상태 표현 가능성 | `pending` | 역할 로그에 Realtime 계약 검토·승인 기록 없음 |
+
+`COMMON-RT-02`는 계약 초안과 자동 검증은 통과했지만 역할별 명시적 승인이 완료되지 않아 `review` 상태다.
+
+---
+
 ## 8. Active Blockers
 
 | Blocker ID | Related Task | Description | Owner | Required Action | Status |
 |---|---|---|---|---|---|
-| - | - | 현재 등록된 차단 요소 없음 | - | - | - |
+| RT-B01 | COMMON-RT-02 | Data A 보완 검토와 Data B·Backend·Frontend의 명시적 계약 승인이 필요 | Team Lead / All Roles | 역할별 로그에 검토 결과와 승인 기록 | `review` |
+| RT-B02 | DATA-B-RT-01 | Data B 동적 ESG·최적화 변경이 현재 브랜치에 미동기화 | Data B | 작업 완료 후 통합 브랜치 동기화 | `in_progress` |
 
 ---
 
 ## 9. Immediate Next Actions
 
-1.  백엔드 서버를 구동하고 프론트엔드 모바일 대시보드 페이지에 접속하여 실시간 연동 테스트를 진행한다 (`INT-01`).
-2.  사용자 시나리오별(입력 수량 변경, 성향 필터링 조정) 포트폴리오 비중 재계산 및 과거 사건 영향 분석 흐름을 최종 데모 시연용으로 세팅한다 (`INT-03`).
+1. Data A, Data B, Backend, Frontend가 `COMMON-RT-02` 계약을 각 역할 로그에서 검토하고 명시적으로 승인한다.
+2. Data A 잔여 데이터 조건과 Data B·Backend·Frontend 구현 관점의 계약 쟁점을 반영한다.
+3. 기존 `INT-01`과 신규 `INT-RT-01`의 E2E 범위를 통합한다.
 
 ---
 
@@ -257,6 +315,8 @@ data/sample/sample-validation-report.json
 - 프로젝트 전체 차단 요소 발생 시
 - Day 1 종료 시
 - Day 2 종료 시
+- Day 3 종료 시
+- Day 4 종료 시
 - 최종 데모 준비 완료 시
 
 ---
