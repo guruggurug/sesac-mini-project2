@@ -1,14 +1,24 @@
 <!-- components/bottom_nav.html -->
 {% set current_path = request.url.path if request and request.url else '/' %}
-<nav class="app-nav" style="position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 390px; background: rgba(11, 15, 25, 0.95); backdrop-filter: blur(12px); border-top: 1px solid var(--border-color); display: flex; justify-content: space-around; padding: 10px 0; z-index: 200;">
-    <a href="/" class="nav-item {% if current_path == '/' or current_path == '/diagnosis' %}active{% endif %}" 
-       style="display: flex; flex-direction: column; align-items: center; color: {% if current_path == '/' or current_path == '/diagnosis' %}var(--primary){% else %}var(--text-secondary){% endif %}; text-decoration: none; font-size: 0.7rem; font-weight: {% if current_path == '/' or current_path == '/diagnosis' %}600{% else %}400{% endif %};">
+<nav class="app-nav" style="position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 390px; background: #FAF8F5; border-top: 1px solid var(--border-color, #E5DEC9); display: grid; grid-template-columns: repeat(4, 1fr); align-items: center; height: 64px; z-index: 200;">
+    <a href="/home" class="nav-item {% if current_path == '/' or current_path == '/home' %}active{% endif %}" 
+       style="display: flex; flex-direction: column; align-items: center; justify-content: center; color: {% if current_path == '/' or current_path == '/home' %}var(--primary, #964B00){% else %}#8A8A8A{% endif %}; text-decoration: none; font-size: 0.75rem; font-weight: {% if current_path == '/' or current_path == '/home' %}600{% else %}400{% endif %};">
+        <span style="font-size: 1.2rem;">🏠</span>
+        <span>홈</span>
+    </a>
+    <a href="/diagnosis" class="nav-item {% if current_path == '/diagnosis' or current_path == '/diagnosis/result' %}active{% endif %}" 
+       style="display: flex; flex-direction: column; align-items: center; justify-content: center; color: {% if current_path == '/diagnosis' or current_path == '/diagnosis/result' %}var(--primary, #964B00){% else %}#8A8A8A{% endif %}; text-decoration: none; font-size: 0.75rem; font-weight: {% if current_path == '/diagnosis' or current_path == '/diagnosis/result' %}600{% else %}400{% endif %};">
         <span style="font-size: 1.2rem;">⚡</span>
         <span>진단/최적화</span>
     </a>
-    <a href="/issues" class="nav-item {% if current_path == '/issues' %}active{% endif %}" 
-       style="display: flex; flex-direction: column; align-items: center; color: {% if current_path == '/issues' %}var(--primary){% else %}var(--text-secondary){% endif %}; text-decoration: none; font-size: 0.7rem; font-weight: {% if current_path == '/issues' %}600{% else %}400{% endif %};">
+    <a href="/issues" class="nav-item {% if current_path == '/issues' or current_path == '/issue/analysis' %}active{% endif %}" 
+       style="display: flex; flex-direction: column; align-items: center; justify-content: center; color: {% if current_path == '/issues' or current_path == '/issue/analysis' %}var(--primary, #964B00){% else %}#8A8A8A{% endif %}; text-decoration: none; font-size: 0.75rem; font-weight: {% if current_path == '/issues' or current_path == '/issue/analysis' %}600{% else %}400{% endif %};">
         <span style="font-size: 1.2rem;">📰</span>
         <span>이슈 분석</span>
+    </a>
+    <a href="/settings-result" class="nav-item {% if current_path == '/settings-result' or current_path == '/portfolio/edit' %}active{% endif %}" 
+       style="display: flex; flex-direction: column; align-items: center; justify-content: center; color: {% if current_path == '/settings-result' or current_path == '/portfolio/edit' %}var(--primary, #964B00){% else %}#8A8A8A{% endif %}; text-decoration: none; font-size: 0.75rem; font-weight: {% if current_path == '/settings-result' or current_path == '/portfolio/edit' %}600{% else %}400{% endif %};">
+        <span style="font-size: 1.2rem;">⚙️</span>
+        <span>설정</span>
     </a>
 </nav>
