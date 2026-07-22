@@ -16,9 +16,10 @@
 | `E04` | E (환경) | 공정가스 감축률 | `%` | `higher_is_better` | 반도체 공정가스 처리·저감 수준 (높을수록 우수) |
 | `E05` | E (환경) | 유해화학물질 배출량 | `톤` | `higher_is_worse` | 유해화학물질 배출량 (높을수록 위험) |
 | `S01` | S (사회) | 산업재해율 (LTIR) | `건/백만시간` | `higher_is_worse` | 근로시간 100만시간 당 손실일수 재해 건수 (높을수록 위험) |
-| `S02` | S (사회) | 협력사 ESG 실사 / 책임광물 비율 | `%` | `higher_is_better` | 협력사 ESG 평가 및 책임광물 검증 비율 (높을수록 우수) |
+| `S02` | S (사회) | 협력사 ESG 현장실사 비율 | `%` | `higher_is_better` | 협력사 ESG 평가 및 현장실사 비율 (높을수록 우수) |
 | `S03` | S (사회) | 임직원 자발적 이직률 | `%` | `higher_is_worse` | 자발적으로 퇴사한 임직원 비율 (높을수록 위험) |
 | `S04` | S (사회) | 정보보호 관리 수준 | `%` | `higher_is_better` | 정보보호 통제 및 관리 수준 (높을수록 우수) |
+| `S05` | S (사회) | 책임광물 제3자 검증률 | `%` | `higher_is_better` | 책임광물 공급망 제3자 검증 비율 (높을수록 우수) |
 | `G01` | G (지배구조) | 사외이사 비율 | `%` | `higher_is_better` | 이사회 총 인원 대비 사외이사 비율 (높을수록 우수) |
 | `G02` | G (지배구조) | 정정공시 건수 | `건` | `higher_is_worse` | 연간 정정공시 건수 (높을수록 위험) |
 | `G03` | G (지배구조) | 준법·수출통제 위반 건수 | `건` | `higher_is_worse` | 공식 제재 및 준법 위반 건수 (높을수록 위험) |
@@ -27,12 +28,14 @@
 
 - **삼성전자**:
   - `DS` (디바이스솔루션 / 반도체 사업부): `E01`~`E05`, `S01` 지표 적용 (`scope_mismatch = false`)
-  - `consolidated` (연결 전사): `S02`~`S04`, `G01`~`G03` 적용 (`scope_mismatch = true`)
+  - `consolidated` (연결 전사): `S02`, `S03`, `S04`, `G01`~`G03` 적용 (`scope_mismatch = true`)
+  - `unknown`: `S05` 적용 (`availability = unavailable`, `scope_mismatch = false`)
 - **SK하이닉스**:
-  - `semiconductor`: `E01`~`E05`, `S01`~`S04` 지표 적용 (`scope_mismatch = false`)
+  - `semiconductor`: `E01`~`E05`, `S01`, `S03`, `S04`, `S05` 지표 적용 (`scope_mismatch = false`)
   - `consolidated`: `G01`~`G03` 적용 (`scope_mismatch = false`, SK하이닉스는 순수 반도체 기업)
+  - `unknown`: `S02` 적용 (`availability = unavailable`, `scope_mismatch = false`)
 
-현재 `G01`~`G03` 18행은 기존 임시 DART 접수번호를 폐기하면서 `availability=unavailable`, `raw_value=null`로 전환했습니다. 공식 원문을 다시 수집하기 전까지 모델 입력에 사용할 수 없습니다.
+현재 `G01`~`G03` 18행 및 `S02`/`S05` 중 결측 항목(총 24행)은 기존 임시 DART 접수번호 폐기 또는 공시 부재로 인해 `availability=unavailable`, `raw_value=null`로 전환했습니다. 공식 원문을 다시 수집하기 전까지 모델 입력에 사용할 수 없습니다.
 
 ---
 

@@ -499,6 +499,12 @@ make validate-data
 make demo
 ```
 
+또는 개별 데이터 검증을 수행하려면 다음 명령을 사용합니다:
+
+```bash
+python scripts/validate_data_a.py
+```
+
 `Makefile`이 아직 없으면 각 서비스의 명령을 직접 실행합니다.
 
 ### 백엔드 예시
