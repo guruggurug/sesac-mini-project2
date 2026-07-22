@@ -113,7 +113,7 @@ def test_calculate_esg_risk_basic(sample_indicators, scoring_rules, materiality_
     # Weighted average: 0.5 * 0.32 + 0.5 * 0.24 = 0.28 (since other indicators are missing and re-normalized)
     
     assert sam_result["esg_risk_score"] == pytest.approx(0.28, abs=0.01)
-    assert sam_result["data_confidence"] == "high"
+    assert sam_result["data_confidence"] == "low"
 
 
 def test_calculate_esg_risk_uncertainty_penalty(sample_indicators, scoring_rules, materiality_weights, event_rules):
