@@ -131,6 +131,9 @@ data/tmp/*
 data/cache/*
 !data/cache/.gitkeep
 
+data/runtime/*
+!data/runtime/.gitkeep
+
 data/snapshots/local/*
 !data/snapshots/local/.gitkeep
 

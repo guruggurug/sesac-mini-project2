@@ -3,7 +3,8 @@ import csv
 import hashlib
 import json
 import jsonschema
-from urllib.parse import urlsplit
+import re
+from urllib.parse import parse_qs, urlsplit
 from app.core.config import BASE_DIR
 from app.core.exceptions import CSVValidationError
 from app.utils.issue_rules import (
@@ -236,46 +237,7 @@ def validate_csv_file(file_path: str, schema_type: str) -> list[dict]:
                 )
 
     elif schema_type == "candidate":
-        candidate_ids = set()
-        dedup_keys = set()
-        for row in parsed_rows:
-            _validate_company_pair(row, "candidate")
-            host = urlsplit(row["url"]).netloc.lower()
-            if row["source_name"].lower() != host:
-                raise CSVValidationError(
-                    code="INVALID_CANDIDATE_SOURCE_NAME",
-                    message=f"URL host와 source_name이 다릅니다: {row['candidate_id']}",
-                )
-            if row["canonical_url"] != canonicalize_url(row["url"]):
-                raise CSVValidationError(
-                    code="INVALID_CANDIDATE_CANONICAL_URL",
-                    message=f"canonical URL 재계산값과 다릅니다: {row['candidate_id']}",
-                )
-            if row["content_hash"] != candidate_content_hash(row):
-                raise CSVValidationError(
-                    code="INVALID_CANDIDATE_CONTENT_HASH",
-                    message=f"candidate identity hash 재계산값과 다릅니다: {row['candidate_id']}",
-                )
-            if row["detection_source_type"] == "dart_disclosure" and (
-                host != "dart.fss.or.kr" or not row.get("external_id")
-            ):
-                raise CSVValidationError(
-                    code="INVALID_CANDIDATE_DART_SOURCE",
-                    message=f"DART 후보의 도메인 또는 접수번호가 잘못되었습니다: {row['candidate_id']}",
-                )
-            if row["candidate_id"] in candidate_ids:
-                raise CSVValidationError(
-                    code="INVALID_CANDIDATE_DUPLICATE_ID",
-                    message=f"중복 후보 ID가 존재합니다: {row['candidate_id']}",
-                )
-            dedup_key = candidate_dedup_key(row)
-            if dedup_key in dedup_keys:
-                raise CSVValidationError(
-                    code="INVALID_CANDIDATE_DUPLICATE_CONTENT",
-                    message=f"후보 중복 키가 충돌합니다: {'|'.join(dedup_key)}",
-                )
-            candidate_ids.add(row["candidate_id"])
-            dedup_keys.add(dedup_key)
+        validate_candidate_rows(parsed_rows)
 
     elif schema_type == "source":
         source_ids = set()
@@ -331,15 +293,89 @@ def _validate_company_pair(row: dict, schema_type: str) -> None:
         )
 
 
+def validate_candidate_rows(rows: list[dict]) -> list[dict]:
+    """Apply the Data A candidate schema and deterministic semantic gates in memory."""
+    schema = load_schema(CANDIDATES_SCHEMA_PATH)
+    candidate_ids: set[str] = set()
+    active_dedup_keys: set[tuple[str, ...]] = set()
+
+    for row in rows:
+        try:
+            jsonschema.validate(
+                instance=row,
+                schema=schema,
+                format_checker=FORMAT_CHECKER,
+            )
+        except jsonschema.ValidationError as error:
+            raise CSVValidationError(
+                code="INVALID_CANDIDATE_VALIDATION",
+                message=f"candidate schema validation failed: {error.message}",
+            ) from error
+
+        _validate_company_pair(row, "candidate")
+        host = urlsplit(row["url"]).netloc.lower()
+        if row["source_name"].lower() != host:
+            raise CSVValidationError(
+                code="INVALID_CANDIDATE_SOURCE_NAME",
+                message=f"URL host와 source_name이 다릅니다: {row['candidate_id']}",
+            )
+        if row["canonical_url"] != canonicalize_url(row["url"]):
+            raise CSVValidationError(
+                code="INVALID_CANDIDATE_CANONICAL_URL",
+                message=f"canonical URL 재계산값과 다릅니다: {row['candidate_id']}",
+            )
+        if row["content_hash"] != candidate_content_hash(row):
+            raise CSVValidationError(
+                code="INVALID_CANDIDATE_CONTENT_HASH",
+                message=f"candidate identity hash 재계산값과 다릅니다: {row['candidate_id']}",
+            )
+        if (
+            row["detection_source_type"] == "dart_disclosure"
+            and row["validation_status"] != "rejected"
+            and not _is_valid_dart_reference(row["url"], row.get("external_id"))
+        ):
+            raise CSVValidationError(
+                code="INVALID_CANDIDATE_DART_SOURCE",
+                message=f"DART 후보의 도메인 또는 접수번호가 잘못되었습니다: {row['candidate_id']}",
+            )
+        if row["candidate_id"] in candidate_ids:
+            raise CSVValidationError(
+                code="INVALID_CANDIDATE_DUPLICATE_ID",
+                message=f"중복 후보 ID가 존재합니다: {row['candidate_id']}",
+            )
+
+        if row["validation_status"] != "rejected":
+            dedup_key = candidate_dedup_key(row)
+            if dedup_key in active_dedup_keys:
+                raise CSVValidationError(
+                    code="INVALID_CANDIDATE_DUPLICATE_CONTENT",
+                    message=f"후보 중복 키가 충돌합니다: {'|'.join(dedup_key)}",
+                )
+            active_dedup_keys.add(dedup_key)
+        candidate_ids.add(row["candidate_id"])
+
+    return rows
+
+
 def _host_matches(host: str, allowed_domain: str) -> bool:
     return host == allowed_domain or host.endswith(f".{allowed_domain}")
+
+
+def _is_valid_dart_reference(url: str, external_id: object) -> bool:
+    receipt = str(external_id or "")
+    parsed = urlsplit(url)
+    return (
+        parsed.netloc.lower() == "dart.fss.or.kr"
+        and re.fullmatch(r"[0-9]{14}", receipt) is not None
+        and parse_qs(parsed.query).get("rcpNo") == [receipt]
+    )
 
 
 def _validate_source_method(row: dict) -> None:
     host = urlsplit(row["url"]).netloc.lower()
     method = row["validation_method"]
     if method == "dart_receipt":
-        if host != "dart.fss.or.kr" or not row.get("external_id"):
+        if not _is_valid_dart_reference(row["url"], row.get("external_id")):
             raise CSVValidationError(
                 code="INVALID_SOURCE_DART_RECEIPT",
                 message=f"DART 출처의 도메인 또는 접수번호가 잘못되었습니다: {row['source_id']}",

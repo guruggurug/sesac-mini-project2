@@ -13,6 +13,7 @@
 | BE-RT-00 | ESG Schema Validator and Sample Contract Compatibility Recovery | `done` | processed/sample ESG·event 계약, nullable 캐스팅, 회귀 테스트 | 없음 |
 | BE-RT-01 | KOSPI·KOSDAQ·Samsung·SK hynix Market Quote Service and Cache | `review` | 내부 provider/adapter, TTL 캐시, timeout, mock 단위 테스트 | `COMMON-RT-02` 승인 전 공개 API 계약 확정 금지 |
 | BE-RT-03 | Daily Issue Scheduler, Manual Sync, Lock and Status API | `in_progress` | 공통 coordinator, SQLite 일일 선점, 서울시간 scheduler, lifespan 제어 | 실제 수집 workflow·공개 API는 `COMMON-RT-02` 승인 대기 |
+| BE-RT-03A | Open DART Adapter and Candidate Normalization | `review` | DART provider, runtime raw·rejected 보존, candidate 정규화·Data A 검증, mock 테스트 | Data A 교차 검토와 실제 키 smoke test 필요 |
 | BE-RT-04 | Last-Known-Good Market and Issue Fallback | `review` | SQLite 시장 LKG 저장·KIS 장애 fallback | 실제 KIS smoke test와 공개 상태 표시는 승인 대기 |
 
 ## Active Blockers
@@ -22,6 +23,69 @@
 | - | - | 현재 없음 | - | - | - |
 
 ## Work Log
+
+### 2026-07-22 18:01 — BE-RT-03A: Implementation Complete, Cross-Review Required
+
+- **Role**: Backend
+- **Owner**: Backend
+- **Task ID**: `BE-RT-03A`
+- **Status**: `review`
+- **Completed**:
+  - 삼성전자(`00126380`)·SK하이닉스(`00164779`) 대상 Open DART `list.json` provider를 구현했다.
+  - timeout·network·HTTP·DART 상태 코드를 분류하고, timeout과 `020/800/900`만 지수 backoff로 재시도하도록 제한했다.
+  - `013`을 정상 빈 결과로 처리하고 인증·입력 오류는 재시도하지 않도록 했다.
+  - 예외 문자열과 코드에 API 키, 요청 URL, 외부 응답 메시지를 포함하지 않았다.
+  - 성공 응답을 `data/runtime/issues/raw/dart/`에 먼저 원자적으로 저장한 뒤 candidate 정규화를 수행하도록 했다.
+  - candidate를 기존 `event-candidates.schema.json` 형식으로 변환하고 접수번호·회사·URL·content hash·dedup key를 결정론적으로 생성·검증했다.
+  - 신규 공시는 `pending`으로 유지하여 사건·ESG 점수에 자동 반영하지 않고, malformed·중복 후보는 `rejected` CSV로 보존했다.
+  - 기존 Data A candidate/source 검증에 14자리 DART 접수번호와 viewer URL `rcpNo` 일치 검사를 연결했다.
+- **Created files**:
+  - `src/backend/app/services/dart_disclosures.py`
+  - `src/backend/tests/test_dart_disclosures.py`
+- **Modified files**:
+  - `.env.example`
+  - `.gitignore`
+  - `src/backend/app/core/config.py`
+  - `src/backend/app/utils/csv_validator.py`
+  - `progress/BACKEND.md`
+- **Validation commands**:
+  - `.venv\\Scripts\\python.exe -m pytest -p no:cacheprovider -q src/backend/tests/test_dart_disclosures.py src/backend/tests/test_issue_pipeline_contracts.py src/backend/tests/test_csv_validator.py`
+  - `.venv\\Scripts\\python.exe -m pytest -p no:cacheprovider -q tests src/backend/tests --ignore=src/backend/tests/test_portfolio.py --ignore=src/backend/tests/test_ui_routes.py`
+  - `.venv\\Scripts\\python.exe -m compileall -q src/backend/app`
+  - `git diff --check`
+- **Validation results**:
+  - DART adapter·Data A 계약 집중 테스트: `28 passed`.
+  - UI route 수집 테스트를 제외한 Backend·모델 전체 회귀: `86 passed`.
+  - Python compile 및 whitespace 검사 통과.
+  - 전체 suite는 최신 `main`에 `src/frontend/static/` 디렉터리가 없어 `test_portfolio.py`, `test_ui_routes.py` import 단계에서 중단됨. 이번 변경과 무관한 기준선 문제로 확인했다.
+- **Remaining**:
+  - Data A가 rejected 후보의 중복 보존 정책과 강화된 DART source 검사를 교차 검토해야 한다.
+  - 실제 API 키 smoke test는 키·응답 원문을 출력하지 않고 회사별 수집 건수와 검증 결과만 확인해야 한다.
+  - atomic snapshot publisher와 coordinator workflow 주입은 후속 작업으로 유지한다.
+- **Blockers**:
+  - 전체 회귀 실행을 위해 최신 `main`의 `src/frontend/static/` 기준선 복구가 필요하다.
+- **Next task**: Data A 교차 검토 후 atomic publisher 브랜치에서 staging bundle 검증과 활성 snapshot 교체를 구현한다.
+
+### 2026-07-22 17:55 — BE-RT-03A: Open DART Adapter and Candidate Normalization
+
+- **Role**: Backend
+- **Owner**: Backend
+- **Task ID**: `BE-RT-03A`
+- **Status**: `in_progress`
+- **Scope**:
+  - 삼성전자·SK하이닉스 Open DART 공시 조회 adapter
+  - timeout·재시도·호출 오류 분류와 비밀정보 비노출
+  - 외부 응답의 runtime raw 선저장
+  - `event-candidates.schema.json` 기반 pending/rejected 후보 정규화와 Data A 검증 연결
+- **Assumptions**:
+  - DART 수집 후보는 공식 공시라는 이유만으로 기존 사건에 자동 연결하지 않고 `pending`으로 유지한다.
+  - malformed 후보는 점수 경로로 보내지 않고 `rejected` 상태와 기계 판정 사유를 보존한다.
+  - atomic snapshot publisher, coordinator 실제 workflow 주입, scheduler 활성화와 공개 `/sync/*` API는 이번 작업에서 제외한다.
+- **Validation plan**:
+  - provider mock 단위 테스트
+  - candidate schema·URL·접수번호·dedup 검증 테스트
+  - 기존 Data A 및 Backend 회귀 테스트
+- **Next task**: provider와 raw/candidate 변환 구현 후 검증 결과 기록.
 
 ### 2026-07-22 — BE-RT-03: Project Environment Loading
 

@@ -48,6 +48,18 @@ MARKET_QUOTE_TIMEOUT_SECONDS = float(os.getenv("MARKET_QUOTE_TIMEOUT_SECONDS", "
 KIS_APP_KEY = os.getenv("KIS_APP_KEY", "")
 KIS_APP_SECRET = os.getenv("KIS_APP_SECRET", "")
 DART_API_KEY = os.getenv("DART_API_KEY", "")
+DART_BASE_URL = os.getenv(
+    "DART_BASE_URL",
+    "https://opendart.fss.or.kr/api",
+)
+DART_TIMEOUT_SECONDS = float(os.getenv("DART_TIMEOUT_SECONDS", "5"))
+DART_MAX_ATTEMPTS = int(os.getenv("DART_MAX_ATTEMPTS", "3"))
+DART_RETRY_BACKOFF_SECONDS = float(
+    os.getenv("DART_RETRY_BACKOFF_SECONDS", "0.25")
+)
+ISSUE_RUNTIME_DATA_DIR = resolve_project_path(
+    os.getenv("ISSUE_RUNTIME_DATA_DIR", "data/runtime/issues")
+)
 NEWS_API_KEY = os.getenv("NEWS_API_KEY", "")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 KIS_BASE_URL = os.getenv(
