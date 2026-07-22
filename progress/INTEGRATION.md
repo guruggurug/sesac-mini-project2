@@ -4,6 +4,7 @@
 
 | Task ID | Task | Status | Output | Blocker |
 |---|---|---|---|---|
+| INT-CLEANUP-01 | Canonical Data, Environment and Frontend Draft Cleanup | `done` | canonical paths and isolated Stitch drafts | - |
 | INT-01 | End-to-End Test | `in_progress` | 실데이터 & 실시간 주가 API 활용 최종 화면 연동 검증 | - |
 | INT-02 | Data and Model Review | `done` | 실데이터 스키마 및 최적화 엔진 안정성 검수 완료 | - |
 | INT-03 | Demo Preparation | `todo` | 투자 성향/보유 정보 입력에 따른 재계산 데모 구성 | INT-01 완료 대기 |
@@ -21,6 +22,66 @@
 | RT-B02 | DATA-B-RT-01 | Data B 동적 ESG·최적화 변경 미동기화 | Data B | 완료 후 통합 브랜치 동기화 | `in_progress` |
 
 ## Work Log
+
+### 2026-07-22 11:30 — Repository Canonicalization Cleanup Start
+
+- **Role**: Integration
+- **Owner**: Codex
+- **Task ID**: `INT-CLEANUP-01`
+- **Status**: `in_progress`
+- **Assumptions**:
+  - `data/processed/` is the only model/API source for validated price and index data.
+  - `.env.example` is the canonical environment template referenced by project documentation.
+  - Unreferenced Google Stitch HTML drafts belong under `stitch-export/raw/`, not production templates.
+- **Planned work**:
+  - Remove byte-identical legacy data copies and update migration references.
+  - Remove the incomplete `env.example` duplicate.
+  - Move unreferenced Stitch drafts out of `src/frontend/templates/`.
+- **Validation commands**:
+  - full pytest suite
+  - canonical-path and template-reference scans
+  - `git diff --check`
+- **Blockers**: None
+
+### 2026-07-22 12:05 — Repository Canonicalization Cleanup Complete
+
+- **Role**: Integration
+- **Owner**: Codex
+- **Task ID**: `INT-CLEANUP-01`
+- **Status**: `done`
+- **Completed**:
+  - Kept `data/processed/stock_prices.csv` and `data/processed/index_prices.csv` as the only validated price/index sources.
+  - Kept `data/docs/data_dictionary.md` as the canonical data dictionary.
+  - Kept `.env.example` as the only environment template.
+  - Moved six unreferenced Stitch drafts from production templates to `stitch-export/raw/`.
+  - Updated the legacy migration script to stop writing the removed price-data copy.
+  - Preserved historical path mentions in role progress logs as immutable work history.
+- **Created files**:
+  - `stitch-export/raw/README.md`
+- **Moved files**:
+  - `diagnosis_result.html`, `home.html`, `issue_analysis.html`
+  - `portfolio_edit.html`, `portfolio_input.html`, `portfolio_summary.html`
+- **Deleted files**:
+  - `data/index_prices.csv`
+  - `data/prices.csv`
+  - `data/notes/data_dictionary.md`
+  - `env.example`
+- **Modified files**:
+  - `scripts/migrate_automated_validation.py`
+  - `progress/INTEGRATION.md`
+- **Validation commands**:
+  - `.venv\\Scripts\\python.exe -m pytest -q`
+  - canonical-path and production-template reference scans with `rg`
+  - non-empty duplicate SHA-256 scan
+  - `git diff --check`
+- **Validation results**:
+  - Full test suite passed (`81 tests collected`, exit code 0).
+  - Removed-path references outside historical progress logs: 0.
+  - Non-empty duplicate file hashes: 0.
+  - Production route/template mapping is complete; whitespace check passed.
+- **Remaining issues**: None for this cleanup task.
+- **Blockers**: None.
+- **Next recommended task**: Continue `INT-01` end-to-end verification.
 
 ### 2026-07-21 10:00 — Initial Setup
 
