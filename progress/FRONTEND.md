@@ -237,4 +237,17 @@
 - **Remaining issues**: 없음
 - **Blockers**: 없음
 - **Next task**: 프론트엔드 모바일 UI 및 백엔드 데이터 최적화 흐름 최종 연동 테스트
->>>>>>> 2dc6ed1 (feat: design alignment and stock color standard correction)
+### 2026-07-23 15:33 — FE-Portfolio-Edit-UI-Cleanup
+
+- **Role**: Frontend
+- **Status**: `done`
+- **Completed**:
+  - `portfolio_edit.html` (포트폴리오 설정 화면) 내 불필요한 신규 종목 검색 및 추가용 버튼인 "종목 추가하기" 점선 프레임 영역을 완전히 제거함.
+  - 삼성전자 및 SK하이닉스 종목 카드 내에 포함되어 있던 개별 삭제(X) 아이콘 버튼을 삭제하여, 사용자가 포트폴리오 메인 종목을 실수로 제거하는 것을 방지하고 단순화된 자산 편집 레이아웃을 제공함.
+- **Created files**: 없음
+- **Modified files**:
+  - [portfolio_edit.html](file:///C:/Users/USER/signal/project3/src/frontend/templates/portfolio_edit.html)
+- **Validation results**: 로컬 개발서버의 `/portfolio/edit` 화면에서 종목 추가하기 프레임과 종목 우측 상단 X 버튼이 정상적으로 제거되었음을 확인.
+- **Remaining issues**: 없음
+- **Blockers**: 없음
+- **Next task**: 프론트엔드 모바일 UI 및 백엔드 데이터 최적화 흐름 최종 연동 테스트
