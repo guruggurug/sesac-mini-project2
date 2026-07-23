@@ -230,3 +230,20 @@
 - **Remaining issues**: 없음
 - **Blockers**: 없음
 - **Next task**: 프론트엔드 모바일 UI 및 백엔드 데이터 최적화 흐름 최종 연동 테스트
+
+### 2026-07-23 15:56 — FE-Login-Screen-Creation
+
+- **Role**: Frontend
+- **Status**: `done`
+- **Completed**:
+  - 사용자 제공 이미지 시안에 맞춰 모바일 390px 최적화 디자인 레이아웃을 준수하는 로그인 화면 `login.html`을 생성함.
+  - 메인 타이틀(Chip Buddy), 서브타이틀, 이메일/비밀번호 입력 폼(비밀번호 보이기/숨기기 토글 스크립트 포함), 로그인 상태 유지 체크박스, 로그인 버튼, 구글 간편로그인 버튼을 이미지 시안과 동일하게 구현함.
+  - `ui.py` 파일의 라우팅 구조를 업데이트하여 루트 경로(`/`) 및 `/login` 접근 시 이 로그인 화면이 표시되도록 하고, 로그인 완료 시 메인 홈 화면(`/home`)으로 자연스럽게 라우팅되도록 흐름을 연동함.
+- **Created files**:
+  - [login.html](file:///C:/Users/USER/signal/project3/src/frontend/templates/login.html)
+- **Modified files**:
+  - [ui.py](file:///C:/Users/USER/signal/project3/src/backend/app/routes/ui.py)
+- **Validation results**: 브라우저에서 `http://localhost:8000/` 접속 시 시안과 100% 동일한 로그인 화면이 렌더링되며, 로그인 버튼 클릭 시 홈 화면(`/home`)으로 매끄럽게 진입하는 것을 확인함.
+- **Remaining issues**: 없음
+- **Blockers**: 없음
+- **Next task**: 프론트엔드 모바일 UI 및 백엔드 데이터 최적화 흐름 최종 연동 테스트
