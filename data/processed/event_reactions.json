@@ -5,154 +5,76 @@
       "company_id": "005930",
       "company_name": "삼성전자",
       "event_date": "2024-05-27",
-      "market_event_date": "2024-05-28",
-      "reaction_start_date": "2024-05-28",
-      "return_1d": -0.0309,
-      "return_3d": -0.0528,
-      "return_5d": -0.0296,
-      "event_relative_min_return": -0.0528,
-      "window_max_drawdown": 0.0528,
-      "max_drawdown": -0.0528,
-      "recovery_days": 11,
-      "abnormal_return_1d": -0.0124,
-      "abnormal_return_3d": -0.0163,
-      "abnormal_return_5d": 0.0083,
+      "market_event_date": "2024-09-26",
+      "reaction_start_date": "2024-09-26",
+      "return_1d": -0.0077,
+      "return_3d": -0.0526,
+      "return_5d": -0.0572,
+      "event_relative_min_return": -0.0896,
+      "window_max_drawdown": 0.0896,
+      "max_drawdown": -0.0896,
+      "recovery_days": null,
+      "abnormal_return_1d": 0.0098,
+      "abnormal_return_3d": -0.0128,
+      "abnormal_return_5d": -0.0358,
       "benchmark_name": "SOX",
-      "status": "resolved",
+      "status": "confirmed",
       "summary": "삼성전자 기흥사업장 XRF 분석장비 인터락 임의조작으로 인한 방사선 피폭 사고 (원안위 과태료 1050만원 처분)",
       "chart_data": [
         {
           "day": 0,
           "cumulative_return": 0.0,
-          "date": "2024-05-28"
+          "date": "2024-09-26"
         },
         {
           "day": 1,
-          "cumulative_return": -0.0309,
-          "date": "2024-05-29"
+          "cumulative_return": -0.0077,
+          "date": "2024-09-27"
         },
         {
           "day": 2,
-          "cumulative_return": -0.0528,
-          "date": "2024-05-30"
+          "cumulative_return": -0.0495,
+          "date": "2024-09-30"
         },
         {
           "day": 3,
-          "cumulative_return": -0.0528,
-          "date": "2024-05-31"
+          "cumulative_return": -0.0526,
+          "date": "2024-10-02"
         },
         {
           "day": 4,
-          "cumulative_return": -0.0245,
-          "date": "2024-06-03"
+          "cumulative_return": -0.0634,
+          "date": "2024-10-04"
         },
         {
           "day": 5,
-          "cumulative_return": -0.0296,
-          "date": "2024-06-04"
+          "cumulative_return": -0.0572,
+          "date": "2024-10-07"
         },
         {
           "day": 6,
-          "cumulative_return": -0.0026,
-          "date": "2024-06-05"
+          "cumulative_return": -0.068,
+          "date": "2024-10-08"
         },
         {
           "day": 7,
-          "cumulative_return": -0.0039,
-          "date": "2024-06-07"
+          "cumulative_return": -0.0896,
+          "date": "2024-10-10"
         },
         {
           "day": 8,
-          "cumulative_return": -0.0245,
-          "date": "2024-06-10"
+          "cumulative_return": -0.0835,
+          "date": "2024-10-11"
         },
         {
           "day": 9,
-          "cumulative_return": -0.0309,
-          "date": "2024-06-11"
+          "cumulative_return": -0.0603,
+          "date": "2024-10-14"
         },
         {
           "day": 10,
-          "cumulative_return": -0.0142,
-          "date": "2024-06-12"
-        }
-      ]
-    },
-    {
-      "event_id": "EVT-0002",
-      "company_id": "005930",
-      "company_name": "삼성전자",
-      "event_date": "2023-09-14",
-      "market_event_date": "2023-09-14",
-      "reaction_start_date": "2023-09-14",
-      "return_1d": 0.0042,
-      "return_3d": -0.0265,
-      "return_5d": -0.0391,
-      "event_relative_min_return": -0.0586,
-      "window_max_drawdown": 0.0625,
-      "max_drawdown": -0.0586,
-      "recovery_days": 1,
-      "abnormal_return_1d": 0.0343,
-      "abnormal_return_3d": 0.0084,
-      "abnormal_return_5d": 0.0294,
-      "benchmark_name": "SOX",
-      "status": "resolved",
-      "summary": "삼성전자 화성사업장 유해화학물질 관리 시정명령 및 행정처분",
-      "chart_data": [
-        {
-          "day": 0,
-          "cumulative_return": 0.0,
-          "date": "2023-09-14"
-        },
-        {
-          "day": 1,
-          "cumulative_return": 0.0042,
-          "date": "2023-09-15"
-        },
-        {
-          "day": 2,
-          "cumulative_return": -0.0209,
-          "date": "2023-09-18"
-        },
-        {
-          "day": 3,
-          "cumulative_return": -0.0265,
-          "date": "2023-09-19"
-        },
-        {
-          "day": 4,
-          "cumulative_return": -0.0293,
-          "date": "2023-09-20"
-        },
-        {
-          "day": 5,
-          "cumulative_return": -0.0391,
-          "date": "2023-09-21"
-        },
-        {
-          "day": 6,
-          "cumulative_return": -0.0404,
-          "date": "2023-09-22"
-        },
-        {
-          "day": 7,
-          "cumulative_return": -0.0321,
-          "date": "2023-09-25"
-        },
-        {
-          "day": 8,
-          "cumulative_return": -0.0432,
-          "date": "2023-09-26"
-        },
-        {
-          "day": 9,
-          "cumulative_return": -0.046,
-          "date": "2023-09-27"
-        },
-        {
-          "day": 10,
-          "cumulative_return": -0.0586,
-          "date": "2023-10-04"
+          "cumulative_return": -0.0572,
+          "date": "2024-10-15"
         }
       ]
     },
@@ -160,155 +82,77 @@
       "event_id": "EVT-0003",
       "company_id": "000660",
       "company_name": "SK하이닉스",
-      "event_date": "2026-06-01",
-      "market_event_date": "2026-06-01",
-      "reaction_start_date": "2026-06-01",
-      "return_1d": -0.0013,
-      "return_3d": -0.124,
-      "return_5d": -0.0626,
-      "event_relative_min_return": -0.1913,
-      "window_max_drawdown": 0.1913,
-      "max_drawdown": -0.1913,
-      "recovery_days": 10,
-      "abnormal_return_1d": -0.0599,
-      "abnormal_return_3d": -0.0665,
-      "abnormal_return_5d": -0.0389,
+      "event_date": "2026-06-26",
+      "market_event_date": "2026-06-26",
+      "reaction_start_date": "2026-06-26",
+      "return_1d": -0.0168,
+      "return_3d": -0.0423,
+      "return_5d": -0.0928,
+      "event_relative_min_return": -0.2233,
+      "window_max_drawdown": 0.2233,
+      "max_drawdown": -0.2233,
+      "recovery_days": null,
+      "abnormal_return_1d": -0.0552,
+      "abnormal_return_3d": -0.0536,
+      "abnormal_return_5d": -0.0491,
       "benchmark_name": "SOX",
-      "status": "resolved",
-      "summary": "SK하이닉스 청주 4캠퍼스 가스룸 불화수소(불소) 누출 사고 및 고용노동부 기획점검 시정명령",
+      "status": "confirmed",
+      "summary": "고용노동부가 반복 불소 누출 사고와 관련해 SK하이닉스 등 반도체 제조업 25개소 집중 점검에 착수",
       "chart_data": [
         {
           "day": 0,
           "cumulative_return": 0.0,
-          "date": "2026-06-01"
+          "date": "2026-06-26"
         },
         {
           "day": 1,
-          "cumulative_return": -0.0013,
-          "date": "2026-06-02"
+          "cumulative_return": -0.0168,
+          "date": "2026-06-29"
         },
         {
           "day": 2,
-          "cumulative_return": -0.0275,
-          "date": "2026-06-04"
+          "cumulative_return": -0.0086,
+          "date": "2026-06-30"
         },
         {
           "day": 3,
-          "cumulative_return": -0.124,
-          "date": "2026-06-05"
+          "cumulative_return": -0.0423,
+          "date": "2026-07-01"
         },
         {
           "day": 4,
-          "cumulative_return": -0.1913,
-          "date": "2026-06-08"
+          "cumulative_return": -0.1818,
+          "date": "2026-07-02"
         },
         {
           "day": 5,
-          "cumulative_return": -0.0626,
-          "date": "2026-06-09"
+          "cumulative_return": -0.0928,
+          "date": "2026-07-03"
         },
         {
           "day": 6,
-          "cumulative_return": -0.1333,
-          "date": "2026-06-10"
+          "cumulative_return": -0.1235,
+          "date": "2026-07-06"
         },
         {
           "day": 7,
-          "cumulative_return": -0.1109,
-          "date": "2026-06-11"
+          "cumulative_return": -0.1766,
+          "date": "2026-07-07"
         },
         {
           "day": 8,
-          "cumulative_return": -0.0901,
-          "date": "2026-06-12"
+          "cumulative_return": -0.2233,
+          "date": "2026-07-08"
         },
         {
           "day": 9,
-          "cumulative_return": -0.0317,
-          "date": "2026-06-15"
+          "cumulative_return": -0.1822,
+          "date": "2026-07-09"
         },
         {
           "day": 10,
-          "cumulative_return": 0.008,
-          "date": "2026-06-16"
-        }
-      ]
-    },
-    {
-      "event_id": "EVT-0004",
-      "company_id": "000660",
-      "company_name": "SK하이닉스",
-      "event_date": "2023-11-20",
-      "market_event_date": "2023-11-20",
-      "reaction_start_date": "2023-11-20",
-      "return_1d": 0.0046,
-      "return_3d": -0.0099,
-      "return_5d": -0.0053,
-      "event_relative_min_return": -0.0259,
-      "window_max_drawdown": 0.0303,
-      "max_drawdown": -0.0259,
-      "recovery_days": 1,
-      "abnormal_return_1d": 0.0238,
-      "abnormal_return_3d": 0.0061,
-      "abnormal_return_5d": 0.0121,
-      "benchmark_name": "SOX",
-      "status": "resolved",
-      "summary": "공정거래위원회 하도급거래 공정화 관련 시정명령 및 경고 조치",
-      "chart_data": [
-        {
-          "day": 0,
-          "cumulative_return": 0.0,
-          "date": "2023-11-20"
-        },
-        {
-          "day": 1,
-          "cumulative_return": 0.0046,
-          "date": "2023-11-21"
-        },
-        {
-          "day": 2,
-          "cumulative_return": -0.0008,
-          "date": "2023-11-22"
-        },
-        {
-          "day": 3,
-          "cumulative_return": -0.0099,
-          "date": "2023-11-23"
-        },
-        {
-          "day": 4,
-          "cumulative_return": -0.0259,
-          "date": "2023-11-24"
-        },
-        {
-          "day": 5,
-          "cumulative_return": -0.0053,
-          "date": "2023-11-27"
-        },
-        {
-          "day": 6,
-          "cumulative_return": 0.0,
-          "date": "2023-11-28"
-        },
-        {
-          "day": 7,
-          "cumulative_return": -0.0076,
-          "date": "2023-11-29"
-        },
-        {
-          "day": 8,
-          "cumulative_return": 0.019,
-          "date": "2023-11-30"
-        },
-        {
-          "day": 9,
-          "cumulative_return": 0.0091,
-          "date": "2023-12-01"
-        },
-        {
-          "day": 10,
-          "cumulative_return": -0.0023,
-          "date": "2023-12-04"
+          "cumulative_return": -0.1844,
+          "date": "2026-07-10"
         }
       ]
     },
@@ -316,77 +160,77 @@
       "event_id": "EVT-0005",
       "company_id": "005930",
       "company_name": "삼성전자",
-      "event_date": "2023-10-18",
-      "market_event_date": "2023-10-18",
-      "reaction_start_date": "2023-10-18",
-      "return_1d": -0.0142,
-      "return_3d": -0.0298,
-      "return_5d": -0.0355,
-      "event_relative_min_return": -0.0539,
-      "window_max_drawdown": 0.0539,
-      "max_drawdown": -0.0539,
-      "recovery_days": 13,
-      "abnormal_return_1d": -0.0008,
-      "abnormal_return_3d": 0.0039,
-      "abnormal_return_5d": 0.0254,
+      "event_date": "2023-06-28",
+      "market_event_date": "2023-06-28",
+      "reaction_start_date": "2023-07-24",
+      "return_1d": -0.0057,
+      "return_3d": 0.0185,
+      "return_5d": -0.0085,
+      "event_relative_min_return": -0.0298,
+      "window_max_drawdown": 0.0474,
+      "max_drawdown": -0.0298,
+      "recovery_days": 3,
+      "abnormal_return_1d": -0.0227,
+      "abnormal_return_3d": -0.0021,
+      "abnormal_return_5d": -0.0544,
       "benchmark_name": "SOX",
-      "status": "resolved",
-      "summary": "개인정보보호위원회 삼성전자 내부 정보유출 관련 과태료 처분 및 보완조치 완료",
+      "status": "confirmed",
+      "summary": "개인정보위가 삼성전자 개인정보 유출과 안전조치의무 위반에 과징금·과태료 및 시정조치를 의결",
       "chart_data": [
         {
           "day": 0,
           "cumulative_return": 0.0,
-          "date": "2023-10-18"
+          "date": "2023-07-24"
         },
         {
           "day": 1,
-          "cumulative_return": -0.0142,
-          "date": "2023-10-19"
+          "cumulative_return": -0.0057,
+          "date": "2023-07-25"
         },
         {
           "day": 2,
-          "cumulative_return": -0.0241,
-          "date": "2023-10-20"
+          "cumulative_return": -0.0085,
+          "date": "2023-07-26"
         },
         {
           "day": 3,
-          "cumulative_return": -0.0298,
-          "date": "2023-10-23"
+          "cumulative_return": 0.0185,
+          "date": "2023-07-27"
         },
         {
           "day": 4,
-          "cumulative_return": -0.0284,
-          "date": "2023-10-24"
+          "cumulative_return": 0.0028,
+          "date": "2023-07-28"
         },
         {
           "day": 5,
-          "cumulative_return": -0.0355,
-          "date": "2023-10-25"
+          "cumulative_return": -0.0085,
+          "date": "2023-07-31"
         },
         {
           "day": 6,
-          "cumulative_return": -0.0539,
-          "date": "2023-10-26"
+          "cumulative_return": 0.0099,
+          "date": "2023-08-01"
         },
         {
           "day": 7,
-          "cumulative_return": -0.0454,
-          "date": "2023-10-27"
+          "cumulative_return": -0.0071,
+          "date": "2023-08-02"
         },
         {
           "day": 8,
-          "cumulative_return": -0.0454,
-          "date": "2023-10-30"
+          "cumulative_return": -0.0227,
+          "date": "2023-08-03"
         },
         {
           "day": 9,
-          "cumulative_return": -0.0511,
-          "date": "2023-10-31"
+          "cumulative_return": -0.0298,
+          "date": "2023-08-04"
         },
         {
           "day": 10,
           "cumulative_return": -0.027,
-          "date": "2023-11-01"
+          "date": "2023-08-07"
         }
       ]
     }

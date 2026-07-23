@@ -17,7 +17,7 @@ TEMPLATE_ROOT = Path(__file__).parents[2] / "frontend" / "templates"
 @pytest.mark.parametrize(
     ("path", "screen"),
     [
-        ("/", "home"),
+        ("/", "login"),
         ("/home", "home"),
         ("/portfolio/input", "portfolio-input"),
         ("/portfolio/edit", "portfolio-edit"),

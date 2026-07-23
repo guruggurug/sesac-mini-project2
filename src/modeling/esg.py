@@ -91,8 +91,11 @@ def calculate_esg_risk(
         latest_rows = []
         for ind_id in company_rows["indicator_id"].unique():
             ind_rows = company_rows[company_rows["indicator_id"] == ind_id]
-            # Filter to approved rows first
-            approved_rows = ind_rows[ind_rows["review_status"] == "approved"]
+            # Filter to approved rows first (if review_status column exists)
+            if "review_status" in ind_rows.columns:
+                approved_rows = ind_rows[ind_rows["review_status"] == "approved"]
+            else:
+                approved_rows = ind_rows
             if approved_rows.empty:
                 continue
             # Pick latest period (year)
@@ -158,9 +161,11 @@ def calculate_esg_risk(
             else:
                 norm_risk = norm_val
 
-            # 2. Trend & Management bonus
             # Trend: find early periods for same company & indicator
-            hist_rows = company_rows[(company_rows["indicator_id"] == ind_id) & (company_rows["review_status"] == "approved")]
+            if "review_status" in company_rows.columns:
+                hist_rows = company_rows[(company_rows["indicator_id"] == ind_id) & (company_rows["review_status"] == "approved")]
+            else:
+                hist_rows = company_rows[company_rows["indicator_id"] == ind_id]
             trend_bonus = 0.0
             if len(hist_rows) >= 2:
                 sorted_hist = hist_rows.sort_values("period")

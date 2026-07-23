@@ -34,7 +34,7 @@ def main():
     
     # Paths
     base_dir = Path(".")
-    data_dir = base_dir / "data" / "reviewed"
+    data_dir = base_dir / "data" / "processed"
     out_dir = base_dir / "data" / "processed"
     os.makedirs(out_dir, exist_ok=True)
     
@@ -85,7 +85,7 @@ def main():
         price_data=price_csv,
         index_prices_input=index_csv,
         window_days=10,
-        filter_approved_only=True
+        filter_model_eligible_only=True
     )
     with open(out_dir / "event_reactions.json", "w", encoding="utf-8") as f:
         json.dump({"events": event_reactions}, f, ensure_ascii=False, indent=2)
