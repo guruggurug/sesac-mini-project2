@@ -268,3 +268,21 @@
 - **Remaining issues**: 없음
 - **Blockers**: 없음
 - **Next task**: 프론트엔드 모바일 UI 및 백엔드 데이터 최적화 흐름 최종 연동 테스트
+
+### 2026-07-23 16:11 — FE-Header-Profile-Link-To-Login
+
+- **Role**: Frontend
+- **Status**: `done`
+- **Completed**:
+  - 모든 템플릿 파일(`home.html`, `diagnosis_result.html`, `portfolio_edit.html`, `portfolio_summary.html`, `issue_analysis.html`)의 상단 헤더 우측 사람 모양 아이콘(`account_circle`)을 클릭했을 때 신규 로그인 페이지인 `/login`으로 원활하게 연결되도록 변경함.
+- **Created files**: 없음
+- **Modified files**:
+  - [home.html](file:///C:/Users/USER/signal/project3/src/frontend/templates/home.html)
+  - [diagnosis_result.html](file:///C:/Users/USER/signal/project3/src/frontend/templates/diagnosis_result.html)
+  - [portfolio_edit.html](file:///C:/Users/USER/signal/project3/src/frontend/templates/portfolio_edit.html)
+  - [portfolio_summary.html](file:///C:/Users/USER/signal/project3/src/frontend/templates/portfolio_summary.html)
+  - [issue_analysis.html](file:///C:/Users/USER/signal/project3/src/frontend/templates/issue_analysis.html)
+- **Validation results**: 로컬 개발서버의 모든 메인/서브 화면에서 헤더 사람 아이콘 클릭 시 `/login` 로그인 화면으로 정상 리다이렉트 및 연동되는 것을 확인.
+- **Remaining issues**: 없음
+- **Blockers**: 없음
+- **Next task**: 프론트엔드 모바일 UI 및 백엔드 데이터 최적화 흐름 최종 연동 테스트
