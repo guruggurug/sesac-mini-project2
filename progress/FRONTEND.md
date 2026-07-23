@@ -103,11 +103,16 @@
 - **Validation results**: 브라우저 390px 뷰포트 내 레이아웃 및 반응형 동작 정상 확인.
 - **Next task**: 통합 연동 테스트 및 실시간 차트 렌더링 조율.
 
+<<<<<<< HEAD
 ### 2026-07-22 12:15 — FE-UI-TWEAK-01 Complete
+=======
+### 2026-07-23 11:10 — FE-UI-Alignment
+>>>>>>> 2dc6ed1 (feat: design alignment and stock color standard correction)
 
 - **Role**: Frontend
 - **Status**: `done`
 - **Completed**:
+<<<<<<< HEAD
   - 하단 메뉴 바 순서 및 4번째 탭 명칭 통일 (`홈`, `진단/최적화`, `이슈 분석`, `설정`).
   - `diagnosis_result.html` 상단 탭 (`진단 결과` \| `포트폴리오`) 클릭 시 `switchTab()` 함수를 이용한 DOM content toggle 및 헤더 타이틀 동적 전환 구현.
   - `issue_analysis.html` 상단 탭 (`삼성전자` \| `SK하이닉스`) 클릭 시 `switchIssueTab()` 함수를 이용한 SK하이닉스 이슈/주가/과거 사례 영향 분석 뷰 동적 전환 구현.
@@ -123,3 +128,113 @@
   - pytest 단위 테스트 15개 항목 100% 통과 (8.43s).
   - 허용 파일 외 수정 없음 (`git status` 검증 완료).
 - **Next task**: 실시간 데이터 API 연동 검토.
+=======
+  - `portfolio_summary.html` 레이아웃 및 Tailwind 설정을 타 페이지와 일치하도록 390px 모바일 프레임 및 공통 헤더/푸터 구조로 변경.
+  - `diagnosis_result.html` 내 "포트폴리오" 탭 클릭 시 `/portfolio/summary` 페이지로 이동하도록 탭 전환 스크립트 수정.
+- **Created files**: 없음
+- **Modified files**:
+  - [portfolio_summary.html](file:///C:/Users/USER/signal/project3/src/frontend/templates/portfolio_summary.html)
+  - [diagnosis_result.html](file:///C:/Users/USER/signal/project3/src/frontend/templates/diagnosis_result.html)
+- **Validation results**: `/portfolio/summary` 렌더링 결과 타 페이지들과 동일한 테마, 폰트 및 모바일 쉘 구조 내 정상 렌더링 확인.
+- **Remaining issues**: 없음
+- **Blockers**: 없음
+- **Next task**: 프론트엔드 모바일 UI 및 백엔드 데이터 최적화 흐름 최종 연동 테스트
+
+### 2026-07-23 11:12 — FE-Nav-Tab-Fix
+
+- **Role**: Frontend
+- **Status**: `done`
+- **Completed**:
+  - `portfolio_edit.html`에서 포트폴리오를 관리하고 수정하는 페이지의 의미에 맞춰 하단 네비게이션 탭의 활성화 상태를 "설정"에서 "진단/최적화"로 변경.
+- **Created files**: 없음
+- **Modified files**:
+  - [portfolio_edit.html](file:///C:/Users/USER/signal/project3/src/frontend/templates/portfolio_edit.html)
+- **Validation results**: `/portfolio/edit` 접근 시 하단의 "진단/최적화" 탭이 정상적으로 활성화 상태(배경색 강조 및 텍스트 칼라 적용)로 표시되는 것 확인.
+- **Remaining issues**: 없음
+- **Blockers**: 없음
+- **Next task**: 프론트엔드 모바일 UI 및 백엔드 데이터 최적화 흐름 최종 연동 테스트
+
+### 2026-07-23 11:13 — FE-Header-Alignment
+
+- **Role**: Frontend
+- **Status**: `done`
+- **Completed**:
+  - `diagnosis_result.html` 상단 헤더 영역의 뒤로가기 버튼과 "진단 결과" 텍스트를 다른 뷰(홈, 이슈분석, 포트폴리오 요약 등)와 일치하도록 waves 로고와 "Chip Buddy" 홈 버튼으로 교체.
+- **Created files**: 없음
+- **Modified files**:
+  - [diagnosis_result.html](file:///C:/Users/USER/signal/project3/src/frontend/templates/diagnosis_result.html)
+- **Validation results**: `/diagnosis/result` 화면 접속 시 상단 헤더에 waves 로고와 "Chip Buddy" 타이틀이 통일되게 노출되는 것 확인.
+- **Remaining issues**: 없음
+- **Blockers**: 없음
+- **Next task**: 프론트엔드 모바일 UI 및 백엔드 데이터 최적화 흐름 최종 연동 테스트
+
+### 2026-07-23 13:32 — FE-Index-Capsule-Wrap-Fix
+
+- **Role**: Frontend
+- **Status**: `done`
+- **Completed**:
+  - `home.html`의 상단 지수 캡슐(Top Index Capsule) 내 코스피/코스닥 지수가 390px 뷰포트 내에서 개행(줄바꿈)되지 않도록 `whitespace-nowrap` 및 `shrink-0` 스타일 유틸리티 적용하여 UI를 개선.
+- **Created files**: 없음
+- **Modified files**:
+  - [home.html](file:///C:/Users/USER/signal/project3/src/frontend/templates/home.html)
+- **Validation results**: 390px 모바일 화면 및 로컬 개발서버(`/home`)에서 코스피/코스닥 지수명이 줄바꿈 없이 1줄로 미려하게 정렬되는 것을 검증.
+- **Remaining issues**: 없음
+- **Blockers**: 없음
+- **Next task**: 프론트엔드 모바일 UI 및 백엔드 데이터 최적화 흐름 최종 연동 테스트
+
+### 2026-07-23 13:33 — FE-Index-Capsule-Baseline-Align
+
+- **Role**: Frontend
+- **Status**: `done`
+- **Completed**:
+  - `home.html`의 상단 지수 캡슐(Top Index Capsule) 내 지수명("코스피/코스닥"), 지수 값(숫자), 등락률의 수직 정렬을 `items-center`에서 `items-baseline`으로 수정하여 텍스트 하단 기준선을 정렬하고 시각적 안정감을 향상시킴.
+- **Created files**: 없음
+- **Modified files**:
+  - [home.html](file:///C:/Users/USER/signal/project3/src/frontend/templates/home.html)
+- **Validation results**: 로컬 개발서버의 `/home` 페이지에서 지수명 한글과 숫자의 기준선(Baseline)이 어긋나지 않고 일렬로 보기 좋게 매칭되는 것을 검증.
+- **Remaining issues**: 없음
+- **Blockers**: 없음
+- **Next task**: 프론트엔드 모바일 UI 및 백엔드 데이터 최적화 흐름 최종 연동 테스트
+
+### 2026-07-23 13:35 — FE-Optimization-Label-Removal
+
+- **Role**: Frontend
+- **Status**: `done`
+- **Completed**:
+  - `diagnosis_result.html` 화면 내 보유 비중 그래프 영역에서 불필요하게 영역을 침범하고 직관성을 해치던 "최적화" 뱃지(badge) 및 sparkles 아이콘(`auto_awesome`)을 제거하고, "추천 최적 비중" 텍스트를 "추천 비중"으로 직관성 있게 단순화함.
+- **Created files**: 없음
+- **Modified files**:
+  - [diagnosis_result.html](file:///C:/Users/USER/signal/project3/src/frontend/templates/diagnosis_result.html)
+- **Validation results**: 로컬 개발서버의 `/diagnosis/result` 화면 그래프에서 뱃지와 아이콘이 사라지고 텍스트가 정상적으로 수정된 것을 검증.
+- **Remaining issues**: 없음
+- **Blockers**: 없음
+- **Next task**: 프론트엔드 모바일 UI 및 백엔드 데이터 최적화 흐름 최종 연동 테스트
+
+### 2026-07-23 13:38 — FE-Issue-Analysis-Color-Correction
+
+- **Role**: Frontend
+- **Status**: `done`
+- **Completed**:
+  - `issue_analysis.html` (이슈 분석 화면) 내 지수/수익률에 대해 가이드라인 규칙에 맞춰 양수(상승/호재)일 경우 스타일가이드 블루(`#3182CE`), 음수(하락/악재)일 경우 스타일가이드 레드(`#ba1a1a`) 색상이 적용되도록 현재가 변동률, 과거 수익률 그리드 및 SVG 차트 경로/도트 색상을 수정함.
+- **Created files**: 없음
+- **Modified files**:
+  - [issue_analysis.html](file:///C:/Users/USER/signal/project3/src/frontend/templates/issue_analysis.html)
+- **Validation results**: 로컬 개발서버의 `/issue/analysis` 화면에서 삼성전자(음수) 영역의 지표와 차트가 빨간색으로, SK하이닉스(양수) 영역의 지표와 차트가 파란색으로 올바르게 노출되는 것을 검증.
+- **Remaining issues**: 없음
+- **Blockers**: 없음
+- **Next task**: 프론트엔드 모바일 UI 및 백엔드 데이터 최적화 흐름 최종 연동 테스트
+
+### 2026-07-23 13:41 — FE-Issue-Analysis-Color-Swap-To-Standard
+
+- **Role**: Frontend
+- **Status**: `done`
+- **Completed**:
+  - `issue_analysis.html`의 양수/음수 색상을 한국 시장 및 기존 페이지들과 일치하도록 변경함. 양의 숫자(상승/호재)일 경우 스타일가이드 레드(`#ba1a1a`), 음의 숫자(하락/악재)일 경우 스타일가이드 블루(`#3182CE`)로 교체 수정.
+- **Created files**: 없음
+- **Modified files**:
+  - [issue_analysis.html](file:///C:/Users/USER/signal/project3/src/frontend/templates/issue_analysis.html)
+- **Validation results**: 로컬 개발서버의 `/issue/analysis` 화면에서 삼성전자(음수) 영역의 지표와 차트가 파란색(Blue)으로, SK하이닉스(양수) 영역의 지표와 차트가 빨간색(Red)으로 정상 반영되는 것 확인.
+- **Remaining issues**: 없음
+- **Blockers**: 없음
+- **Next task**: 프론트엔드 모바일 UI 및 백엔드 데이터 최적화 흐름 최종 연동 테스트
+>>>>>>> 2dc6ed1 (feat: design alignment and stock color standard correction)
