@@ -77,8 +77,6 @@ def parse_and_cast_row(row: dict, schema: dict) -> dict:
             
         prop_info = properties[key]
         prop_type = prop_info.get("type")
-<<<<<<< HEAD
-
         # JSON Schema permits nullable unions such as
         # {"type": ["number", "null"]}. CSV values arrive as strings, so
         # select the concrete non-null type before casting. Empty values are
@@ -103,24 +101,6 @@ def parse_and_cast_row(row: dict, schema: dict) -> dict:
                 prop_type = "integer"
             else:
                 prop_type = "string"
-=======
-        
-        if isinstance(prop_type, list):
-            types = [t for t in prop_type if t != "null"]
-            prop_type = types[0] if types else "string"
-        
-        # oneOf나 anyOf 등 다중 타입 대응 (null 허용 등)
-        if not prop_type and "oneOf" in prop_info:
-            types = []
-            for t in prop_info["oneOf"]:
-                t_type = t.get("type")
-                if t_type:
-                    if isinstance(t_type, list):
-                        types.extend([x for x in t_type if x != "null"])
-                    elif t_type != "null":
-                        types.append(t_type)
-            prop_type = types[0] if types else "string"
->>>>>>> a5b40c1 (Teammate B Update push 22.07.2026)
             
         cast_row[key] = safe_cast_value(val, prop_type)
         
