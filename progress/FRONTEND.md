@@ -286,3 +286,17 @@
 - **Remaining issues**: 없음
 - **Blockers**: 없음
 - **Next task**: 프론트엔드 모바일 UI 및 백엔드 데이터 최적화 흐름 최종 연동 테스트
+
+### 2026-07-23 17:04 — FE-Login-Redirect-To-Portfolio-Input
+
+- **Role**: Frontend
+- **Status**: `done`
+- **Completed**:
+  - `login.html` (로그인 화면) 내 이메일 로그인 버튼 및 구글 로그인 버튼 클릭 시 이동하는 대상을 기존의 홈 화면(`/home`)에서 포트폴리오 입력 화면(`/portfolio/input`)으로 변경 연동함.
+- **Created files**: 없음
+- **Modified files**:
+  - [login.html](file:///C:/Users/USER/signal/project3/src/frontend/templates/login.html)
+- **Validation results**: 로그인 버튼 또는 구글 로그인 버튼 클릭 시 `/portfolio/input` 경로로 알맞게 리다이렉션되는 것을 검증.
+- **Remaining issues**: 없음
+- **Blockers**: 없음
+- **Next task**: 프론트엔드 모바일 UI 및 백엔드 데이터 최적화 흐름 최종 연동 테스트
