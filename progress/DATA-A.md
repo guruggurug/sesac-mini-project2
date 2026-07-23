@@ -11,6 +11,7 @@
 | DATA-A-05 | Final Data Quality Review | `done` | `validate_data_a_bundle()` 및 계약 테스트 통과 | 없음 |
 | DATA-A-RT-01 | Daily Disclosure and News Source·Classification·Deduplication Rules | `review` | candidate/source 계약, 중복·severity 자동 결정 규칙 | 공유 스키마 교차 검토 필요 |
 | DATA-A-RT-02 | Candidate Data Quality and Event Status Validation | `review` | candidate 6건, source 6건, event-source 4건, processed event 3건 통합 검증 | 실제 일일 수집기 연동 필요 |
+| DATA-A-RT-FINAL-02 | final audit remediation (S02/S05 split, event deduplication gate, EVT-0001 date, scripts restore) | `review` | scripts/validate_data_a.py, data/processed/*, data/docs/*, etc. | 없음 |
 
 ## Active Blockers
 
@@ -262,3 +263,73 @@
   - 지배구조 G01~G03 공식 원문 재수집 전 18행은 `unavailable` 유지
 - **Blockers**: Data B 집계 모델이 현재 브랜치에 아직 없음
 - **Next task**: Data B 산출물 동기화 후 두 기업의 완전한 `esg_risk_score` 입력을 계약 테스트로 고정
+
+### 2026-07-22 12:20 — DATA-A-RT-FINAL-02: Final Audit Quality Remediation
+
+- **Role**: Data A
+- **Owner**: Data A
+- **Status**: `review`
+- **Completed**:
+  - S02(협력사 ESG 현장실사 비율)와 S05(책임광물 제3자 검증률) 지표 분리 완료.
+    - `data/processed/esg_indicators.csv` 수정 (SK Hynix S02 -> S05 변경 및 삼성 S05, SK Hynix S02에 대한 3개년 unavailable 결측 행 추가, 총 78행).
+    - `data/docs/indicator_comparability.csv` 수정 (S02/S05 개별 비교 행으로 분리 및 `insufficient_data` 설정).
+    - `data/docs/data_dictionary.md` 및 `data/notes/data_dictionary.md` 수정 (S05 지표 정보 추가 및 scope_mismatch 전체 리스트 명시).
+  - 사건 의미 중복 검사를 processed 발행 게이트에 연결 완료.
+    - `src/backend/app/utils/csv_validator.py`의 `validate_data_a_bundle` 내에 `events_are_duplicates`를 연동하여 의미상 중복된 사건 발생 시 `INVALID_EVENT_SEMANTIC_DUPLICATE` 오류 코드로 반려하도록 수정.
+    - bidirectional 검증 추가: 모든 processed event가 최소 하나의 `validation_status=validated` candidate에 의해 참조되고, candidate와 event의 company_id가 일치해야 함을 검증하며, 고아 사건 존재 시 `INVALID_EVENT_CANDIDATE_REFERENCE` 오류 코드로 반려.
+    - `src/backend/tests/test_issue_pipeline_contracts.py`에 esg 행 수 78/24행 변경 사항 반영 및 중복/고아 사건 예외 테스트 케이스 추가.
+  - EVT-0001 기흥 방사선 피폭 사고 시장 공개일 근거 보존 (Option B 선택).
+    - 2024-05-28 최초 보도일 근거 확보 실패로 인해, 검증 가능한 가장 빠른 공식 원안위 보도자료일인 `2024-09-26`로 `market_event_date` 통일.
+    - `market_event_date_type`을 `authority_announcement_date`로 변경하고 사건 메모(`note`)에 날짜 폐기 이유 수록.
+  - Data A 검증 진입점 및 문서 복구.
+    - `scripts/validate_data_a.py` 스크립트를 `validate_data_a_bundle` 통합 검증을 실행하는 방식으로 복구 완료.
+    - `README.md` 내의 개별 검증 명령어를 `python scripts/validate_data_a.py`로 통일 및 가이드 보완.
+- **Created files**: None
+- **Modified files**:
+  - `data/processed/esg_indicators.csv`
+  - `data/processed/events.csv`
+  - `data/docs/indicator_comparability.csv`
+  - `data/docs/data_dictionary.md`
+  - `data/notes/data_dictionary.md`
+  - `src/backend/app/utils/csv_validator.py`
+  - `src/backend/tests/test_issue_pipeline_contracts.py`
+  - `scripts/validate_data_a.py`
+  - `README.md`
+  - `progress/DATA-A.md`
+- **Validation commands**:
+  - `python scripts/validate_data_a.py`
+  - `python -m pytest src/backend/tests/test_issue_pipeline_contracts.py`
+- **Validation results**: Pass
+- **Remaining**:
+  - Data B/Backend는 S02/S05 분리에 따라 최적화 모델 및 UI에서 `unavailable` 지표가 0으로 오처리되지 않도록 점검 필요.
+  - Data B/Backend는 EVT-0001의 시장 공개일 변경(`2024-09-26`)에 따른 주가 반응 분석(Reaction Window) 재계산 필요.
+- **Blockers**: 없음
+- **Next task**: 없음
+
+### 2026-07-22 12:45 — DATA-A-RT-FINAL-02: Local Virtual Environment and Verification Complete
+
+- **Role**: Data A
+- **Owner**: Data A
+- **Status**: `review`
+- **Completed**:
+  - 로컬 가상환경 `.venv` 생성 및 `requirements.txt` 패키지 설치 완료.
+  - 동적 웹페이지인 고용부(MOEL) 및 개인정보위(PIPC) 원문 파일 다운로드 및 `data/processed/sources.csv` 내 실시간 content_hash 동기화 완료.
+  - `scripts/validate_data_a.py` 실행하여 데이터셋 통합 검증 성공 완료.
+  - 신규 스키마 규격(ESG 78행) 및 중복 사건 검출 로직에 맞춰 `test_csv_validator.py` 및 `test_issue_pipeline_contracts.py` 테스트 케이스 보완 완료.
+  - 백엔드 전체 테스트 스위트 68건 실행 및 전체 통과 완료.
+- **Created files**:
+  - `scripts/download_reports.py`
+- **Modified files**:
+  - `data/processed/sources.csv`
+  - `src/backend/tests/test_csv_validator.py`
+  - `src/backend/tests/test_issue_pipeline_contracts.py`
+- **Validation commands**:
+  - `.venv/Scripts/python.exe scripts/validate_data_a.py`
+  - `.venv/Scripts/python.exe -m pytest src/backend/tests/`
+- **Validation results**:
+  - 데이터 검증: `[+] Data A bundle validation PASSED!` (candidates: 6, sources: 6, events: 3, esg: 78)
+  - 테스트: `68 passed`
+- **Remaining**:
+  - 타 역할 직무(Data B, Backend, Frontend)에서 S02/S05 분리 및 EVT-0001 공개일 변경에 따른 연동 재확인
+- **Blockers**: 없음
+- **Next task**: 없음

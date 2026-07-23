@@ -86,9 +86,9 @@ def test_data_refresh_does_not_report_false_success_before_sync_implementation()
 
 def test_get_diagnosis_page():
     """
-    GET / 진단 홈 페이지가 정상적으로 HTML을 렌더링하는지 테스트
+    GET /home 진단 홈 페이지가 정상적으로 HTML을 렌더링하는지 테스트
     """
-    response = client.get("/")
+    response = client.get("/home")
     assert response.status_code == 200
     assert "text/html" in response.headers["content-type"]
     assert "현재 투자 위험도" in response.text

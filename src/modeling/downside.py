@@ -90,36 +90,84 @@ def calculate_downside_deviation(
     return float(downside_dev)
 
 
+def filter_price_period(
+    prices_df: pd.DataFrame,
+    years: int = 3
+) -> pd.DataFrame:
+    """
+    Filter price DataFrame to trailing N years from the last available date.
+
+    Args:
+        prices_df: Pivoted DataFrame of stock prices.
+        years: Period in years (e.g. 1, 3, 5).
+
+    Returns:
+        pd.DataFrame: Filtered DataFrame.
+    """
+    if prices_df.empty:
+        return prices_df
+
+    end_date = prices_df.index.max()
+    start_date = end_date - pd.DateOffset(years=years)
+    
+    # Filter the dataframe
+    filtered_df = prices_df[prices_df.index >= start_date]
+    return filtered_df
+
+
 def calculate_company_downside_risks(
     returns_df: pd.DataFrame,
     prices_df: pd.DataFrame,
-    cvar_confidence: float = 0.95
-) -> Dict[str, Dict[str, float]]:
+    cvar_confidence: float = 0.95,
+    years: int = 3
+) -> Dict[str, Dict[str, Any]]:
     """
-    Calculate company-level downside risk metrics for all tickers.
+    Calculate company-level downside risk metrics for all tickers over a filtered period.
 
     Args:
         returns_df: Pivoted DataFrame of daily returns.
         prices_df: Pivoted DataFrame of stock prices.
         cvar_confidence: CVaR confidence level (default 0.95).
+        years: Period in years (default 3).
 
     Returns:
-        Dict[str, Dict[str, float]]: Nested dictionary containing cvar_95, max_drawdown, downside_deviation per ticker.
+        Dict[str, Dict[str, Any]]: Nested dictionary containing cvar, max_drawdown, downside_deviation per ticker.
     """
-    results: Dict[str, Dict[str, float]] = {}
+    # 1. Filter prices and returns to specified period
+    filtered_prices = filter_price_period(prices_df, years=years)
+    filtered_returns = returns_df.loc[returns_df.index.intersection(filtered_prices.index)]
 
-    for ticker in returns_df.columns:
-        ret_series = returns_df[ticker]
-        px_series = prices_df[ticker]
+    if filtered_returns.empty or len(filtered_prices) < 2:
+        raise ValueError("선택한 기간 동안의 거래일 데이터가 부족하여 하방위험을 계산할 수 없습니다.")
+
+    results: Dict[str, Dict[str, Any]] = {}
+    
+    # Calculate period metadata
+    start_dt = str(filtered_prices.index.min())[:10]
+    end_dt = str(filtered_prices.index.max())[:10]
+    obs_count = len(filtered_prices)
+
+    for ticker in filtered_prices.columns:
+        ret_series = filtered_returns[ticker]
+        px_series = filtered_prices[ticker]
 
         cvar_val = calculate_cvar(ret_series, confidence_level=cvar_confidence)
         mdd_val = calculate_mdd(px_series)
         ds_dev_val = calculate_downside_deviation(ret_series, target_return=0.0)
 
+        # Also support 95% explicitly for legacy compatibility if confidence level changes
+        cvar_95_val = cvar_val if cvar_confidence == 0.95 else calculate_cvar(ret_series, confidence_level=0.95)
+
         results[str(ticker)] = {
-            "cvar_95": round(cvar_val, 4),
+            "cvar": round(cvar_val, 4),
+            "cvar_95": round(cvar_95_val, 4),
             "max_drawdown": round(mdd_val, 4),
             "downside_deviation": round(ds_dev_val, 4),
+            "price_period_start": start_dt,
+            "price_period_end": end_dt,
+            "number_of_observations": obs_count,
+            "analysis_period": f"{years}y",
+            "confidence_level": cvar_confidence
         }
 
     return results

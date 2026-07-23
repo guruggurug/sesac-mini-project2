@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html class="light" lang="ko">
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>로그인 - Chip Buddy</title>
+    <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=block" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', path='css/index.css') }}">
+</head>
+<body data-ui-screen="login" class="bg-[#FAF8F5] text-on-surface flex justify-center items-start min-h-screen">
+    {% if data_status in ["sample", "fallback"] %}<div class="fixed top-1 right-2 z-[100] rounded-full bg-[#F5E8DD] px-2 py-1 text-[10px] font-bold text-[#964B00]">{{ "샘플 데이터" if data_status == "sample" else "대체 데이터" }}</div>{% endif %}
+    
+    <!-- 390px Mobile App Container Shell -->
+    <div class="w-full max-w-[390px] min-h-screen flex flex-col justify-between relative shadow-2xl bg-[#FAF8F5] overflow-x-hidden px-6 py-12">
+        
+        <!-- Top Spacer to push logo down -->
+        <div class="h-10"></div>
+
+        <!-- Title & Subtitle Section -->
+        <div class="text-center flex flex-col items-center">
+            <h1 class="text-[44px] font-bold text-[#6B3E08] tracking-tight leading-none mb-3">Chip Buddy</h1>
+            <p class="text-[14px] font-medium text-[#7A7571] tracking-wide">당신의 투자 친구, Chip Buddy</p>
+        </div>
+
+        <!-- Form Fields Section -->
+        <div class="flex flex-col gap-3 mt-10">
+            <!-- Email Input -->
+            <div class="relative flex items-center w-full border border-[#E5DEC9] rounded-xl bg-white focus-within:ring-1 focus-within:ring-primary focus-within:border-primary overflow-hidden transition-all shadow-sm">
+                <span class="material-symbols-outlined text-[#7A7571] ml-4 shrink-0">mail</span>
+                <input class="w-full border-none bg-transparent px-3 py-4 text-[15px] text-[#2A1800] placeholder-[#B5B0AB] focus:ring-0 focus:outline-none" type="email" placeholder="이메일">
+            </div>
+
+            <!-- Password Input -->
+            <div class="relative flex items-center w-full border border-[#E5DEC9] rounded-xl bg-white focus-within:ring-1 focus-within:ring-primary focus-within:border-primary overflow-hidden transition-all shadow-sm">
+                <span class="material-symbols-outlined text-[#7A7571] ml-4 shrink-0">lock</span>
+                <input class="w-full border-none bg-transparent px-3 py-4 text-[15px] text-[#2A1800] placeholder-[#B5B0AB] focus:ring-0 focus:outline-none" type="password" id="password-input" placeholder="비밀번호">
+                <button onclick="togglePasswordVisibility()" class="material-symbols-outlined text-[#7A7571] mr-4 shrink-0 hover:text-primary transition-colors focus:outline-none" id="password-toggle">
+                    visibility_off
+                </button>
+            </div>
+
+            <!-- Keep me logged in Checkbox -->
+            <div class="flex items-center gap-2.5 mt-1.5 px-0.5">
+                <input type="checkbox" class="w-5 h-5 rounded border-[#E5DEC9] text-[#964B00] focus:ring-[#964B00] bg-white cursor-pointer" id="keep-login">
+                <label for="keep-login" class="text-[13px] font-semibold text-[#564334] cursor-pointer select-none">로그인 상태 유지</label>
+            </div>
+        </div>
+
+        <!-- Action Buttons Section -->
+        <div class="flex flex-col gap-3 mt-8">
+            <!-- Email Login Button -->
+            <button onclick="location.href='/portfolio/input'" class="w-full h-14 bg-[#8A4500] text-white font-bold rounded-xl text-[16px] active:scale-[0.98] transition-transform flex items-center justify-center shadow-md shadow-[#8A4500]/10">
+                로그인
+            </button>
+
+            <!-- Google Login Button -->
+            <button onclick="location.href='/portfolio/input'" class="w-full h-14 bg-[#FAF2EB] border border-[#E5DEC9] rounded-xl active:scale-[0.98] transition-transform flex items-center justify-center gap-2 shadow-sm">
+                <div class="shrink-0 flex items-center justify-center">
+                    <svg class="w-5 h-5" viewBox="0 0 24 24">
+                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22c-.87-2.6-2.87-4.53-5.84-4.53z"/>
+                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                    </svg>
+                </div>
+                <span class="font-bold text-[15px] text-[#6B3E08]">구글 아이디로 로그인하기</span>
+            </button>
+        </div>
+
+        <!-- Bottom Spacer to balance the top -->
+        <div class="h-10"></div>
+
+    </div>
+
+    <!-- Password visibility toggle script -->
+    <script>
+        function togglePasswordVisibility() {
+            const passwordInput = document.getElementById('password-input');
+            const passwordToggle = document.getElementById('password-toggle');
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                passwordToggle.innerText = 'visibility';
+            } else {
+                passwordInput.type = 'password';
+                passwordToggle.innerText = 'visibility_off';
+            }
+        }
+    </script>
+</body>
+</html>

@@ -14,6 +14,7 @@ from app.utils.issue_rules import (
     canonicalize_url,
     load_issue_rules,
     source_dedup_key,
+    events_are_duplicates,
 )
 
 # 스키마 파일 경로 설정
@@ -70,12 +71,12 @@ def parse_and_cast_row(row: dict, schema: dict) -> dict:
     
     for key, val in row.items():
         if key not in properties:
-            cast_row[key] = val
+            # Skip fields not defined in the JSON schema properties to support backward-compatibility
+            # and ignore deprecated columns (e.g. review_status)
             continue
             
         prop_info = properties[key]
         prop_type = prop_info.get("type")
-
         # JSON Schema permits nullable unions such as
         # {"type": ["number", "null"]}. CSV values arrive as strings, so
         # select the concrete non-null type before casting. Empty values are
@@ -413,6 +414,17 @@ def validate_data_a_bundle(base_dir: str = BASE_DIR) -> dict[str, list[dict]]:
 
     sources = {row["source_id"]: row for row in bundle["sources"]}
     events = {row["event_id"]: row for row in bundle["events"]}
+
+    # Check for duplicate events by semantic similarity
+    events_list = list(events.values())
+    for i in range(len(events_list)):
+        for j in range(i + 1, len(events_list)):
+            if events_are_duplicates(events_list[i], events_list[j]):
+                raise CSVValidationError(
+                    code="INVALID_EVENT_SEMANTIC_DUPLICATE",
+                    message=f"의미상 중복된 사건이 발견되었습니다: {events_list[i]['event_id']} / {events_list[j]['event_id']}",
+                )
+
     indicators = {
         (row["company_id"], row["indicator_id"])
         for row in bundle["esg"]
@@ -470,6 +482,7 @@ def validate_data_a_bundle(base_dir: str = BASE_DIR) -> dict[str, list[dict]]:
                 message=f"기업에 존재하지 않는 ESG 지표 참조입니다: {event_id}",
             )
 
+    referenced_event_ids = set()
     for candidate in bundle["candidates"]:
         matched_event_id = candidate.get("matched_event_id")
         if candidate["validation_status"] == "validated":
@@ -479,6 +492,15 @@ def validate_data_a_bundle(base_dir: str = BASE_DIR) -> dict[str, list[dict]]:
                     code="INVALID_CANDIDATE_EVENT_REFERENCE",
                     message=f"검증 후보의 사건 참조가 잘못되었습니다: {candidate['candidate_id']}",
                 )
+            if matched_event_id:
+                referenced_event_ids.add(matched_event_id)
+
+    for event_id in events:
+        if event_id not in referenced_event_ids:
+            raise CSVValidationError(
+                code="INVALID_EVENT_CANDIDATE_REFERENCE",
+                message=f"연결되지 않은 고아 사건(orphan event)이 존재합니다: {event_id}",
+            )
 
     for indicator in bundle["esg"]:
         source = sources.get(indicator["source_id"])

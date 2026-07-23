@@ -1,0 +1,13 @@
+{
+  "total_runs": 81,
+  "successful_runs": 81,
+  "failed_runs": 0,
+  "samsung_weight": {
+    "mean": 0.2581,
+    "std": 0.029,
+    "min": 0.25,
+    "max": 0.36
+  },
+  "stability_status": "stable",
+  "korean_note": "민감도 테스트 완료. 분석 기간 및 투자 성향 조건 변화에 따른 비중 변동성이 안정 범위 이내입니다."
+}

@@ -15,7 +15,12 @@ def _render(request: Request, template_name: str):
     )
 
 
+@router.get("/login", response_class=HTMLResponse)
 @router.get("/", response_class=HTMLResponse)
+def login(request: Request):
+    return _render(request, "login.html")
+
+
 @router.get("/home", response_class=HTMLResponse)
 def home(request: Request):
     return _render(request, "home.html")

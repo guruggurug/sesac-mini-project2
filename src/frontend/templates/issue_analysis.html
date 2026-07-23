@@ -15,13 +15,13 @@
         
         <!-- Header -->
         <header class="fixed top-0 w-full max-w-[390px] z-50 bg-[#FAF8F5] border-b border-[#E5DEC9] flex justify-between items-center px-4 h-16">
-            <div class="flex items-center gap-2 cursor-pointer" onclick="window.history.back()">
-                <span class="material-symbols-outlined text-[#964B00] text-[24px]">arrow_back</span>
-                <h1 class="font-bold text-[18px] leading-[24px] text-[#2A1800]">이슈 분석</h1>
-            </div>
+            <a href="/home" class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-[#964B00] text-[28px]">waves</span>
+                <h1 class="font-bold text-[18px] leading-[24px] text-[#2A1800] tracking-tight">Chip Buddy</h1>
+            </a>
             <div class="flex items-center gap-3">
                 <button class="material-symbols-outlined text-[#964B00]">notifications</button>
-                <button class="material-symbols-outlined text-[#964B00]">account_circle</button>
+                <a href="/login" class="material-symbols-outlined text-[#964B00] hover:text-[#7a3d00] transition-colors">account_circle</a>
             </div>
         </header>
 
@@ -120,18 +120,18 @@
                         <svg class="w-full h-full overflow-visible" viewBox="0 0 340 150">
                             <defs>
                                 <linearGradient id="lineGradientSam" x1="0%" x2="0%" y1="0%" y2="100%">
-                                    <stop offset="0%" stop-color="#964B00" stop-opacity="0.2"></stop>
-                                    <stop offset="100%" stop-color="#964B00" stop-opacity="0"></stop>
+                                    <stop offset="0%" stop-color="#3182CE" stop-opacity="0.2"></stop>
+                                    <stop offset="100%" stop-color="#3182CE" stop-opacity="0"></stop>
                                 </linearGradient>
                             </defs>
                             <line stroke="#ddc1ae" stroke-dasharray="2,2" x1="0" x2="340" y1="30" y2="30"></line>
                             <line stroke="#ddc1ae" stroke-dasharray="2,2" x1="0" x2="340" y1="75" y2="75"></line>
                             <line stroke="#ddc1ae" stroke-dasharray="2,2" x1="0" x2="340" y1="120" y2="120"></line>
                             <path d="M 0 30 L 80 50 L 160 110 L 250 125 L 340 100 V 150 H 0 Z" fill="url(#lineGradientSam)"></path>
-                            <path d="M 0 30 L 80 50 L 160 110 L 250 125 L 340 100" fill="none" stroke="#964B00" stroke-width="2.5"></path>
-                            <circle cx="0" cy="30" fill="#964B00" r="4"></circle>
-                            <circle cx="160" cy="110" fill="#ba1a1a" r="4"></circle>
-                            <circle cx="250" cy="125" fill="#ba1a1a" r="4"></circle>
+                            <path d="M 0 30 L 80 50 L 160 110 L 250 125 L 340 100" fill="none" stroke="#3182CE" stroke-width="2.5"></path>
+                            <circle cx="0" cy="30" fill="#3182CE" r="4"></circle>
+                            <circle cx="160" cy="110" fill="#3182CE" r="4"></circle>
+                            <circle cx="250" cy="125" fill="#3182CE" r="4"></circle>
                         </svg>
                         <div class="flex justify-between font-medium text-[11px] text-[#7A7571] mt-1">
                             <span>이슈 발생</span>
@@ -187,7 +187,7 @@
                         </div>
                         <div class="flex items-baseline gap-2">
                             <span class="text-[28px] font-bold text-[#2A1800] leading-none">185,000원</span>
-                            <span class="text-[#38A169] font-bold text-[16px] flex items-center">
+                            <span class="text-[#ba1a1a] font-bold text-[16px] flex items-center">
                                 <span class="material-symbols-outlined text-[20px]">arrow_drop_up</span>
                                 1.15%
                             </span>
@@ -203,15 +203,15 @@
                     <div class="grid grid-cols-3 gap-2 mb-4">
                         <div class="bg-[#FAF8F5] p-3 rounded-lg border border-[#E5DEC9] text-center">
                             <p class="font-medium text-[11px] text-[#7A7571]">Day+1 수익률</p>
-                            <p class="font-bold text-[15px] text-[#38A169]">+2.4%</p>
+                            <p class="font-bold text-[15px] text-[#ba1a1a]">+2.4%</p>
                         </div>
                         <div class="bg-[#FAF8F5] p-3 rounded-lg border border-[#E5DEC9] text-center">
                             <p class="font-medium text-[11px] text-[#7A7571]">Day+3 누적</p>
-                            <p class="font-bold text-[15px] text-[#38A169]">+5.1%</p>
+                            <p class="font-bold text-[15px] text-[#ba1a1a]">+5.1%</p>
                         </div>
                         <div class="bg-[#FAF8F5] p-3 rounded-lg border border-[#E5DEC9] text-center">
                             <p class="font-medium text-[11px] text-[#7A7571]">최대 상승</p>
-                            <p class="font-bold text-[15px] text-[#38A169]">+8.2%</p>
+                            <p class="font-bold text-[15px] text-[#ba1a1a]">+8.2%</p>
                         </div>
                     </div>
 
@@ -220,18 +220,18 @@
                         <svg class="w-full h-full overflow-visible" viewBox="0 0 340 150">
                             <defs>
                                 <linearGradient id="lineGradientSK" x1="0%" x2="0%" y1="0%" y2="100%">
-                                    <stop offset="0%" stop-color="#38A169" stop-opacity="0.25"></stop>
-                                    <stop offset="100%" stop-color="#38A169" stop-opacity="0"></stop>
+                                    <stop offset="0%" stop-color="#ba1a1a" stop-opacity="0.25"></stop>
+                                    <stop offset="100%" stop-color="#ba1a1a" stop-opacity="0"></stop>
                                 </linearGradient>
                             </defs>
                             <line stroke="#ddc1ae" stroke-dasharray="2,2" x1="0" x2="340" y1="30" y2="30"></line>
                             <line stroke="#ddc1ae" stroke-dasharray="2,2" x1="0" x2="340" y1="75" y2="75"></line>
                             <line stroke="#ddc1ae" stroke-dasharray="2,2" x1="0" x2="340" y1="120" y2="120"></line>
                             <path d="M 0 120 L 80 90 L 160 50 L 250 35 L 340 25 V 150 H 0 Z" fill="url(#lineGradientSK)"></path>
-                            <path d="M 0 120 L 80 90 L 160 50 L 250 35 L 340 25" fill="none" stroke="#38A169" stroke-width="2.5"></path>
-                            <circle cx="0" cy="120" fill="#38A169" r="4"></circle>
-                            <circle cx="160" cy="50" fill="#38A169" r="4"></circle>
-                            <circle cx="340" cy="25" fill="#38A169" r="4"></circle>
+                            <path d="M 0 120 L 80 90 L 160 50 L 250 35 L 340 25" fill="none" stroke="#ba1a1a" stroke-width="2.5"></path>
+                            <circle cx="0" cy="120" fill="#ba1a1a" r="4"></circle>
+                            <circle cx="160" cy="50" fill="#ba1a1a" r="4"></circle>
+                            <circle cx="340" cy="25" fill="#ba1a1a" r="4"></circle>
                         </svg>
                         <div class="flex justify-between font-medium text-[11px] text-[#7A7571] mt-1">
                             <span>이슈 발생</span>

@@ -1,0 +1,20 @@
+# Materiality Weights for 12 ESG Indicators
+# The sum of all weights must equal 1.00
+
+# Environment (Total: 0.40)
+E01: 0.12  # 온실가스 배출집약도
+E02: 0.08  # 용수 재이용률
+E03: 0.06  # 폐기물 재활용률
+E04: 0.08  # 공정가스 감축률
+E05: 0.06  # 유해화학물질 배출량
+
+# Social (Total: 0.30)
+S01: 0.09  # 산업재해율(LTIR)
+S02: 0.07  # 책임광물 제3자 검증률 / 협력사 ESG 현장실사 비율
+S03: 0.06  # 임직원 자발적 이직률
+S04: 0.08  # 정보보호 관리 수준
+
+# Governance (Total: 0.30)
+G01: 0.10  # 사외이사 비율
+G02: 0.08  # 정정공시 건수
+G03: 0.12  # 준법/수출통제 위반 건수

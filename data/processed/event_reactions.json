@@ -1,0 +1,238 @@
+{
+  "events": [
+    {
+      "event_id": "EVT-0001",
+      "company_id": "005930",
+      "company_name": "삼성전자",
+      "event_date": "2024-05-27",
+      "market_event_date": "2024-09-26",
+      "reaction_start_date": "2024-09-26",
+      "return_1d": -0.0077,
+      "return_3d": -0.0526,
+      "return_5d": -0.0572,
+      "event_relative_min_return": -0.0896,
+      "window_max_drawdown": 0.0896,
+      "max_drawdown": -0.0896,
+      "recovery_days": null,
+      "abnormal_return_1d": 0.0098,
+      "abnormal_return_3d": -0.0128,
+      "abnormal_return_5d": -0.0358,
+      "benchmark_name": "SOX",
+      "status": "confirmed",
+      "summary": "삼성전자 기흥사업장 XRF 분석장비 인터락 임의조작으로 인한 방사선 피폭 사고 (원안위 과태료 1050만원 처분)",
+      "chart_data": [
+        {
+          "day": 0,
+          "cumulative_return": 0.0,
+          "date": "2024-09-26"
+        },
+        {
+          "day": 1,
+          "cumulative_return": -0.0077,
+          "date": "2024-09-27"
+        },
+        {
+          "day": 2,
+          "cumulative_return": -0.0495,
+          "date": "2024-09-30"
+        },
+        {
+          "day": 3,
+          "cumulative_return": -0.0526,
+          "date": "2024-10-02"
+        },
+        {
+          "day": 4,
+          "cumulative_return": -0.0634,
+          "date": "2024-10-04"
+        },
+        {
+          "day": 5,
+          "cumulative_return": -0.0572,
+          "date": "2024-10-07"
+        },
+        {
+          "day": 6,
+          "cumulative_return": -0.068,
+          "date": "2024-10-08"
+        },
+        {
+          "day": 7,
+          "cumulative_return": -0.0896,
+          "date": "2024-10-10"
+        },
+        {
+          "day": 8,
+          "cumulative_return": -0.0835,
+          "date": "2024-10-11"
+        },
+        {
+          "day": 9,
+          "cumulative_return": -0.0603,
+          "date": "2024-10-14"
+        },
+        {
+          "day": 10,
+          "cumulative_return": -0.0572,
+          "date": "2024-10-15"
+        }
+      ]
+    },
+    {
+      "event_id": "EVT-0003",
+      "company_id": "000660",
+      "company_name": "SK하이닉스",
+      "event_date": "2026-06-26",
+      "market_event_date": "2026-06-26",
+      "reaction_start_date": "2026-06-26",
+      "return_1d": -0.0168,
+      "return_3d": -0.0423,
+      "return_5d": -0.0928,
+      "event_relative_min_return": -0.2233,
+      "window_max_drawdown": 0.2233,
+      "max_drawdown": -0.2233,
+      "recovery_days": null,
+      "abnormal_return_1d": -0.0552,
+      "abnormal_return_3d": -0.0536,
+      "abnormal_return_5d": -0.0491,
+      "benchmark_name": "SOX",
+      "status": "confirmed",
+      "summary": "고용노동부가 반복 불소 누출 사고와 관련해 SK하이닉스 등 반도체 제조업 25개소 집중 점검에 착수",
+      "chart_data": [
+        {
+          "day": 0,
+          "cumulative_return": 0.0,
+          "date": "2026-06-26"
+        },
+        {
+          "day": 1,
+          "cumulative_return": -0.0168,
+          "date": "2026-06-29"
+        },
+        {
+          "day": 2,
+          "cumulative_return": -0.0086,
+          "date": "2026-06-30"
+        },
+        {
+          "day": 3,
+          "cumulative_return": -0.0423,
+          "date": "2026-07-01"
+        },
+        {
+          "day": 4,
+          "cumulative_return": -0.1818,
+          "date": "2026-07-02"
+        },
+        {
+          "day": 5,
+          "cumulative_return": -0.0928,
+          "date": "2026-07-03"
+        },
+        {
+          "day": 6,
+          "cumulative_return": -0.1235,
+          "date": "2026-07-06"
+        },
+        {
+          "day": 7,
+          "cumulative_return": -0.1766,
+          "date": "2026-07-07"
+        },
+        {
+          "day": 8,
+          "cumulative_return": -0.2233,
+          "date": "2026-07-08"
+        },
+        {
+          "day": 9,
+          "cumulative_return": -0.1822,
+          "date": "2026-07-09"
+        },
+        {
+          "day": 10,
+          "cumulative_return": -0.1844,
+          "date": "2026-07-10"
+        }
+      ]
+    },
+    {
+      "event_id": "EVT-0005",
+      "company_id": "005930",
+      "company_name": "삼성전자",
+      "event_date": "2023-06-28",
+      "market_event_date": "2023-06-28",
+      "reaction_start_date": "2023-07-24",
+      "return_1d": -0.0057,
+      "return_3d": 0.0185,
+      "return_5d": -0.0085,
+      "event_relative_min_return": -0.0298,
+      "window_max_drawdown": 0.0474,
+      "max_drawdown": -0.0298,
+      "recovery_days": 3,
+      "abnormal_return_1d": -0.0227,
+      "abnormal_return_3d": -0.0021,
+      "abnormal_return_5d": -0.0544,
+      "benchmark_name": "SOX",
+      "status": "confirmed",
+      "summary": "개인정보위가 삼성전자 개인정보 유출과 안전조치의무 위반에 과징금·과태료 및 시정조치를 의결",
+      "chart_data": [
+        {
+          "day": 0,
+          "cumulative_return": 0.0,
+          "date": "2023-07-24"
+        },
+        {
+          "day": 1,
+          "cumulative_return": -0.0057,
+          "date": "2023-07-25"
+        },
+        {
+          "day": 2,
+          "cumulative_return": -0.0085,
+          "date": "2023-07-26"
+        },
+        {
+          "day": 3,
+          "cumulative_return": 0.0185,
+          "date": "2023-07-27"
+        },
+        {
+          "day": 4,
+          "cumulative_return": 0.0028,
+          "date": "2023-07-28"
+        },
+        {
+          "day": 5,
+          "cumulative_return": -0.0085,
+          "date": "2023-07-31"
+        },
+        {
+          "day": 6,
+          "cumulative_return": 0.0099,
+          "date": "2023-08-01"
+        },
+        {
+          "day": 7,
+          "cumulative_return": -0.0071,
+          "date": "2023-08-02"
+        },
+        {
+          "day": 8,
+          "cumulative_return": -0.0227,
+          "date": "2023-08-03"
+        },
+        {
+          "day": 9,
+          "cumulative_return": -0.0298,
+          "date": "2023-08-04"
+        },
+        {
+          "day": 10,
+          "cumulative_return": -0.027,
+          "date": "2023-08-07"
+        }
+      ]
+    }
+  ]
+}

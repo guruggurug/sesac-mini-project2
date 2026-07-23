@@ -1,0 +1,31 @@
+{
+  "run_id": "RUN-20260723-091617",
+  "model_version": "v1.2-dynamic-esg",
+  "generated_at": "2026-07-23T09:16:17.734322+00:00",
+  "data_status": "reviewed",
+  "input_files": {
+    "esg_indicators": {
+      "file": "esg_indicators.csv",
+      "hash": "6682d36ba2fb266b0330e2e3a3c8e9da"
+    },
+    "events": {
+      "file": "events.csv",
+      "hash": "e89523124a330ca3c014495c8967ef24"
+    },
+    "stock_prices": {
+      "file": "stock_prices.csv",
+      "hash": "8190e6db03cc85e36af9cc805d0bef9f"
+    },
+    "index_prices": {
+      "file": "index_prices.csv",
+      "hash": "05587f2f697f85e7fa3d90f36dba0d0e"
+    }
+  },
+  "model_parameters": {
+    "cvar_confidence": 0.95,
+    "price_period_years": 3,
+    "min_weight": 0.2,
+    "max_weight": 0.8,
+    "grid_step": 0.01
+  }
+}

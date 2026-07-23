@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0",
+  "version": "1.1.0",
   "automated_validation": {
     "required_contracts": ["event-candidates", "sources", "event-sources", "events"],
     "publishable_candidate_statuses": ["validated"],
@@ -81,6 +81,17 @@
         "keywords": ["경고", "집중점검", "일시 지연", "경미"]
       }
     ],
+    "negated_keyword_phrases": {
+      "사망": [
+        "사망 없음",
+        "사망자는 없음",
+        "사망자는 없",
+        "사망자 없음",
+        "사망하지 않음",
+        "사망으로 이어지지 않음",
+        "사망 사고는 없음"
+      ]
+    },
     "no_match_action": "use_enforcement_base_or_default"
   }
 }

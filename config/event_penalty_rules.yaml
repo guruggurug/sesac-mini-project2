@@ -1,0 +1,27 @@
+# Event Controversy Penalty Rules
+
+severity_multipliers:
+  1: 0.02
+  2: 0.05
+  3: 0.12
+  4: 0.25
+  5: 0.50
+
+status_multipliers:
+  rumor: 0.0
+  reported: 0.0
+  confirmed: 1.0
+  sanctioned: 1.5
+  resolved: 0.6  # Reduced penalty for resolved events
+
+evidence_confidence_multipliers:
+  high: 1.0
+  medium: 0.7
+  low: 0.4
+
+# Time decay multipliers based on days elapsed from analysis reference date
+# (e.g., 2026-07-22 as current date in metadata)
+recency_decay:
+  within_365_days: 1.0
+  within_730_days: 0.5
+  older_than_730_days: 0.2
