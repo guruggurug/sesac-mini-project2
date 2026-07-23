@@ -14,13 +14,16 @@ All branches on `origin` were inspected and compared against the latest `origin/
 
 | Branch Name | Primary Owner | Status / Category | Actions & Commit Coverage |
 | :--- | :--- | :--- | :--- |
-| `origin/feature/data-a-quality-remediation` | Data A | **Category D (Unique Work)** | Cherry-picked commit `32732b2` (resolved quality audit findings, S02/S05 split, event deduplication gate, date alignment). |
+| `origin/feature/data-a-quality-remediation` | Data A | **Category D (Unique Work)** | Cherry-picked commit `32732b2` (resolved quality audit findings, S02/S05 split, event deduplication gate, date alignment). Archived as `archive/feature/data-a-quality-remediation`. |
 | `origin/feature/downside-risk-cvar` | Data B | **Category D (Unique Work)** | Cherry-picked commit `b4dff76` (contract compliance remediation for downside models, 95% CVaR parameters, and Korean output strings). |
-| `origin/feature/data-b-chip-buddy-final-tasks` | Data B | **Category D (Unique Work)** | Cherry-picked commits `a5b40c1`, `0518ad0`, `98111ce`, `b91a8c1`, `3f568ed` (skipped as empty), and `b8ed0c5` (integrated dynamic ESG scoring, portfolio status scores, parameter YAML configurations, and model sensitivity check module). |
-| `origin/codex/frontend-ui-tweak` | Frontend | **Category A (Already Integrated)** | Analyzed template changes. Navigation layout (4 tabs: 홈, 진단/최적화, 이슈 분석, 설정) was already represented in main. Retained Frontend logs and resolved conflict in `progress/FRONTEND.md` by cherry-picking commit `3b970e5`. |
-| `origin/feature/frontend-improvements` | Frontend | **Category D (Unique Work)** | Cherry-picked commits `2dc6ed1`, `2a55d70`, `dac9cfd`, `c19cc2e`, `22b7177` (integrated high-fidelity login screen, aligned color standards, removed unnecessary DOM frames, and linked profile actions). |
-| `origin/be-rt-dart-adapter` | Backend | **Category A (Already Integrated)** | All commits and feature adaptations were already merged/represented in `main` via squash-merges. No unique changes. |
-| `origin/fe-stitch-static-css` | Frontend | **Category A (Already Integrated)** | Tailwind CLI static CSS pipeline and templates were already integrated into `main`. No unique changes. |
+| `origin/feature/data-b-chip-buddy-final-tasks` | Data B | **Category D (Unique Work)** | Cherry-picked commits `a5b40c1`, `0518ad0`, `98111ce`, `b91a8c1`, `3f568ed` (skipped as empty), and `b8ed0c5` (integrated dynamic ESG scoring, portfolio status scores, parameter YAML configurations, and model sensitivity check module). Archived as `archive/feature/data-b-chip-buddy-final-tasks`. |
+| `origin/codex/frontend-ui-tweak` | Frontend | **Category A (Already Integrated)** | Analyzed template changes. Navigation layout was already represented in main. Retained Frontend logs in `progress/FRONTEND.md` by cherry-picking commit `3b970e5`. Archived as `archive/codex/frontend-ui-tweak`. |
+| `origin/feature/frontend-improvements` | Frontend | **Category D (Unique Work)** | Cherry-picked commits `2dc6ed1`, `2a55d70`, `dac9cfd`, `c19cc2e`, `22b7177` (login flow and headers). Archived as `archive/feature/frontend-improvements`. |
+| `origin/codex/be-rt-dart-adapter` | Backend | **Category A (Already Integrated)** | Already merged in PR #6. Archived as `archive/codex/be-rt-dart-adapter`. |
+| `origin/feature/fe-stitch-static-css` | Frontend | **Category A (Already Integrated)** | Already merged in PR #5. Archived as `archive/feature/fe-stitch-static-css`. |
+| `origin/codex/repository-cleanup` | Dev/All | **Category A (Already Integrated)** | Already merged in PR #3 and PR #4. Archived as `archive/codex/repository-cleanup`. |
+| `origin/codex/common-rt-02-contract-remediation` | Dev/All | **Category D (Unique Work)** | Cherry-picked commit `b4dff76` (contract compliance remediation). Archived as `archive/codex/common-rt-02-contract-remediation`. |
+| `origin/codex/integrate-ui-railway` | Backend | **Category A (Already Integrated)** | Already merged in PR #2. Tagged as `archive/codex/integrate-ui-railway` (remote branch deletion protected by GitHub rules). |
 
 ---
 
