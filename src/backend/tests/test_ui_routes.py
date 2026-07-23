@@ -62,3 +62,22 @@ def test_unintended_ui_templates_are_absent_from_production():
     }
 
     assert all(not (TEMPLATE_ROOT / relative_path).exists() for relative_path in unintended)
+
+
+@pytest.mark.parametrize(
+    "path",
+    [
+        "/",
+        "/portfolio/input",
+        "/portfolio/edit",
+        "/portfolio/summary",
+        "/diagnosis/result",
+        "/issue/analysis",
+    ],
+)
+def test_ui_uses_generated_local_tailwind_stylesheet(path: str):
+    response = client.get(path)
+
+    assert "/static/css/index.css" in response.text
+    assert "cdn.tailwindcss.com" not in response.text
+    assert "tailwind.config" not in response.text

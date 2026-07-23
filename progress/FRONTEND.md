@@ -10,6 +10,7 @@
 | FE-04 | Real API Integration | `done` | HTMX 기반 백엔드 최적화 API 연동 완료 | - |
 | FE-05 | Issues and Event Analysis | `done` | 과거 사건 시계열 및 분석 결과 화면 설계 완료 | - |
 | FE-06 | Mobile and State Testing | `done` | 390px 모바일 화면 및 로딩/에러/샘플 데이터 상태 검증 완료 | - |
+| FE-RT-04 | Stitch Static Tailwind CSS Build | `done` | Tailwind 3.4 build pipeline and local CSS migration | - |
 
 ## Active Blockers
 
@@ -18,6 +19,62 @@
 | - | - | 현재 없음 | - | - | - |
 
 ## Work Log
+
+### 2026-07-22 — FE-RT-04 Started
+
+- **Role**: Frontend
+- **Status**: `in_progress`
+- **Assumptions**:
+  - The currently approved Jinja templates are the service-ready derivatives of the Stitch drafts.
+  - Tailwind 3.4 is retained to minimize visual changes; a Tailwind 4 migration is out of scope.
+- **Planned outputs**:
+  - Preserve a dated snapshot under `stitch-export/raw/2026-07-22/`.
+  - Add a reproducible Tailwind input, shared configuration, and npm build scripts.
+  - Replace Tailwind CDN/config scripts with the generated local stylesheet.
+- **Validation planned**: `npm run css:build`, UI route tests, portfolio tests, and dynamic-class scan.
+
+### 2026-07-22 — FE-RT-04 Complete
+
+- **Role**: Frontend
+- **Task ID**: FE-RT-04
+- **Status**: `done`
+- **Work completed**:
+  - Preserved the six pre-migration templates under `stitch-export/raw/2026-07-22/`.
+  - Consolidated per-template Tailwind tokens into a pinned Tailwind 3.4 configuration.
+  - Replaced Tailwind CDN/config scripts with the generated local stylesheet on all six screens.
+  - Preserved conflicting portfolio-summary spacing, radius, and color values with complete static class names.
+  - Repaired the truncated portfolio-summary touch-handler class string found during migration.
+  - Added route regression coverage that rejects Tailwind CDN/config usage.
+- **Created files**:
+  - `package.json`
+  - `package-lock.json`
+  - `tailwind.config.js`
+  - `src/frontend/assets/css/app.css`
+  - `src/frontend/static/css/index.css`
+  - `stitch-export/README.md`
+  - `stitch-export/raw/2026-07-22/*`
+- **Modified files**:
+  - `src/frontend/templates/*.html`
+  - `src/backend/tests/test_ui_routes.py`
+  - `ROADMAP.md`
+  - `progress/FRONTEND.md`
+- **Validation commands**:
+  - `npm run css:build`
+  - `.venv/Scripts/python.exe -m pytest src/backend/tests/test_ui_routes.py`
+  - `.venv/Scripts/python.exe -m pytest src/backend/tests/test_portfolio.py -q`
+  - CDN, dynamic Tailwind class, generated selector, and `git diff --check` scans
+  - Local browser checks for six routes at a 390px viewport override
+- **Validation results**:
+  - Tailwind build passed; npm audit reported 0 vulnerabilities.
+  - UI routes: 20 passed.
+  - Portfolio regression: 16 passed on the corrected `origin/main` branch base.
+  - Six service templates load local CSS; six raw snapshots retain CDN configuration; no dynamic class fragments found.
+  - Six routes rendered without horizontal overflow or browser console errors.
+- **Remaining**:
+  - Google Fonts and Material Symbols remain external by design.
+  - Tailwind 4 migration remains a separate task.
+- **Blockers**: None.
+- **Next recommended task**: Continue `FE-RT-01` through `FE-RT-03`, then include this build in `INT-RT-01`.
 
 ### 2026-07-21 10:00 — Initial Setup
 

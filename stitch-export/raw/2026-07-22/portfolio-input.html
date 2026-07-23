@@ -1,4 +1,89 @@
-<!DOCTYPE html><html lang="ko" class="light" style=""><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?material+symbols+outlined:wght,FILL@100..700,0..1&amp;display=block" rel="stylesheet"><link rel="stylesheet" href="{{ url_for('static', path='css/index.css') }}"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=block" rel="stylesheet"></head><body data-ui-screen="portfolio-input" class="bg-background text-on-surface min-h-screen flex flex-col items-center">
+<!DOCTYPE html><html lang="ko" class="light" style=""><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?material+symbols+outlined:wght,FILL@100..700,0..1&amp;display=block" rel="stylesheet"><script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script><script id="tailwind-config">try{try{
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "camel-brown": "#964B00",
+                        "camel-light": "#F5E8DD",
+                        "on-tertiary-fixed-variant": "#005228",
+                        "on-primary-fixed": "#2f1500",
+                        "outline": "#897362",
+                        "primary-fixed-dim": "#ffb77d",
+                        "surface-container-high": "#eae7e7",
+                        "outline-variant": "#ddc1ae",
+                        "secondary-fixed-dim": "#e9c400",
+                        "on-secondary-container": "#6e5c00",
+                        "on-surface": "#1c1b1b",
+                        "on-tertiary": "#ffffff",
+                        "surface-variant": "#e5e2e1",
+                        "inverse-surface": "#313030",
+                        "on-secondary-fixed-variant": "#544600",
+                        "secondary-fixed": "#ffe16d",
+                        "on-tertiary-fixed": "#00210c",
+                        "surface-container": "#f0eded",
+                        "surface-container-highest": "#e5e2e1",
+                        "on-primary-container": "#623200",
+                        "secondary": "#705d00",
+                        "on-error": "#ffffff",
+                        "tertiary-container": "#3fc070",
+                        "error-container": "#ffdad6",
+                        "surface-tint": "#964B00",
+                        "primary": "#964B00",
+                        "inverse-on-surface": "#f3f0ef",
+                        "on-secondary-fixed": "#221b00",
+                        "inverse-primary": "#ffb77d",
+                        "surface-container-lowest": "#ffffff",
+                        "on-tertiary-container": "#004922",
+                        "primary-fixed": "#ffdcc3",
+                        "surface": "#fcf9f8",
+                        "surface-bright": "#fcf9f8",
+                        "error": "#ba1a1a",
+                        "on-error-container": "#93000a",
+                        "on-surface-variant": "#564334",
+                        "secondary-container": "#F5E8DD",
+                        "tertiary-fixed": "#7efba4",
+                        "tertiary": "#006d37",
+                        "on-secondary": "#ffffff",
+                        "on-primary": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "container-padding": "24px",
+                        "gutter": "16px",
+                        "stack-md": "12px",
+                        "stack-sm": "4px",
+                        "base": "8px",
+                        "stack-lg": "24px",
+                        "margin-mobile": "16px"
+                    },
+                    "fontFamily": {
+                        "headline-lg-mobile": ["Hanken Grotesk"],
+                        "body-md": ["Hanken Grotesk"],
+                        "label-sm": ["Hanken Grotesk"],
+                        "body-lg": ["Hanken Grotesk"],
+                        "headline-md": ["Hanken Grotesk"],
+                        "headline-lg": ["Hanken Grotesk"],
+                        "label-md": ["Hanken Grotesk"]
+                    },
+                    "fontSize": {
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "700" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "fontWeight": "500" }],
+                        "body-lg": ["18px", { "lineHeight": "26px", "fontWeight": "400" }],
+                        "headline-md": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "600" }]
+                    }
+                },
+            },
+        }
+    }catch(_e){}}catch(_e){}</script><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=block" rel="stylesheet"></head><body data-ui-screen="portfolio-input" class="bg-background text-on-surface min-h-screen flex flex-col items-center">
 
     <form id="portfolio-analysis-form" method="post" action="/portfolio/optimize">
         <input type="hidden" name="risk_priority" value="balanced">
@@ -7,10 +92,10 @@
     {% if data_status in ["sample", "fallback"] %}<div class="fixed top-1 right-2 z-[100] rounded-full bg-[#F5E8DD] px-2 py-1 text-[10px] font-bold text-[#964B00]">{{ "샘플 데이터" if data_status == "sample" else "대체 데이터" }}</div>{% endif %}
     <!-- TopAppBar -->
     <header class="sticky top-0 w-full z-50 bg-[#FAF8F5] border-b border-[#E5DEC9] flex items-center px-margin-mobile h-16 max-w-[390px]">
-        <a href="/home" class="flex items-center gap-2">
-            <span class="material-symbols-outlined text-[#964B00] text-[28px]">waves</span>
-            <h1 class="font-bold text-[18px] leading-[24px] text-[#2A1800] tracking-tight">Chip Buddy</h1>
-        </a>
+        <button class="mr-4 p-2 rounded-full hover:bg-surface-container-high transition-colors active:opacity-80">
+            
+        </button>
+        <h1 class="font-headline-md text-headline-md font-bold text-on-surface" style="font-size: 18px; line-height: 24px; color: rgb(42, 24, 0); font-weight: 700;">&nbsp;내 포트폴리오 입력</h1>
     </header>
 
     <main class="flex-grow w-full max-w-[390px] px-margin-mobile py-stack-lg space-y-gutter">

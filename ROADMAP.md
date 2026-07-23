@@ -70,6 +70,7 @@
 - [ ] FE-RT-01: Home Market Overview and 10~30 Second Refresh
 - [ ] FE-RT-02: Realtime Total Asset Value·P/L·Current Weight
 - [ ] FE-RT-03: Issue Manual Refresh and Sync Status UI
+- [x] FE-RT-04: Stitch Static Tailwind CSS Build
 - [ ] INT-RT-01: Market·Portfolio·Daily Sync End-to-End Test
 
 `COMMON-RT-02` 계약과 검증 예시는 `schemas/api/README.md`, `schemas/api/*summary*.schema.json`, `schemas/api/market-quotes-response.schema.json`, `schemas/api/sync-*.schema.json`, `schemas/api/examples/`에 작성되었다. 계약 테스트는 통과했지만 Data A는 `review`, Data B·Backend·Frontend는 `pending`이므로 전 역할 승인 전까지 `review`를 유지한다.

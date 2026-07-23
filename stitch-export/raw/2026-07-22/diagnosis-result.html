@@ -6,7 +6,29 @@
     <title>진단/최적화 - Chip Buddy</title>
     <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=block" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', path='css/index.css') }}">
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+        try {
+            tailwind.config = {
+                darkMode: "class",
+                theme: {
+                    extend: {
+                        colors: {
+                            "primary": "#964B00",
+                            "background": "#FAF8F5",
+                            "surface": "#FAF8F5",
+                            "on-surface": "#1c1b1b",
+                            "on-surface-variant": "#564334",
+                            "outline-variant": "#E5DEC9",
+                            "surface-container-high": "#eae7e7",
+                            "surface-container-low": "#f6f3f2",
+                            "surface-container-lowest": "#ffffff"
+                        }
+                    }
+                }
+            }
+        } catch (_e) {}
+    </script>
 </head>
 <body data-ui-screen="diagnosis-result" class="bg-[#FAF8F5] text-on-surface flex justify-center items-start min-h-screen">
     {% if data_status in ["sample", "fallback"] %}<div class="fixed top-1 right-2 z-[100] rounded-full bg-[#F5E8DD] px-2 py-1 text-[10px] font-bold text-[#964B00]">{{ "샘플 데이터" if data_status == "sample" else "대체 데이터" }}</div>{% endif %}
@@ -15,10 +37,10 @@
         
         <!-- Header -->
         <header class="fixed top-0 w-full max-w-[390px] z-50 bg-[#FAF8F5] border-b border-[#E5DEC9] flex justify-between items-center px-4 h-16">
-            <a href="/home" class="flex items-center gap-2">
-                <span class="material-symbols-outlined text-[#964B00] text-[28px]">waves</span>
-                <h1 class="font-bold text-[18px] leading-[24px] text-[#2A1800] tracking-tight">Chip Buddy</h1>
-            </a>
+            <div class="flex items-center gap-2 cursor-pointer" onclick="window.history.back()">
+                <span class="material-symbols-outlined text-[#964B00] text-[24px]">arrow_back</span>
+                <h1 class="font-bold text-[18px] leading-[24px] text-[#2A1800]" id="page-header-title">진단 결과</h1>
+            </div>
             <div class="flex items-center gap-3">
                 <button class="material-symbols-outlined text-[#964B00]">notifications</button>
                 <button class="material-symbols-outlined text-[#964B00]">account_circle</button>
@@ -67,11 +89,13 @@
                         </div>
                         <div class="flex flex-col items-center gap-3">
                             <div class="flex items-center gap-1">
-                                <span class="font-bold text-primary uppercase tracking-wider text-[11px]">추천 비중</span>
+                                <span class="font-bold text-primary uppercase tracking-wider text-[11px]">추천 최적 비중</span>
+                                <span class="material-symbols-outlined text-primary text-[14px]">auto_awesome</span>
                             </div>
                             <div class="relative w-16 h-48 flex flex-col rounded-lg overflow-hidden border border-[#964B00]/30 shadow-md">
                                 <div class="flex items-center justify-center bg-[#FF6B00] text-[12px] font-bold text-white text-center" style="height: 60%">삼성<br>60%</div>
                                 <div class="flex items-center justify-center bg-[#FFC700] text-[12px] font-bold text-[#2A1800] text-center" style="height: 40%">하이닉스<br>40%</div>
+                                <div class="absolute -right-3 -top-2 bg-[#964B00] text-white text-[10px] px-2 py-0.5 rounded-full font-bold shadow-sm z-20 border border-white/20">최적화</div>
                             </div>
                         </div>
                     </div>
@@ -247,6 +271,7 @@
             const portfolioTab = document.getElementById('tab-portfolio');
             const diagnosisContent = document.getElementById('content-diagnosis');
             const portfolioContent = document.getElementById('content-portfolio');
+            const headerTitle = document.getElementById('page-header-title');
 
             if (tab === 'diagnosis') {
                 diagnosisTab.classList.add('text-[#964B00]', 'border-[#964B00]', 'font-bold');
@@ -257,8 +282,19 @@
                 
                 diagnosisContent.classList.remove('hidden');
                 portfolioContent.classList.add('hidden');
+                
+                if (headerTitle) headerTitle.innerText = "진단 결과";
             } else if (tab === 'portfolio') {
-                location.href = '/portfolio/summary';
+                portfolioTab.classList.add('text-[#964B00]', 'border-[#964B00]', 'font-bold');
+                portfolioTab.classList.remove('text-[#8A8A8A]', 'border-transparent', 'font-medium');
+                
+                diagnosisTab.classList.add('text-[#8A8A8A]', 'border-transparent', 'font-medium');
+                diagnosisTab.classList.remove('text-[#964B00]', 'border-[#964B00]', 'font-bold');
+                
+                portfolioContent.classList.remove('hidden');
+                diagnosisContent.classList.add('hidden');
+                
+                if (headerTitle) headerTitle.innerText = "포트폴리오 관리";
             }
         }
     </script>
