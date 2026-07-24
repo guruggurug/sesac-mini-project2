@@ -12,7 +12,8 @@
       "skhynix.com",
       "nssc.go.kr",
       "moel.go.kr",
-      "pipc.go.kr"
+      "pipc.go.kr",
+      "krx.co.kr"
     ],
     "failure_action": "retain_rejected_candidate"
   },

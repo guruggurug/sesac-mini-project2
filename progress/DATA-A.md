@@ -14,6 +14,7 @@
 | DATA-A-RT-FINAL-02 | final audit remediation (S02/S05 split, event deduplication gate, EVT-0001 date, scripts restore) | `review` | scripts/validate_data_a.py, data/processed/*, data/docs/*, etc. | 없음 |
 | DATA-A-06 | ESG Indicator Re-validation (원문 재대조, 전임 산출물 전면 폐기) | `done` | `data/processed/esg_indicators.csv`(64행), `data/processed/sources.csv`(10건), `data/docs/data_quality_report.md`, `data/docs/indicator_comparability.csv`, `data/docs/data_dictionary.md` | 없음 — `validate_data_a_bundle()` 전체 통과(main 최신 검증 로직 기준으로 재확인) |
 | DATA-A-07 | EDA 수행 및 데이터분석 정의서 작성 (모델링 A 역할 요구사항) | `done` | `notebooks/eda_analysis.ipynb`, `notebooks/charts/*.png`, 지침 폴더 `데이터분석 정의서.docx`("2. EDA 명세서" 섹션) | Modeling B 결과 교차검수·최종 발표 준비는 후속 작업으로 남음 |
+| DATA-A-08 | G02/SK G01·G03 DART 조사 | `review` | `data/processed/esg_indicators.csv`(68행, SK G01·G03 4행 추가), `data/processed/sources.csv`(SRC-0015/0016) | G02(양사)만 Open DART API 키 발급 대기, G01/G03은 완료 |
 
 ## Active Blockers
 
@@ -415,3 +416,61 @@
   - 최종 발표/제출 준비
 - **Blockers**: 없음
 - **Next task**: 커밋/PR 후 사용자 확인, 이후 Modeling B 재계산 대기
+
+### 2026-07-25 (계속) — DATA-A-08: SK하이닉스 G03(준법/제재 현황) 원문 확보
+
+- **Role**: Data A
+- **Owner**: Data A
+- **Status**: `review`
+- **Completed**:
+  - DART 사업보고서(2025.03.19 제출, rcpNo=20250319000665) 뷰어에서 "XI. 그 밖에 투자자 보호를 위하여 필요한 사항 > 3. 제재 등과 관련된 사항" 섹션 위치를 확인했으나, 가상 스크롤(virtualized) 목차 트리를 자동화 도구로 탐색하는 데 반복 실패해 사용자가 직접 DART에서 원문을 열람해 표 전체를 전달함
+  - 원문 기준 SK하이닉스 G03을 연도별 3행(2022=6건, 2023=3건, 2024=2건)으로 `esg_indicators.csv`에 추가. 각 행에 제재기관·금액·근거법령을 note에 요약 기록
+  - `sources.csv`에 `SRC-0015`(SK하이닉스 사업보고서, `validation_method=dart_receipt`, `external_id=20250319000665`) 등록. 사용자가 DART에서 PDF를 다운로드해 `data/raw/reports/`에 저장, SHA-256 재계산 후 등록
+  - SK G01(사외이사 비율)도 KRX KIND 기업지배구조보고서(2025-05-30 제출, acptno=20250530000841) 원문에서 "총 9명 이사 중 사외이사 5명(55.6%)" 확인(WebFetch로 원문 인용 확보) — 단, 사용자가 받은 raw 파일이 0바이트라 아직 `esg_indicators.csv`/`sources.csv`에는 미반영, 재다운로드 대기
+  - `data/docs/indicator_comparability.csv`, `data_dictionary.md`, `data_quality_report.md`, `data_a_human_review_checklist.md`를 G03 확보 반영해 갱신(G03: 삼성 PIPC 단일 제재 vs SK 전 규제기관 제재로 정의 상이 확인, `not_comparable`로 분류)
+- **Created files**: 없음
+- **Modified files**:
+  - `data/processed/esg_indicators.csv` (67행)
+  - `data/processed/sources.csv` (11건)
+  - `data/raw/reports/skhynix_business_report_2025_rcp20250319000665.pdf` (사용자 다운로드)
+  - `data/docs/indicator_comparability.csv`, `data_dictionary.md`, `data_quality_report.md`, `data_a_human_review_checklist.md`
+  - `src/backend/tests/test_csv_validator.py`, `src/backend/tests/test_issue_pipeline_contracts.py` (esg 64→67, sources 10→11)
+  - `progress/DATA-A.md`
+- **Validation commands**:
+  - `validate_data_a_bundle()` 직접 호출
+  - `.venv/Scripts/python.exe -m pytest src/backend/tests/test_csv_validator.py src/backend/tests/test_issue_pipeline_contracts.py -q`
+- **Validation results**: `validate_data_a_bundle()` PASS(esg 67, sources 11), pytest 23 passed
+- **Remaining**:
+  - SK G01: raw 파일 재다운로드 필요(현재 0바이트) — 받으면 esg_indicators.csv 1행 + sources.csv 1건 추가
+  - G02(양사): Open DART API 키 발급 대기
+- **Blockers**: 위 2건
+- **Next task**: SK G01 파일 재확보, 이후 G02 API 키 발급 시 정정공시 건수 집계
+
+### 2026-07-25 (계속) — DATA-A-08 완료: SK하이닉스 G01(사외이사 비율) 확보, 이 데이터셋 최초의 direct 지표
+
+- **Role**: Data A
+- **Owner**: Data A
+- **Status**: `done`
+- **Completed**:
+  - 사용자가 KRX KIND 기업지배구조보고서(2025.05.30 제출, acptno=20250530000841) 원문 PDF를 재다운로드(65페이지, 이전 0바이트 문제 해소)해 전달
+  - p.4 "독립적 이사회 구성"에서 "총 9명의 이사(사내이사 2명, 기타비상무이사 2명, 사외이사 5명)... 사외이사의 비율을 과반수 이상(55.6%)" 확인 → `esg_indicators.csv`에 SK G01 2025년 1행 추가(raw_value=55.6, business_scope=consolidated)
+  - `sources.csv`에 `SRC-0016` 등록(SHA-256 재계산 일치 확인). `kind.krx.co.kr`가 기존 `official_domains` 허용목록에 없어 `schemas/data/issue-pipeline-rules.json`에 `krx.co.kr` 추가(KRX는 한국거래소 공식 공시시스템으로, 기존 nssc.go.kr/moel.go.kr/pipc.go.kr와 동일 성격의 공식기관 도메인)
+  - G01은 삼성·SK 산식이 완전히 동일(사외이사수/이사회총원)해 `indicator_comparability.csv`에서 `one_sided`→**`direct`**로 재분류. 이 프로젝트 ESG 데이터셋 전체에서 최초의 직접비교 가능 지표
+  - `data/docs/data_quality_report.md`, `data_dictionary.md`, `data_a_human_review_checklist.md` 갱신(G01 확보 반영, 이제 미확보는 G02(양사)·S05(삼성)뿐). `data_dictionary.md`의 이벤트 raw artifact 관련 stale 경고문도 이번에 정리(이미 해소된 결함이었음)
+- **Modified files**:
+  - `data/processed/esg_indicators.csv` (68행)
+  - `data/processed/sources.csv` (12건)
+  - `data/raw/reports/skhynix_corporate_governance_report_2025_acpt20250530000841.pdf` (사용자 재다운로드)
+  - `schemas/data/issue-pipeline-rules.json` (official_domains에 krx.co.kr 추가)
+  - `data/docs/indicator_comparability.csv`, `data_dictionary.md`, `data_quality_report.md`, `data_a_human_review_checklist.md`
+  - `src/backend/tests/test_csv_validator.py`, `src/backend/tests/test_issue_pipeline_contracts.py` (esg 67→68, sources 11→12)
+  - `progress/DATA-A.md`
+- **Validation commands**:
+  - `validate_data_a_bundle()` 직접 호출
+  - `.venv/Scripts/python.exe -m pytest src/backend/tests/test_csv_validator.py src/backend/tests/test_issue_pipeline_contracts.py -q`
+  - `.venv/Scripts/python.exe -m pytest src/backend/tests -q`(pandas 미의존 부분)
+- **Validation results**: `validate_data_a_bundle()` PASS(esg 68, sources 12), pytest 23 passed / 69 passed
+- **Remaining**:
+  - G02(양사): Open DART API 키 발급 대기(팀 결정)
+- **Blockers**: G02만 남음(사용자 계정 생성 필요, Data A가 대신할 수 없음)
+- **Next task**: 커밋/PR 여부 사용자 확인 후 진행. G02는 API 키 확보 시 재개
