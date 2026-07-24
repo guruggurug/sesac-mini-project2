@@ -12,6 +12,7 @@
 | DATA-A-RT-01 | Daily Disclosure and News Source·Classification·Deduplication Rules | `review` | candidate/source 계약, 중복·severity 자동 결정 규칙 | 공유 스키마 교차 검토 필요 |
 | DATA-A-RT-02 | Candidate Data Quality and Event Status Validation | `review` | candidate 6건, source 6건, event-source 4건, processed event 3건 통합 검증 | 실제 일일 수집기 연동 필요 |
 | DATA-A-RT-FINAL-02 | final audit remediation (S02/S05 split, event deduplication gate, EVT-0001 date, scripts restore) | `review` | scripts/validate_data_a.py, data/processed/*, data/docs/*, etc. | 없음 |
+| DATA-A-06 | ESG Indicator Re-validation (원문 재대조, 전임 산출물 전면 폐기) | `done` | `data/processed/esg_indicators.csv`(64행), `data/processed/sources.csv`(10건), `data/docs/data_quality_report.md`, `data/docs/indicator_comparability.csv`, `data/docs/data_dictionary.md` | 없음 — `validate_data_a_bundle()` 전체 통과(main 최신 검증 로직 기준으로 재확인) |
 
 ## Active Blockers
 
@@ -333,3 +334,34 @@
   - 타 역할 직무(Data B, Backend, Frontend)에서 S02/S05 분리 및 EVT-0001 공개일 변경에 따른 연동 재확인
 - **Blockers**: 없음
 - **Next task**: 없음
+
+### 2026-07-25 — DATA-A-06: 78행도 여전히 원문 미검증이었음을 확인, 원문 재대조본(64행)으로 전면 교체
+
+- **Role**: Data A
+- **Owner**: Data A (신규 인수인계)
+- **Status**: `done`
+- **배경**: 위 DATA-A-RT-FINAL-02까지의 78행 `esg_indicators.csv`를 재점검한 결과, S02/S05 분리는 구조적으로는 맞았지만 여전히 `source_id`가 `SRC-0001`/`SRC-0002`/`SRC-0004` 3개로만 귀속되고 `note`가 "자동 출처 검증 완료"로 전 행 동일한, 원문 대조 없이 생성된 값이었음을 확인함. `data/docs/data_quality_report.md`도 "8개 지표 직접비교 가능"이라 기술했으나 실제 재대조 결과 직접비교 가능 지표는 0개였음.
+- **Completed**:
+  - `data/raw/reports/`의 지속가능경영보고서 PDF 6종(삼성전자·SK하이닉스 각 2024~2026) SHA-256을 직접 재계산해 `extraction_manifest.csv`와 100% 일치 확인
+  - 팀원이 원문 페이지·표제목·근거문장을 직접 대조해 작성한 `esg_indicators.csv`(65행, 유효 64행)로 전면 교체. `company_name`/`risk_direction`/`business_scope`/`geography`/`availability` 스키마 enum 매핑, 삼성 `consolidated`(DX+DS/전사) 판정 시 스키마 규칙대로 `scope_mismatch=true` 강제 적용, SK 인증 3행(`raw_value="Y"`)·삼성 G03 제재 1행(복합 텍스트)의 숫자 인코딩, E05 기간범위 3행의 대표연도 단일화, `target_candidates_FINAL.csv` 채택분 중 지표 정의가 정확히 일치하는 2건만 수치화(나머지는 null+note)
+  - `data/processed/sources.csv`: 브라우저로 삼성(`images.samsung.com`)·SK하이닉스(`skhynix.com` 공식 자료실) 공식 URL을 직접 접속해 존재 확인, PDF 6종 전부 SHA-256 일치. 이벤트 증거 3건(원안위/고용노동부/개인정보위)도 사용자가 직접 다운로드해 `data/raw/reports/`에 저장 — 고용노동부·개인정보위 첨부가 실제로는 `.html`이 아닌 `.pdf`였음을 확인해 `file_name` 정정
+  - `data/docs/data_quality_report.md`, `data/docs/indicator_comparability.csv`, `data/docs/data_dictionary.md`를 원문 대조 기반 실제 분석본으로 교체
+  - **브랜치 재구성**: 최초 작업은 `codex/frontend-ui-tweak`(UI 브랜치) 위에서 분기해 진행했으나, 데이터 전용 브랜치를 요청받았음에도 UI 브랜치 계보가 섞이는 문제를 발견해 `origin/main`에서 새로 분기(`data-a/esg-revalidation`)하고 데이터 변경분만 이식. 그 사이 main은 독자적으로 DART 어댑터, orphan-event 검증, 사건 의미 중복 검증(`severity_rule_version=1.1.0`) 등을 추가했음을 확인 — 이 커밋들은 건드리지 않고 그대로 유지
+- **Modified files**:
+  - `data/processed/esg_indicators.csv`, `data/processed/sources.csv`
+  - `data/docs/data_quality_report.md`, `data/docs/indicator_comparability.csv`, `data/docs/data_dictionary.md`
+  - `src/backend/tests/test_csv_validator.py`, `src/backend/tests/test_issue_pipeline_contracts.py` (esg 78→64행, sources 6→10건, unavailable 24→0건으로 정정. main이 추가한 orphan-event/의미중복/DART 정규식 테스트는 그대로 유지)
+  - `progress/DATA-A.md`, `PROGRESS.md`
+- **Validation commands**:
+  - 로컬 PDF 6종 + 이벤트 증거 3종 SHA-256 재계산 및 대조
+  - `.venv/Scripts/python.exe -m pytest src/backend/tests/test_csv_validator.py src/backend/tests/test_issue_pipeline_contracts.py -q`
+  - `.venv/Scripts/python.exe -m pytest src/backend/tests -q` (pandas 의존 4개 파일은 로컬 환경의 애플리케이션 제어 정책이 pandas DLL을 차단해 실행 불가 — 제 변경과 무관한 로컬 환경 제약)
+  - `validate_data_a_bundle()` 직접 호출(main 최신 로직: orphan-event, 의미상 중복 사건, DART 접수번호 정규식 포함)
+- **Validation results**:
+  - `validate_data_a_bundle()` PASS (esg 64, sources 10, events 3, candidates 6)
+  - pytest: `test_csv_validator.py`+`test_issue_pipeline_contracts.py` 23 passed / 나머지 백엔드 테스트(pandas 미의존 부분) 69 passed
+- **Remaining**:
+  - G02(정정공시 건수)는 여전히 미확보(DART 별도 트랙, 이번 작업 범위 밖)
+  - Data B의 `event_reactions.json`/`optimization_result.json` 등은 구 78행(여전히 허구) 데이터 기반일 가능성이 있어 재계산 필요(`PROGRESS.md` Active Blockers 참고)
+- **Blockers**: 없음
+- **Next task**: Data B가 새 64행 ESG 데이터 기준으로 재계산, 이후 PR 생성 및 리뷰

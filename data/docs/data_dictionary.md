@@ -1,41 +1,45 @@
 # Data Dictionary & Data A Notes
 
-이 문서는 **데이터 A**가 수집하고 자동 검증 규칙을 통과시킨 ESG 지표(`esg_indicators.csv`), ESG 사건(`events.csv`), 출처(`sources.csv`) 데이터셋의 스키마 및 수치 집계 기준을 명시합니다.
+이 문서는 **데이터 A**가 원문(지속가능경영보고서 6종: 삼성전자/SK하이닉스 각 2024~2026)을 직접 대조해 검증한 ESG 지표(`esg_indicators.csv`), ESG 사건(`events.csv`), 출처(`sources.csv`) 데이터셋의 스키마 및 수치 집계 기준을 명시합니다.
+
+> 2026-07-24 갱신: 이전 버전은 원문 대조 없이 생성된 72행(2022~2024, 12지표 완비) 가정을 기술하고 있었으나 실제와 달랐습니다. 아래는 원문 재대조본(64행, 2020~2026)을 기준으로 다시 작성했습니다. 근거: `progress/DATA-A.md` 2026-07-24 작업 로그.
 
 ---
 
 ## 1. ESG 지표 정의 (`esg_indicators.csv`)
 
-### 지표 목록 및 위험 방향
+### 지표 목록 및 확보 현황 (총 64행 = 삼성전자 29행 + SK하이닉스 35행)
 
-| Indicator ID | Category | Indicator Name | Unit | Risk Direction | 설명 |
+| Indicator ID | Category | Indicator Name(원문 기준) | Unit | Risk Direction | 확보 현황 |
 |---|---|---|---|---|---|
-| `E01` | E (환경) | 온실가스 배출집약도 | `tCO2e/억원` | `higher_is_worse` | 매출액 억원당 온실가스 배출량 (높을수록 위험) |
-| `E02` | E (환경) | 용수 재이용률 | `%` | `higher_is_better` | 총 용수 사용량 대비 재이용수 비율 (높을수록 우수) |
-| `E03` | E (환경) | 폐기물 재활용률 | `%` | `higher_is_better` | 총 발생 폐기물 대비 재활용 비율 (높을수록 우수) |
-| `E04` | E (환경) | 공정가스 감축률 | `%` | `higher_is_better` | 반도체 공정가스 처리·저감 수준 (높을수록 우수) |
-| `E05` | E (환경) | 유해화학물질 배출량 | `톤` | `higher_is_worse` | 유해화학물질 배출량 (높을수록 위험) |
-| `S01` | S (사회) | 산업재해율 (LTIR) | `건/백만시간` | `higher_is_worse` | 근로시간 100만시간 당 손실일수 재해 건수 (높을수록 위험) |
-| `S02` | S (사회) | 협력사 ESG 현장실사 비율 | `%` | `higher_is_better` | 협력사 ESG 평가 및 현장실사 비율 (높을수록 우수) |
-| `S03` | S (사회) | 임직원 자발적 이직률 | `%` | `higher_is_worse` | 자발적으로 퇴사한 임직원 비율 (높을수록 위험) |
-| `S04` | S (사회) | 정보보호 관리 수준 | `%` | `higher_is_better` | 정보보호 통제 및 관리 수준 (높을수록 우수) |
-| `S05` | S (사회) | 책임광물 제3자 검증률 | `%` | `higher_is_better` | 책임광물 공급망 제3자 검증 비율 (높을수록 우수) |
-| `G01` | G (지배구조) | 사외이사 비율 | `%` | `higher_is_better` | 이사회 총 인원 대비 사외이사 비율 (높을수록 우수) |
-| `G02` | G (지배구조) | 정정공시 건수 | `건` | `higher_is_worse` | 연간 정정공시 건수 (높을수록 위험) |
-| `G03` | G (지배구조) | 준법·수출통제 위반 건수 | `건` | `higher_is_worse` | 공식 제재 및 준법 위반 건수 (높을수록 위험) |
+| `E01` | E | 온실가스 배출집약도 (market-based) | `tCO2e(q)/억원` 등 | `higher_is_worse` | 양사 확보 (삼성 5행, SK 6행) |
+| `E02` | E | 용수 재이용률/재이용량 | `%` 또는 `1,000 tonnes` | `higher_is_better` | 양사 확보하나 **단위 불일치**(삼성=재이용량 절대치, SK=재이용률 %) → `not_comparable` |
+| `E03` | E | 폐기물 재활용률 | `%` | `higher_is_better` | 양사 확보 (SK=SASB 유해폐기물 재활용률, 삼성=DS부문 폐기물 재활용률 — 모집단 상이, `partial`) |
+| `E04` | E | 공정가스 처리/감축 효율 | `%` | `higher_is_better` | 양사 확보하나 **지표 정의 상이**(SK=전사 배출감소율 단일지표, 삼성=PFC처리효율·NF3저감률 등 하위지표 3종) → `not_comparable` |
+| `E05` | E | 유해물질/환경법규 관련 지표 | `건` 또는 `ton` | `higher_is_worse` | 양사 확보하나 **정의 상이**(삼성=유해물질 유출건수, SK=환경법규 위반건수+대기오염물질 총배출량 대체) → `not_comparable` |
+| `S01` | S | 산업재해율 (LTIR/LTIFR) | `%` 또는 `건/20만시간` | `higher_is_worse` | 양사 확보하나 **단위 상이**(삼성=LTIR %, SK=LTIFR 빈도수) → `partial` |
+| `S02` | S | 협력사 ESG 실사 / 책임광물 검증 | `개사` 또는 `%` | `higher_is_better` | 양사 확보하나 정의 상이(삼성=현장감사 건수기반, SK=이행률 %기반) → `partial` |
+| `S03` | S | 임직원 이직률 | `%` | `higher_is_worse`(원문 lower_better를 동일 방향으로 환산) | 양사 확보하나 삼성 수치가 자발/비자발 포함 여부 불명 → `partial` |
+| `S04` | S | 정보보안/개인정보 관리 | `%`, `건`, 또는 `boolean` | 삼성=`higher_is_better`, SK 인증행=`qualitative` | 양사 확보하나 성격 상이(삼성=정량 컨설팅 건수, SK=인증 여부(정성)+교육이수율(정량) 혼재) → `not_comparable` |
+| `S05` | S | 책임광물(RMAP) 제3자 인증률 | `%` | `higher_is_better` | **SK만 확보**(1행). 삼성은 별도 외부보고서(Responsible Minerals Report)로 위임, 이 보고서엔 수치 없음 → `one_sided` |
+| `G01` | G | 사외이사 비율 | `%` | `higher_is_better` | **삼성만 확보**(2행). SK는 PDF 내 이사회 로스터 표 없음(홈페이지 위임 확인) → `one_sided` |
+| `G02` | G | 정정공시 건수 | `건` | `higher_is_worse` | **양사 미확보**. 지속가능경영보고서 범위 밖(DART 조사 필요, 별도 트랙) — `esg_indicators.csv`에 행 자체가 존재하지 않음 |
+| `G03` | G | 개인정보위 제재 등 준법 위반 | `건` | `higher_is_worse` | **삼성만 확보**(1행, PIPC 제재). SK는 SASB N/A + 사업보고서(DART) 위임 확인 → `one_sided` |
 
-### 사업 범위 (Business Scope) 및 불일치 (Scope Mismatch) 처리
+**직접 비교 가능(`direct`)한 지표는 0개입니다.** 전 지표가 `partial`/`not_comparable`/`one_sided` 중 하나이며, 상세 근거는 `data/docs/indicator_comparability.csv`를 참고하세요. `not_comparable`/`one_sided` 지표는 기업 간 상대평가나 평균 계산에 사용하면 안 되며 개별 기업 설명용으로만 사용해야 합니다.
 
-- **삼성전자**:
-  - `DS` (디바이스솔루션 / 반도체 사업부): `E01`~`E05`, `S01` 지표 적용 (`scope_mismatch = false`)
-  - `consolidated` (연결 전사): `S02`, `S03`, `S04`, `G01`~`G03` 적용 (`scope_mismatch = true`)
-  - `unknown`: `S05` 적용 (`availability = unavailable`, `scope_mismatch = false`)
-- **SK하이닉스**:
-  - `semiconductor`: `E01`~`E05`, `S01`, `S03`, `S04`, `S05` 지표 적용 (`scope_mismatch = false`)
-  - `consolidated`: `G01`~`G03` 적용 (`scope_mismatch = false`, SK하이닉스는 순수 반도체 기업)
-  - `unknown`: `S02` 적용 (`availability = unavailable`, `scope_mismatch = false`)
+### 사업 범위 (Business Scope) 및 불일치 (Scope Mismatch) — 실측 기준
 
-현재 `G01`~`G03` 18행 및 `S02`/`S05` 중 결측 항목(총 24행)은 기존 임시 DART 접수번호 폐기 또는 공시 부재로 인해 `availability=unavailable`, `raw_value=null`로 전환했습니다. 공식 원문을 다시 수집하기 전까지 모델 입력에 사용할 수 없습니다.
+- **삼성전자**: 지표별로 공시 범위가 다릅니다.
+  - `DS`(디바이스솔루션 반도체 사업부 단독): `E02`(용수 재이용량), `E03`(폐기물 재활용률), `E04`(공정가스 처리효율) — `scope_mismatch=false`
+  - `consolidated`(DX+DS 전사 연결, 원문 표기 "DX+DS" 포함): `E01`(온실가스 배출집약도 — **DS 단독 원단위는 원문에 미공시**), `E05`, `S01`~`S04`, `G01`, `G03` — 스키마 규칙상 `scope_mismatch=true` 강제
+- **SK하이닉스**: 사실상 반도체 단일 사업 회사이므로 전 지표를 `consolidated`로 공시하며 `scope_mismatch`는 항상 `false`입니다(스키마 규칙이 이 플래그를 강제하는 대상은 삼성전자뿐).
+
+### 목표값(`target_*`) 컬럼
+
+원문에서 지표 정의와 **정확히 일치**하는 수치 목표가 확인된 경우에만 채웠습니다(2건: SK E01 배출집약도 70%감축/2030/기준2020, 삼성 E03 DS한국 폐기물 재활용률 99.9%/2030). 그 외 지표는 Net Zero 선언, 취수량 목표(재이용량과 다른 지표) 등 정의가 다르거나 정성적 서술이라 `target_value`를 임의로 대응시키지 않고 `null` 처리했으며, 원문 목표는 각 행의 `note`에 그대로 남겨두었습니다. 반드시 `note`를 확인한 뒤 목표 대비 진행률을 계산하세요.
+
+현재 결측(`unavailable`) 처리된 행은 없습니다(64행 전부 `availability=available`). `G02`는 행 자체가 없다는 점에 유의하세요(0으로 채우거나 평균에 포함하면 안 됩니다).
 
 ---
 
@@ -53,10 +57,14 @@
 
 사건 탐지 출처는 `detection_source_type`에 `dart_disclosure` 또는 `news`로 기록합니다. 뉴스 탐지 사건은 DART 또는 연결된 공식 원문을 확인해야 `confirmed`나 `resolved`가 될 수 있습니다.
 
+> **알려진 결함**: 현재 `events.csv`가 참조하는 공식 1차 출처 3건(`SRC-0006` 원안위, `SRC-0008` 고용노동부, `SRC-0010` 개인정보위)의 raw 원문 파일이 `data/raw/reports/`에 존재하지 않아 `validate_data_a_bundle()`이 이 지점에서 실패합니다. 원문 재수집 후 해소 예정(`progress/DATA-A.md` Active Blockers `DATA-A-B01` 참고).
+
 ---
 
 ## 3. Data B & Backend 팀 전달용 메모
 
-1. **데이터 스키마 준수**: 모든 데이터는 JSON 스키마 (`schemas/data/*.schema.json`)의 필수 조건 및 Enum 값을 100% 만족합니다.
-2. **범위 불일치 (`scope_mismatch`)**: 백엔드 및 UI에서는 삼성전자 `S02`, `G01` 수치 노출 시 연결 기준 수치임을 알리는 경고 아이콘/툴팁을 노출해야 합니다.
+1. **데이터 스키마 준수**: 모든 데이터는 JSON 스키마 (`schemas/data/*.schema.json`)의 필수 조건 및 Enum 값을 100% 만족합니다(ESG 지표 64행 개별 검증 통과).
+2. **범위 불일치 (`scope_mismatch`)**: 백엔드 및 UI에서는 삼성전자 `E01`, `E05`, `S01`~`S04`, `G01`, `G03` 노출 시 DX+DS 연결 기준 수치임을 알리는 경고 아이콘/툴팁을 노출해야 합니다(위 1절 참고, 과거 문서의 "S02/G01만 해당" 기술은 부정확했습니다).
 3. **사건 날짜**: 주가 영향 분석은 발생일인 `event_date`가 아니라 최초 시장 공개일인 `market_event_date`를 기준으로 수행해야 합니다.
+4. **기존 산출물 무효화**: 이전 72행(허구 데이터) 기반으로 계산된 `event_reactions.json`/`optimization_result.json` 등은 무효이며 새 64행 기준으로 재계산이 필요합니다(`PROGRESS.md` Active Blockers `DATA-A-B02` 참고).
+5. **비교 금지 지표**: `not_comparable`/`one_sided`로 분류된 지표(`E02`,`E04`,`E05`,`S04`,`S05`,`G01`,`G03`)는 양사 평균이나 상대 순위 계산에 사용하지 말고 개별 기업 설명 카드에만 사용하세요.
