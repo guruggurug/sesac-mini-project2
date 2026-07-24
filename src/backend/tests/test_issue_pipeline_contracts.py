@@ -56,7 +56,7 @@ def test_candidate_source_and_event_source_csvs_match_contracts():
     )
 
     assert len(candidates) == 6
-    assert len(sources) == 10
+    assert len(sources) == 12
     assert len(event_sources) == 4
     assert sum(row["validation_status"] == "validated" for row in candidates) == 3
     assert sum(row["validation_status"] == "rejected" for row in candidates) == 3
@@ -66,7 +66,7 @@ def test_complete_data_a_publish_bundle_is_referentially_valid():
     bundle = validate_data_a_bundle(str(ROOT))
 
     assert len(bundle["events"]) == 3
-    assert len(bundle["esg"]) == 64
+    assert len(bundle["esg"]) == 68
     assert sum(row["availability"] == "unavailable" for row in bundle["esg"]) == 0
 
 
