@@ -55,18 +55,18 @@ def test_candidate_source_and_event_source_csvs_match_contracts():
         str(ROOT / "data" / "processed" / "event_sources.csv"), "event_source"
     )
 
-    assert len(candidates) == 6
-    assert len(sources) == 12
-    assert len(event_sources) == 4
-    assert sum(row["validation_status"] == "validated" for row in candidates) == 3
+    assert len(candidates) == 9
+    assert len(sources) == 15
+    assert len(event_sources) == 7
+    assert sum(row["validation_status"] == "validated" for row in candidates) == 6
     assert sum(row["validation_status"] == "rejected" for row in candidates) == 3
 
 
 def test_complete_data_a_publish_bundle_is_referentially_valid():
     bundle = validate_data_a_bundle(str(ROOT))
 
-    assert len(bundle["events"]) == 3
-    assert len(bundle["esg"]) == 68
+    assert len(bundle["events"]) == 6
+    assert len(bundle["esg"]) == 72
     assert sum(row["availability"] == "unavailable" for row in bundle["esg"]) == 0
 
 
@@ -194,13 +194,14 @@ def test_bundle_rejects_semantic_duplicate_events(tmp_path):
     
     events_path = copied_root / "data" / "processed" / "events.csv"
     lines = events_path.read_text(encoding="utf-8").splitlines()
-    dup_row = lines[-1].replace("EVT-0005", "EVT-9999")
+    evt_0005_line = next(line for line in lines if line.startswith("EVT-0005,"))
+    dup_row = evt_0005_line.replace("EVT-0005", "EVT-9999")
     events_path.write_text("\n".join(lines + [dup_row]) + "\n", encoding="utf-8")
-    
+
     import hashlib
     payload = "005930|violation9999|2023-06-28"
     new_hash = hashlib.sha256(payload.encode("utf-8")).hexdigest()
-    
+
     dup_cand_row = [
         "CND-9999", "005930", "\uc0bc\uc131\uc804\uc790", "news", "www.pipc.go.kr", "9999",
         "query9999", "violation9999", "violation9999",
@@ -211,14 +212,15 @@ def test_bundle_rejects_semantic_duplicate_events(tmp_path):
         new_hash, "validated", "EVT-9999", ""
     ]
     dup_cand = ",".join(dup_cand_row)
-    
+
     candidates_path = copied_root / "data" / "candidate" / "news_candidates.csv"
     c_lines = candidates_path.read_text(encoding="utf-8").splitlines()
     candidates_path.write_text("\n".join(c_lines + [dup_cand]) + "\n", encoding="utf-8")
 
     ev_sources_path = copied_root / "data" / "processed" / "event_sources.csv"
     es_lines = ev_sources_path.read_text(encoding="utf-8").splitlines()
-    dup_es = es_lines[-1].replace("EVT-0005", "EVT-9999")
+    evt_0005_es_line = next(line for line in es_lines if line.startswith("EVT-0005,"))
+    dup_es = evt_0005_es_line.replace("EVT-0005", "EVT-9999")
     ev_sources_path.write_text("\n".join(es_lines + [dup_es]) + "\n", encoding="utf-8")
 
     with pytest.raises(CSVValidationError) as error:
@@ -233,16 +235,18 @@ def test_bundle_rejects_orphan_events(tmp_path):
     copied_root = tmp_path / "project"
     shutil.copytree(ROOT / "data", copied_root / "data")
     shutil.copytree(ROOT / "schemas", copied_root / "schemas")
-    
+
     events_path = copied_root / "data" / "processed" / "events.csv"
     lines = events_path.read_text(encoding="utf-8").splitlines()
     # Change date to make it not a duplicate of EVT-0005
-    orphan_row = lines[-1].replace("EVT-0005", "EVT-9999").replace("2023-06-28", "2023-01-01")
+    evt_0005_line = next(line for line in lines if line.startswith("EVT-0005,"))
+    orphan_row = evt_0005_line.replace("EVT-0005", "EVT-9999").replace("2023-06-28", "2023-01-01")
     events_path.write_text("\n".join(lines + [orphan_row]) + "\n", encoding="utf-8")
 
     ev_sources_path = copied_root / "data" / "processed" / "event_sources.csv"
     es_lines = ev_sources_path.read_text(encoding="utf-8").splitlines()
-    dup_es = es_lines[-1].replace("EVT-0005", "EVT-9999")
+    evt_0005_es_line = next(line for line in es_lines if line.startswith("EVT-0005,"))
+    dup_es = evt_0005_es_line.replace("EVT-0005", "EVT-9999")
     ev_sources_path.write_text("\n".join(es_lines + [dup_es]) + "\n", encoding="utf-8")
 
     with pytest.raises(CSVValidationError) as error:
