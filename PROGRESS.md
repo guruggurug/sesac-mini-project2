@@ -294,6 +294,7 @@ schemas/api/examples/sync-status-response.example.json
 |---|---|---|---|---|---|
 | RT-B01 | COMMON-RT-02 | Data A 사람 검토 체크리스트와 Data B·Backend·Frontend의 명시적 계약 승인이 필요 | Team Lead / All Roles | Data A 체크리스트 완료 및 역할별 로그에 승인 기록 | `review` |
 | RT-B02 | DATA-B-RT-01 | Data B 동적 ESG·최적화 변경이 현재 브랜치에 미동기화 | Data B | 작업 완료 후 통합 브랜치 동기화 | `in_progress` |
+| DATA-A-B02 | DATA-A-06, DATA-B-04/05 | `esg_indicators.csv`가 DATA-A-RT-FINAL-02(78행) 이후에도 여전히 원문 대조 없이 생성된 값(source_id 3개 귀속, 동일 문구 note)이었음을 발견해 원문 재대조본(64행)으로 전면 교체함(`progress/DATA-A.md` 2026-07-25 항목 참고). `validate_data_a_bundle()`은 main의 최신 검증 로직(orphan-event, 사건 의미중복 등) 기준으로도 통과 확인 완료. 기존 `event_reactions.json`/`optimization_result.json` 등 Data B 산출물은 이 가짜 78행 데이터를 입력으로 사용했을 가능성이 있어 무효이며 재계산이 필요함 | Data B | 새 `data/processed/esg_indicators.csv`(64행)·`sources.csv`(10건) 기준으로 ESG 위험점수·이벤트 반응·포트폴리오 최적화 재계산 및 재검증 | `todo` |
 
 ---
 
