@@ -13,6 +13,7 @@
 | DATA-A-RT-02 | Candidate Data Quality and Event Status Validation | `review` | candidate 6건, source 6건, event-source 4건, processed event 3건 통합 검증 | 실제 일일 수집기 연동 필요 |
 | DATA-A-RT-FINAL-02 | final audit remediation (S02/S05 split, event deduplication gate, EVT-0001 date, scripts restore) | `review` | scripts/validate_data_a.py, data/processed/*, data/docs/*, etc. | 없음 |
 | DATA-A-06 | ESG Indicator Re-validation (원문 재대조, 전임 산출물 전면 폐기) | `done` | `data/processed/esg_indicators.csv`(64행), `data/processed/sources.csv`(10건), `data/docs/data_quality_report.md`, `data/docs/indicator_comparability.csv`, `data/docs/data_dictionary.md` | 없음 — `validate_data_a_bundle()` 전체 통과(main 최신 검증 로직 기준으로 재확인) |
+| DATA-A-07 | EDA 수행 및 데이터분석 정의서 작성 (모델링 A 역할 요구사항) | `done` | `notebooks/eda_analysis.ipynb`, `notebooks/charts/*.png`, 지침 폴더 `데이터분석 정의서.docx`("2. EDA 명세서" 섹션) | Modeling B 결과 교차검수·최종 발표 준비는 후속 작업으로 남음 |
 
 ## Active Blockers
 
@@ -365,3 +366,52 @@
   - Data B의 `event_reactions.json`/`optimization_result.json` 등은 구 78행(여전히 허구) 데이터 기반일 가능성이 있어 재계산 필요(`PROGRESS.md` Active Blockers 참고)
 - **Blockers**: 없음
 - **Next task**: Data B가 새 64행 ESG 데이터 기준으로 재계산, 이후 PR 생성 및 리뷰
+
+### 2026-07-25 (계속) — `data_a_human_review_checklist.md` 1절 갱신 (RT-B01 관련)
+
+- **Role**: Data A
+- **Owner**: Data A
+- **Status**: `review`
+- **Completed**:
+  - `data/docs/data_a_human_review_checklist.md` 1절(G01~G03 공식자료 검토)이 옛 72/78행 구조("양사 G01~G03 전부 unavailable 18행, 2022~2024") 기준으로 작성돼 있어 새 64행 실측 구조와 맞지 않는 것을 발견해 갱신
+  - 삼성전자 G01(2행, SEC-2025 p.6/SEC-2026 p.6)·G03(1행, SEC-2024 p.57 + PIPC 의결서)은 원문 근거가 확인된 것으로 표기하고 체크리스트 항목을 `승인`으로 판정
+  - SK하이닉스 G01·G03, 양사 G02는 "임시 unavailable 행"이 아니라 "행 자체가 없는 미확보 상태(사유 명시)"로 정정, 수정 필요 사항에 DART 조사 필요성을 남김
+  - 2절(비전공자용 사용자 문구 검토)은 ESG 데이터 구조와 무관해 손대지 않음(Frontend/Backend 카피 검토 영역)
+- **Modified files**:
+  - `data/docs/data_a_human_review_checklist.md`
+  - `progress/DATA-A.md`
+- **Validation commands**: 없음(문서 갱신, 데이터 파일 변경 아님 — 스키마 검증 대상 아님)
+- **Remaining**:
+  - `COMMON-RT-02`가 `done`이 되려면 Data B·Backend·Frontend가 각자 로그에 승인 기록을 남겨야 함(RT-B01)
+  - G02/SK G01·G03 DART 조사는 여전히 미착수(팀 결정 대기)
+- **Blockers**: 없음
+- **Next task**: 커밋/PR 여부는 사용자 확인 후 진행
+
+### 2026-07-25 (계속) — DATA-A-07: EDA 수행 및 데이터분석 정의서 작성
+
+- **Role**: Data A (모델링 A 역할 기준)
+- **Owner**: Data A
+- **Status**: `done`
+- **배경**: `[2] semiconductor_navigation_2day_4person_execution_plan_v2.md`(지침 폴더) 기준 "모델링 A" 책임에 EDA 수행·EDA 노트북/차트·데이터분석 정의서 작성이 명시돼 있으나, 이전까지의 ESG 원문 재검증 작업(DATA-A-06)은 이 요구사항을 충족하지 못했음을 확인하고 착수
+- **Completed**:
+  - `notebooks/eda_analysis.ipynb` 작성 및 실행(Anaconda Python 사용 — `.venv`는 이 PC의 애플리케이션 제어 정책이 pandas DLL을 차단해 사용 불가)
+  - 가격 데이터(`stock_prices.csv`, `index_prices.csv`): 크기·기간·결측·중복 확인(0건), 종가·수익률 기초통계, 수익률 히스토그램+VaR95%/CVaR95%, 누적수익률(SOX 비교), 최대낙폭(MDD), 두 종목 상관관계(0.688), 최근 1년 vs 전체(~3년) CVaR 비교
+  - ESG 데이터(`esg_indicators.csv`): 카테고리(E/S/G)·`data_confidence`·`risk_direction`·`scope_mismatch` 분포, `scope_mismatch=true`(21행, 전부 삼성) 및 `data_confidence=low`(2행) 목록 추출
+  - matplotlib 기본 폰트가 한글 글리프를 지원하지 않아 차트 텍스트가 깨지는 문제를 발견해 `Malgun Gothic`으로 폰트 설정 수정 후 전체 재실행
+  - 차트 5종을 `notebooks/charts/*.png`로 저장(발표자료·정의서 재사용용)
+  - 지침 폴더 `데이터분석 정의서.docx`의 "2. EDA 명세서" 섹션(목표/데이터정의/데이터획득방법/EDA과정/EDA결론/KPI확정 6개 셀)을 실제 분석 결과로 채움. "3. 모델링 명세서"는 Modeling B 영역이라 손대지 않음. python-docx로 편집 후 원본 백업 보존, XML well-formed 여부 및 pandoc 렌더링으로 결과 확인
+- **Created files**:
+  - `notebooks/eda_analysis.ipynb`
+  - `notebooks/charts/01_return_histogram.png` 등 5개
+- **Modified files**:
+  - `C:/Users/tiger/OneDrive/Desktop/지침/데이터분석 정의서.docx` (리포지토리 밖 파일)
+  - `progress/DATA-A.md`
+- **Validation commands**:
+  - `anaconda3/python.exe -m jupyter nbconvert --to notebook --execute --inplace notebooks/eda_analysis.ipynb`
+  - `python -c "import xml.etree.ElementTree as ET; ET.parse(...)"`(docx 내부 XML 4종 well-formed 확인)
+- **Validation results**: 노트북 전체 셀 오류 없이 실행 완료, 차트 5종 생성, docx XML 구조 이상 없음
+- **Remaining**:
+  - Modeling B(Data B) 계산 결과와 EDA 결론(특히 CVaR 기준기간 1년 vs 3년) 교차검수 — Data B 재계산 이후 가능
+  - 최종 발표/제출 준비
+- **Blockers**: 없음
+- **Next task**: 커밋/PR 후 사용자 확인, 이후 Modeling B 재계산 대기
