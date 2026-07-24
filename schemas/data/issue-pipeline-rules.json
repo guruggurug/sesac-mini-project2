@@ -13,7 +13,8 @@
       "nssc.go.kr",
       "moel.go.kr",
       "pipc.go.kr",
-      "krx.co.kr"
+      "krx.co.kr",
+      "dart.fss.or.kr"
     ],
     "failure_action": "retain_rejected_candidate"
   },

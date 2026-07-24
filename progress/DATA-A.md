@@ -474,3 +474,71 @@
   - G02(양사): Open DART API 키 발급 대기(팀 결정)
 - **Blockers**: G02만 남음(사용자 계정 생성 필요, Data A가 대신할 수 없음)
 - **Next task**: 커밋/PR 여부 사용자 확인 후 진행. G02는 API 키 확보 시 재개
+
+### 2026-07-25 (계속) — DATA-A-09: G03 최신 사업보고서로 전면 갱신, 중대재해 2건 신규 발견·추가, G02 API 없이 건수 확보
+
+- **Role**: Data A
+- **Owner**: Data A
+- **Status**: `review`
+- **배경**: 사용자가 SK/삼성 최신 사업보고서(2026년 3월 제출본)의 XI.3 제재현황 원문을 직접 열람해 전달. 기존 SK G03(2025.03.19본, 2022~2024 window)이 이미 오래됐고, 삼성 G03(PIPC 단일건만)은 사업보고서 전체를 본 게 아니었음을 확인해 전면 재작업.
+- **Completed**:
+  - **G03 전면 교체**: 양사 모두 2026년 3월 제출 사업보고서(2023~2025 window)로 통일
+    - SK하이닉스: 당사 단독 기준 2023=3건/2024=2건/2025=3건 (수사·사법기관 해당없음). 기존 2022~2024 데이터(2025.03.19본)와 2023·2024년 숫자가 완전히 일치해 교차검증됨
+    - 삼성전자: 당사+전세계 종속회사(Harman·삼성디스플레이·삼성메디슨·레인보우로보틱스·SEUZ/SEASA/SETK/SEM/SEVT/SEF/SEMAG 등) 합산 2023=7건/2024=7건/2025=16건. **비반도체 종속회사 포함 여부를 note에 명시**(지침의 "삼성=반도체 외 사업 포함, 주의 필요" 경고에 부합)
+    - `sources.csv`: `SRC-0015`를 2026.03.17 제출본으로 교체, `SRC-0017`(삼성 사업보고서 2026.03.10) 신규 등록. 기존 2025.03.19본 raw 파일은 삭제
+  - **중대재해 2건을 신규 이벤트로 추가**(사용자 승인, "1번 추가"):
+    - `EVT-0006`: SK하이닉스, 2024-05-10 발생 업무상 질병 사망 1명(사외). 사업보고서(SRC-0015)만 근거, 언론보도 확인 안 됨. severity=5(사망 키워드), enforcement_action=no_action(명시된 정부조치 없음)
+    - `EVT-0007`: 삼성전자(삼성디스플레이), 2025-12-23 아산2캠퍼스 협력사 직원 끼임사고 사망1+부상1. 사업보고서(SRC-0017)+뉴스(디지털데일리 등 사고 당일 다수 보도) 교차확인. 대전지방고용노동청 천안지청 부분작업중지명령(2025-12-23 발령, 2026-02-20 해제) 확인, enforcement_action=corrective_order, severity=5
+    - `candidate_content_hash`/`canonicalize_url`/`calculate_event_severity`는 실제 `app.utils.issue_rules` 함수를 그대로 호출해 계산(수동 계산으로 인한 오류 방지)
+    - `news_candidates.csv`에 `CND-0007`(EVT-0006용, dart_disclosure)·`CND-0008`(EVT-0007용, news) 추가, `event_sources.csv`에 두 이벤트의 공식 1차 출처 연결 추가
+  - **뉴스 조사 중 SK하이닉스의 별개 사망 사건 발견**: 산재 승인 2025-03-05, 사망 2026-06-25(2026-06-26 다수 매체 보도, "중대재해 여부 조사 중"). 사업보고서 표의 2024-05-10 건과 날짜가 달라 별개 인물로 추정. 사용자가 "조사해서 추가" 결정 — DART 원문(수시공시) 링크를 사용자에게 요청, 확보 후 `EVT-0008`로 추가 예정
+  - `data/docs/data_quality_report.md`, `data_dictionary.md`, `indicator_comparability.csv`, `data_a_human_review_checklist.md` 갱신(G03 신규 수치, 사건 5건으로 갱신, 비반도체 종속회사 주의사항 명시)
+  - 테스트 3개(`test_bundle_rejects_semantic_duplicate_events`, `test_bundle_rejects_orphan_events`, 행수 단언)가 `lines[-1]`(마지막 줄)을 EVT-0005로 가정하고 있었는데 새 이벤트를 뒤에 추가하면서 깨짐 — `next(line for line in lines if line.startswith("EVT-0005,"))`로 위치에 의존하지 않도록 수정
+- **Created files**:
+  - `data/raw/reports/skhynix_business_report_2026_rcp20260317000635.pdf`, `samsung_business_report_2026_rcp20260310002820.pdf` (사용자 다운로드)
+- **Modified files**:
+  - `data/processed/esg_indicators.csv`(70행), `data/processed/sources.csv`(13건), `data/processed/events.csv`(5건), `data/candidate/news_candidates.csv`(8건), `data/processed/event_sources.csv`(6건)
+  - `data/docs/data_quality_report.md`, `data_dictionary.md`, `indicator_comparability.csv`, `data_a_human_review_checklist.md`
+  - `src/backend/tests/test_csv_validator.py`, `src/backend/tests/test_issue_pipeline_contracts.py`
+  - `progress/DATA-A.md`
+- **Validation commands**:
+  - `validate_data_a_bundle()` 직접 호출
+  - `.venv/Scripts/python.exe -m pytest src/backend/tests/test_csv_validator.py src/backend/tests/test_issue_pipeline_contracts.py -q`
+  - `.venv/Scripts/python.exe -m pytest src/backend/tests -q`(pandas 미의존 부분)
+- **Validation results**: `validate_data_a_bundle()` PASS(esg 70, sources 13, events 5, candidates 8), pytest 23 passed / 69 passed
+- **Remaining**:
+  - G02: 사용자가 API 없이 DART "정정보고서 검색"으로 건수 직접 확인(삼성 45건/SK 28건, 2023~2025). 근거 파일(캡처 또는 인쇄 PDF)만 받으면 반영 가능
+  - EVT-0008: SK하이닉스 2026-06-25 사망 건, DART 수시공시 원문 링크 확보 대기
+- **Blockers**: 위 2건(둘 다 사용자 확인/자료 제공 필요)
+- **Next task**: G02 근거 파일 및 EVT-0008용 DART 링크 확보 후 마무리, 이후 커밋/PR
+
+### 2026-07-25 (계속) — DATA-A-10: G02 양사 확보(API 불필요) 및 SK하이닉스 세 번째 중대재해(EVT-0008) 추가로 4단계 항목 전부 마무리
+
+- **Role**: Data A
+- **Owner**: Data A
+- **Status**: `done`(커밋/PR 대기)
+- **배경**: 사용자가 DART "정정보고서 검색" 화면 캡처(삼성 45건/SK 28건, 2023-01-01~2025-12-31)와 SK하이닉스의 세 번째 중대재해 발생 공시(2026.06.26 접수, rcpNo=20260626801398) 화면 캡처를 `data/raw/reports/`에 직접 저장 후 전달
+- **Completed**:
+  - **G02(정정공시 건수) 양사 확보**: `SRC-0019`로 등록(organization_name=전자공시시스템(DART), validation_method=`official_domain`, url=`https://dart.fss.or.kr/dsab001/main.do`). 개별 rcpNo 문서가 아닌 검색결과 화면이라 `dart_receipt` 대신 `official_domain` 적용 — `issue-pipeline-rules.json`의 `official_domains`에 `dart.fss.or.kr` 추가. `esg_indicators.csv`에 삼성(45건)·SK(28건) 각 1행 추가(연도별 세부내역 없이 3개년 누적치, `not_comparable`로 분류 — 계열사 규모 차이 때문에 단순 비교 금지 명시)
+  - **EVT-0008 추가**: SK하이닉스, 산재보험법상 업무상 질병 승인(2025-03-05) 후 요양 중 사망(2026-06-25), 고용노동부 보고일자 2026-06-26. `SRC-0018`(dart_receipt, rcpNo=20260626801398)로 근거 등록. `EVT-0006`(사업보고서 XI.라 기재, 2024-05-10 사망)과는 발생일자가 달라 별개 인물로 판단 — 사업보고서 제출(2026.03.17) 이후 발생한 별건이라 해당 보고서에는 미기재. `enforcement_action=investigation`(고용노동부 현장조사·원인파악 진행 중, 공시 자체에 "중대재해 여부 미확정, 확정 시 정정공시 예정" 명시), severity=5(실제 함수 재계산 확인)
+  - `CND-0009`(EVT-0008용 dart_disclosure 후보) 추가, `event_sources.csv`에 EVT-0008↔SRC-0018 연결 추가
+  - **파일명 정리**: 사용자가 저장한 원본 파일명(`G02(정정보고서 45건,28건).pdf`, `SK하이닉스_중대재해발생_2026.06.26.pdf`)에 한글·쉼표가 포함돼 있어 CSV 파싱 사고 방지 및 기존 명명 규칙(영문 snake_case) 일치를 위해 각각 `dart_correction_report_search_g02_2023_2025.pdf`, `skhynix_fatality_disclosure_2026_rcp20260626801398.pdf`로 리네임(콘텐츠는 불변이라 SHA-256 동일)
+  - **CSV 파싱 버그 발견·수정**: `SRC-0019`의 `document_title` 필드에 쉼표가 포함된 채 따옴표 없이 입력해 컬럼이 밀리는 사고 발생 → `validate_data_a_bundle()` 실행 중 `INVALID_SOURCE_DART_RECEIPT` 등 엉뚱한 오류로 감지, 해당 필드를 따옴표로 감싸 수정 후 재검증 통과
+  - `data_quality_report.md`(12개 지표 전부 확보로 요약 갱신, G02 not_comparable 사유 추가, 남은 한계 8번 EVT-0008 반영), `data_dictionary.md`(총 72행=삼성32+SK40, G02 확보 반영, scope_mismatch 대상에 G02 추가), `indicator_comparability.csv`(G02 행 추가), `data_a_human_review_checklist.md`(G01~G03 전부 확보 11행, "수정 필요 사항" 없음으로 갱신) 업데이트
+  - 테스트 카운트 갱신: esg 70→72, sources 13→15, events 5→6, candidates 8→9(validated 5→6), event_sources 6→7
+- **Created files**:
+  - `data/raw/reports/dart_correction_report_search_g02_2023_2025.pdf`, `skhynix_fatality_disclosure_2026_rcp20260626801398.pdf`(사용자 저장, 리네임)
+- **Modified files**:
+  - `data/processed/esg_indicators.csv`(72행), `data/processed/sources.csv`(15건), `data/processed/events.csv`(6건), `data/candidate/news_candidates.csv`(9건), `data/processed/event_sources.csv`(7건)
+  - `schemas/data/issue-pipeline-rules.json`(official_domains에 dart.fss.or.kr 추가)
+  - `data/docs/data_quality_report.md`, `data_dictionary.md`, `indicator_comparability.csv`, `data_a_human_review_checklist.md`
+  - `src/backend/tests/test_csv_validator.py`, `src/backend/tests/test_issue_pipeline_contracts.py`
+  - `progress/DATA-A.md`
+- **Validation commands**:
+  - `validate_data_a_bundle()` 직접 호출
+  - `.venv/Scripts/python.exe -m pytest src/backend/tests/test_csv_validator.py src/backend/tests/test_issue_pipeline_contracts.py -q`
+  - `.venv/Scripts/python.exe -m pytest src/backend/tests -q --ignore=...`(pandas 미의존 부분)
+- **Validation results**: `validate_data_a_bundle()` PASS(esg 72, sources 15, events 6, candidates 9, event_sources 7), pytest 23 passed / 69 passed
+- **Remaining**: 없음 — G01~G03 12개 지표 전부 양사 확보, 발견된 중대재해 3건(EVT-0006/0007/0008) 전부 반영 완료
+- **Blockers**: 없음
+- **Next task**: 이번 라운드 전체(G03 교체+EVT-0006/0007/0008+G02+문서 갱신)를 새 브랜치로 커밋·푸시하고 PR 링크 제공, 사용자 병합 대기

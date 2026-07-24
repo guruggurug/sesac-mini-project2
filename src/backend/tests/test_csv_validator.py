@@ -23,7 +23,7 @@ def test_processed_esg_nullable_numbers_are_cast_and_validated():
         "esg",
     )
 
-    assert len(rows) == 68
+    assert len(rows) == 72
     assert isinstance(rows[0]["raw_value"], float)
     assert isinstance(rows[0]["target_value"], float)
     assert isinstance(rows[0]["baseline_value"], float)
