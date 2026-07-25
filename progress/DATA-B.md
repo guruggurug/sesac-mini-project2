@@ -10,6 +10,7 @@
 | DATA-B-04 | Event Reaction Function | `done` | `src/modeling/events.py` | - |
 | DATA-B-05 | Real Data Integration | `done` | `src/modeling/esg.py`, `src/modeling/run_pipeline.py` | - |
 | DATA-B-06 | Sensitivity Check | `done` | `src/modeling/sensitivity.py`, `data/processed/*` | - |
+| DATA-B-07 | Recalculation with Actual Data + Teammate Constraints | `done` | `src/modeling/esg.py`, `src/modeling/optimizer.py`, `tests/test_esg.py`, `data/processed/*` | - |
 
 ## Active Blockers
 
@@ -173,3 +174,47 @@
 - **Remaining**: 없음
 - **Blockers**: 없음
 - **Next recommended task**: 개발 A(Backend/Frontend)에게 최종 모듈 함수 및 JSON 출력 연동 넘기기 (`BE-05` 및 `FE-04` 통합 검수`)
+
+---
+
+### 2026-07-25 10:55 — DATA-B-07
+
+- **Role**: Data B
+- **Owner**: Data B
+- **Task ID**: DATA-B-07
+- **Status**: `done`
+- **Completed**:
+  - Data A 팀메이트의 요청(비교 불가 지표 분리, market_event_date 기준 사건 분석, 허구 데이터 재계산) 검토 및 반영
+  - `esg.py`: `DEFAULT_DATA_DIR` 경로 `data/reviewed` → `data/processed` 수정 (경로 버그 수정)
+  - `esg.py`: `NON_COMPARABLE_INDICATORS` / `COMPARABLE_INDICATORS` 상수 추가 (E02, E04, E05, S04, S05, G02, G03 → 비교 불가)
+  - `esg.py`: `calculate_esg_risk()` 함수에 `comparability_mode` 파라미터 추가. `strict` 모드(기본값)에서는 비교 불가 지표를 `esg_risk_score` 가중 평균에서 제외하되, `indicator_results`에는 개별 기업 기술(記述) 목적으로 포함.
+  - `optimizer.py`: `data/reviewed` 경로 2개소(103-105번, 315-317번 라인) → `data/processed`로 수정
+  - `tests/test_esg.py`: `test_calculate_esg_risk_basic` 예상값 업데이트 (E02 제외 후 0.28 → 0.32), `test_calculate_esg_risk_all_mode` 테스트 추가
+  - `python -m src.modeling.run_pipeline` 실행 → 전체 산출물 재생성 완료
+- **Created files**: 없음
+- **Modified files**:
+  - `src/modeling/esg.py`
+  - `src/modeling/optimizer.py`
+  - `tests/test_esg.py`
+  - `data/processed/optimization_result.json` (재생성)
+  - `data/processed/event_reactions.json` (재생성)
+  - `data/processed/company_esg_risks.json` (재생성)
+  - `data/processed/company_downside_risks.json` (재생성)
+  - `data/processed/sensitivity_results.csv` (재생성)
+  - `data/processed/sensitivity_summary.json` (재생성)
+  - `data/processed/model_run_metadata.json` (재생성, run_id: RUN-20260725-015603)
+- **Validation commands**:
+  - `python -m pytest tests/test_esg.py tests/test_events.py tests/test_optimizer.py tests/test_downside.py -v`
+  - `python -m src.modeling.run_pipeline`
+- **Validation results**:
+  - 모델링 테스트 20/20 통과 (0 failures)
+  - 파이프라인 완료 성공. `data_status: reviewed` 확인
+  - `optimization_result.json`: `data_status=reviewed`, `generated_at=2026-07-25T01:55:44`
+  - `event_reactions.json`: 3건 (EVT-0001, EVT-0003, EVT-0005) 모두 `market_event_date` 기준 반응 분석 완료
+  - `model_run_metadata.json`: `run_id=RUN-20260725-015603`, `data_status=reviewed`
+- **Known limitation**:
+  - 현재 `esg_indicators.csv`는 78행 (teammate 언급 72행과 6건 events와 차이 있음). Data A 팀의 최종 검수 완료 파일이 준비되면 `data/processed/`에 배치 후 파이프라인 재실행 필요.
+  - `events.py`의 `market_event_date` 우선 적용 로직은 이미 올바르게 구현되어 있었음 (코드 변경 불필요).
+  - indicator_comparability.csv와 teammate의 비교 불가 지표 목록 간 일부 불일치(E04, E05, G02, G03은 CSV에서 `direct`이나 teammate는 `one_sided` 분류). 보수적 원칙에 따라 teammate 지시를 우선 적용.
+- **Blockers**: 없음
+- **Next recommended task**: Data A 팀에서 최종 72행 esg_indicators.csv 및 6건 events.csv 파일 배치 후 파이프라인 재실행 요청 (`DATA-B-08`)

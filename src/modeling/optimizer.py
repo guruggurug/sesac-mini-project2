@@ -100,9 +100,9 @@ def load_esg_scores(
             config_dir = Path("config")
             if not config_dir.exists():
                 config_dir = Path(__file__).resolve().parent.parent.parent / "config"
-            data_dir = Path("data/reviewed")
+            data_dir = Path("data/processed")
             if not data_dir.exists():
-                data_dir = Path(__file__).resolve().parent.parent.parent / "data" / "reviewed"
+                data_dir = Path(__file__).resolve().parent.parent.parent / "data" / "processed"
 
             scoring_rules = load_yaml_config(config_dir / "esg_scoring_rules.yaml")
             materiality_weights = load_yaml_config(config_dir / "materiality_weights.yaml")
@@ -312,9 +312,9 @@ def optimize_portfolio(
     if not config_dir.exists():
         config_dir = Path(__file__).resolve().parent.parent.parent / "config"
     
-    data_dir = Path("data/reviewed")
+    data_dir = Path("data/processed")
     if not data_dir.exists():
-        data_dir = Path(__file__).resolve().parent.parent.parent / "data" / "reviewed"
+        data_dir = Path(__file__).resolve().parent.parent.parent / "data" / "processed"
 
     if isinstance(esg_input, pd.DataFrame) and not esg_input.empty:
         # Dynamic calculation

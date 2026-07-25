@@ -1,7 +1,7 @@
 {
   "005930": {
     "company_id": "005930",
-    "esg_risk_score": 0.1356,
+    "esg_risk_score": 0.1041,
     "environment_risk": 0.1248,
     "social_risk": 0.1499,
     "governance_risk": 0.5,
@@ -20,7 +20,9 @@
         "controversy_penalty": 0.0,
         "data_uncertainty": 0.05,
         "issue_risk": 0.05,
-        "materiality_weight": 0.12
+        "materiality_weight": 0.12,
+        "is_comparable": true,
+        "used_in_comparison": true
       },
       {
         "indicator_id": "E02",
@@ -33,7 +35,9 @@
         "controversy_penalty": 0.0,
         "data_uncertainty": 0.05,
         "issue_risk": 0.124,
-        "materiality_weight": 0.08
+        "materiality_weight": 0.08,
+        "is_comparable": false,
+        "used_in_comparison": false
       },
       {
         "indicator_id": "E03",
@@ -46,7 +50,9 @@
         "controversy_penalty": 0.0,
         "data_uncertainty": 0.05,
         "issue_risk": 0.05,
-        "materiality_weight": 0.06
+        "materiality_weight": 0.06,
+        "is_comparable": true,
+        "used_in_comparison": true
       },
       {
         "indicator_id": "E04",
@@ -59,7 +65,9 @@
         "controversy_penalty": 0.0,
         "data_uncertainty": 0.05,
         "issue_risk": 0.05,
-        "materiality_weight": 0.08
+        "materiality_weight": 0.08,
+        "is_comparable": false,
+        "used_in_comparison": false
       },
       {
         "indicator_id": "E05",
@@ -72,7 +80,9 @@
         "controversy_penalty": 0.0,
         "data_uncertainty": 0.05,
         "issue_risk": 0.45,
-        "materiality_weight": 0.06
+        "materiality_weight": 0.06,
+        "is_comparable": false,
+        "used_in_comparison": false
       },
       {
         "indicator_id": "S01",
@@ -85,7 +95,9 @@
         "controversy_penalty": 0.125,
         "data_uncertainty": 0.05,
         "issue_risk": 0.175,
-        "materiality_weight": 0.09
+        "materiality_weight": 0.09,
+        "is_comparable": true,
+        "used_in_comparison": true
       },
       {
         "indicator_id": "S02",
@@ -98,7 +110,9 @@
         "controversy_penalty": 0.0,
         "data_uncertainty": 0.13,
         "issue_risk": 0.13,
-        "materiality_weight": 0.07
+        "materiality_weight": 0.07,
+        "is_comparable": true,
+        "used_in_comparison": true
       },
       {
         "indicator_id": "S03",
@@ -111,7 +125,9 @@
         "controversy_penalty": 0.0,
         "data_uncertainty": 0.13,
         "issue_risk": 0.13,
-        "materiality_weight": 0.06
+        "materiality_weight": 0.06,
+        "is_comparable": true,
+        "used_in_comparison": true
       },
       {
         "indicator_id": "S04",
@@ -124,7 +140,9 @@
         "controversy_penalty": 0.024,
         "data_uncertainty": 0.13,
         "issue_risk": 0.154,
-        "materiality_weight": 0.08
+        "materiality_weight": 0.08,
+        "is_comparable": false,
+        "used_in_comparison": false
       },
       {
         "indicator_id": "G01",
@@ -157,7 +175,7 @@
   },
   "000660": {
     "company_id": "000660",
-    "esg_risk_score": 0.1047,
+    "esg_risk_score": 0.05,
     "environment_risk": 0.1361,
     "social_risk": 0.05,
     "governance_risk": 0.5,
@@ -176,7 +194,9 @@
         "controversy_penalty": 0.0,
         "data_uncertainty": 0.05,
         "issue_risk": 0.05,
-        "materiality_weight": 0.12
+        "materiality_weight": 0.12,
+        "is_comparable": true,
+        "used_in_comparison": true
       },
       {
         "indicator_id": "E02",
@@ -189,7 +209,9 @@
         "controversy_penalty": 0.0,
         "data_uncertainty": 0.05,
         "issue_risk": 0.143,
-        "materiality_weight": 0.08
+        "materiality_weight": 0.08,
+        "is_comparable": false,
+        "used_in_comparison": false
       },
       {
         "indicator_id": "E03",
@@ -202,7 +224,9 @@
         "controversy_penalty": 0.0,
         "data_uncertainty": 0.05,
         "issue_risk": 0.05,
-        "materiality_weight": 0.06
+        "materiality_weight": 0.06,
+        "is_comparable": true,
+        "used_in_comparison": true
       },
       {
         "indicator_id": "E04",
@@ -215,7 +239,9 @@
         "controversy_penalty": 0.0,
         "data_uncertainty": 0.05,
         "issue_risk": 0.05,
-        "materiality_weight": 0.08
+        "materiality_weight": 0.08,
+        "is_comparable": false,
+        "used_in_comparison": false
       },
       {
         "indicator_id": "E05",
@@ -228,7 +254,9 @@
         "controversy_penalty": 0.05,
         "data_uncertainty": 0.05,
         "issue_risk": 0.5,
-        "materiality_weight": 0.06
+        "materiality_weight": 0.06,
+        "is_comparable": false,
+        "used_in_comparison": false
       },
       {
         "indicator_id": "S01",
@@ -241,7 +269,9 @@
         "controversy_penalty": 0.0,
         "data_uncertainty": 0.05,
         "issue_risk": 0.05,
-        "materiality_weight": 0.09
+        "materiality_weight": 0.09,
+        "is_comparable": true,
+        "used_in_comparison": true
       },
       {
         "indicator_id": "S02",
@@ -263,7 +293,9 @@
         "controversy_penalty": 0.0,
         "data_uncertainty": 0.05,
         "issue_risk": 0.05,
-        "materiality_weight": 0.06
+        "materiality_weight": 0.06,
+        "is_comparable": true,
+        "used_in_comparison": true
       },
       {
         "indicator_id": "S04",
@@ -276,7 +308,9 @@
         "controversy_penalty": 0.0,
         "data_uncertainty": 0.05,
         "issue_risk": 0.05,
-        "materiality_weight": 0.08
+        "materiality_weight": 0.08,
+        "is_comparable": false,
+        "used_in_comparison": false
       },
       {
         "indicator_id": "G01",

@@ -104,16 +104,46 @@ def test_calculate_esg_risk_basic(sample_indicators, scoring_rules, materiality_
     assert "000660" in res
 
     sam_result = res["005930"]
-    # E01 normalized value: 15.0 / 30.0 = 0.50 (higher is worse -> risk = 0.50)
-    # E02 normalized value: 60.0 / 100.0 = 0.60 (higher is better -> risk = 0.40)
-    # E01 Management: 1.0 - 0.50 + 0.1 (assurance bonus) = 0.60
-    # E01 Residual Risk: 0.8 (exposure) * (1 - 0.60) = 0.32
-    # E02 Management: 1.0 - 0.40 + 0.1 = 0.70
-    # E02 Residual Risk: 0.8 * (1 - 0.70) = 0.24
-    # Weighted average: 0.5 * 0.32 + 0.5 * 0.24 = 0.28 (since other indicators are missing and re-normalized)
-    
-    assert sam_result["esg_risk_score"] == pytest.approx(0.28, abs=0.01)
+    # With comparability_mode="strict" (default), E02 is NON_COMPARABLE and excluded
+    # from the esg_risk_score weighted average.
+    # Only E01 (comparable) contributes:
+    #   E01 normalized value: 15.0 / 30.0 = 0.50 (higher_is_worse -> risk = 0.50)
+    #   E01 Management: 1.0 - 0.50 + 0.1 (third_party_assured bonus) = 0.60
+    #   E01 Residual Risk: 0.8 * (1 - 0.60) = 0.32
+    #   esg_risk_score = 0.32 (E01 only, renormalized over comparable weight)
+    assert sam_result["esg_risk_score"] == pytest.approx(0.32, abs=0.01)
     assert sam_result["data_confidence"] == "low"
+
+    # E02 must still appear in indicator_results (for descriptive display)
+    # but marked as non-comparable
+    ind_ids = {r["indicator_id"] for r in sam_result["indicator_results"]}
+    assert "E02" in ind_ids
+    e02_res = next(r for r in sam_result["indicator_results"] if r["indicator_id"] == "E02")
+    assert e02_res["used_in_comparison"] is False
+    assert e02_res["is_comparable"] is False
+
+
+def test_calculate_esg_risk_all_mode(sample_indicators, scoring_rules, materiality_weights, event_rules):
+    """Verify comparability_mode='all' includes both E01 and E02 in the weighted average."""
+    res = calculate_esg_risk(
+        indicators_df=sample_indicators,
+        events_df=pd.DataFrame(),
+        scoring_rules=scoring_rules,
+        materiality_weights=materiality_weights,
+        event_rules=event_rules,
+        reference_date="2026-07-22",
+        comparability_mode="all"
+    )
+    sam_result = res["005930"]
+    # With mode="all", both E01 and E02 contribute:
+    #   E01 Residual Risk: 0.32, weight 0.5
+    #   E02 Residual Risk: 0.8*(1-0.70)=0.24, weight 0.5
+    #   Weighted avg: 0.5*0.32 + 0.5*0.24 = 0.28
+    assert sam_result["esg_risk_score"] == pytest.approx(0.28, abs=0.01)
+    # In "all" mode, all *available* indicators are used in comparison
+    for ind in sam_result["indicator_results"]:
+        if ind.get("availability") == "available":
+            assert ind.get("used_in_comparison") is True
 
 
 def test_calculate_esg_risk_uncertainty_penalty(sample_indicators, scoring_rules, materiality_weights, event_rules):

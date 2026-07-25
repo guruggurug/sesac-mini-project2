@@ -13,7 +13,34 @@ import numpy as np
 # Default directories relative to workspace root
 DEFAULT_WORKSPACE_DIR = Path("c:/Users/jkim1/Sesac/sesac_pjt/Investment App")
 DEFAULT_CONFIG_DIR = DEFAULT_WORKSPACE_DIR / "config"
-DEFAULT_DATA_DIR = DEFAULT_WORKSPACE_DIR / "data" / "reviewed"
+DEFAULT_DATA_DIR = DEFAULT_WORKSPACE_DIR / "data" / "processed"
+
+# ---------------------------------------------------------------------------
+# Indicator comparability classification (per Data A, 2026-07-25)
+# ---------------------------------------------------------------------------
+# These indicators are scored per-company for descriptive display only.
+# They must NOT be used in cross-company average or relative ranking calculations
+# because their measurement definitions differ between Samsung and SK Hynix,
+# or because only one company has data.
+# Reference: data/docs/indicator_comparability.csv
+NON_COMPARABLE_INDICATORS: frozenset = frozenset({
+    "E02",  # 용수 재이용률 — 분모 산출 기준 차이 (취수량 vs 사용량)
+    "E04",  # 공정가스 감축률 — one_sided per Data A policy
+    "E05",  # 유해화학물질 배출량 — one_sided per Data A policy
+    "S04",  # 정보보호 관리 수준 — 인증 기준 세부 편차
+    "S05",  # 책임광물 제3자 검증률 — 삼성전자 데이터 없음
+    "G02",  # 정정공시 건수 — one_sided per Data A policy
+    "G03",  # 준법/수출통제 위반 건수 — one_sided per Data A policy
+})
+# Directly comparable indicators (양사 직접 비교 가능)
+COMPARABLE_INDICATORS: frozenset = frozenset({
+    "E01",  # 온실가스 배출집약도
+    "E03",  # 폐기물 재활용률
+    "S01",  # 산업재해율(LTIR)
+    "S02",  # 협력사 ESG 현장실사 비율
+    "S03",  # 임직원 자발적 이직률
+    "G01",  # 사외이사 비율 (유일하게 직접 비교 가능한 지배구조 지표)
+})
 
 
 def load_yaml_config(file_path: Path) -> dict:
@@ -44,7 +71,8 @@ def calculate_esg_risk(
     materiality_weights: dict,
     event_rules: dict,
     reviewed_sources: set = None,
-    reference_date: str = "2026-07-22"
+    reference_date: str = "2026-07-22",
+    comparability_mode: str = "strict"
 ) -> Dict[str, Any]:
     """
     Calculate company-level and indicator-level ESG risk scores.
@@ -57,6 +85,10 @@ def calculate_esg_risk(
         event_rules: Event penalty rules dict from event_penalty_rules.yaml.
         reviewed_sources: Set of reviewed official source IDs.
         reference_date: Analysis date to compute recency decay.
+        comparability_mode: "strict" (default) excludes NON_COMPARABLE_INDICATORS from
+            the esg_risk_score used in cross-company optimizer math. Per-company
+            descriptive scores for those indicators are still computed and included in
+            indicator_results. Use "all" to include every available indicator.
 
     Returns:
         Dict[str, Any]: Dictionary containing ESG scores per company.
@@ -269,8 +301,17 @@ def calculate_esg_risk(
                 "materiality_weight": weight
             })
 
-            available_material_sum += weight
-            weighted_total_risk += weight * issue_risk
+            # Comparability gate: only include in weighted average if mode allows
+            is_comparable = ind_id in COMPARABLE_INDICATORS
+            use_in_comparison = (comparability_mode != "strict") or is_comparable
+
+            # Tag the result with comparability metadata
+            indicator_results[-1]["is_comparable"] = is_comparable
+            indicator_results[-1]["used_in_comparison"] = use_in_comparison
+
+            if use_in_comparison:
+                available_material_sum += weight
+                weighted_total_risk += weight * issue_risk
             cat_data[category].append((weight, issue_risk))
 
         # Renormalize overall score
