@@ -4,7 +4,7 @@ Unit tests for dynamic ESG risk scoring module (esg.py).
 
 import pandas as pd
 import pytest
-from src.modeling.esg import calculate_esg_risk
+from src.modeling.esg import calculate_esg_risk, get_validated_sources
 
 
 @pytest.fixture
@@ -163,3 +163,83 @@ def test_calculate_esg_risk_uncertainty_penalty(sample_indicators, scoring_rules
     # Check E01 results specifically
     e01_res = next(x for x in sk_result["indicator_results"] if x["indicator_id"] == "E01")
     assert e01_res["data_uncertainty"] == pytest.approx(0.11, abs=0.001)
+
+
+def test_calculate_esg_risk_accepts_nested_config(
+    sample_indicators, scoring_rules, materiality_weights, event_rules
+):
+    nested_rules = {
+        "indicators": {
+            key: value
+            for key, value in scoring_rules.items()
+            if key != "uncertainty_penalties"
+        },
+        "uncertainty_penalties": scoring_rules["uncertainty_penalties"],
+    }
+
+    result = calculate_esg_risk(
+        indicators_df=sample_indicators,
+        events_df=pd.DataFrame(),
+        scoring_rules=nested_rules,
+        materiality_weights=materiality_weights,
+        event_rules=event_rules,
+        reference_date="2026-07-22",
+    )
+
+    # Latest Data A comparability policy excludes E02 from cross-company scoring.
+    assert result["005930"]["esg_risk_score"] == pytest.approx(0.32, abs=0.01)
+
+
+def test_calculate_esg_risk_excludes_reported_events(
+    sample_indicators, scoring_rules, materiality_weights, event_rules
+):
+    confirmed = {
+        "event_id": "EVT-CONFIRMED",
+        "company_id": "005930",
+        "linked_indicator_id": "E01",
+        "status": "confirmed",
+        "severity": 4,
+        "authority_confirmed": True,
+        "official_source_url": "https://example.com/official",
+        "evidence_confidence": "high",
+        "event_date": "2026-01-01",
+        "market_event_date": "2026-01-01",
+    }
+    reported = {
+        **confirmed,
+        "event_id": "EVT-REPORTED",
+        "status": "reported",
+        "severity": 5,
+    }
+
+    result = calculate_esg_risk(
+        indicators_df=sample_indicators,
+        events_df=pd.DataFrame([confirmed, reported]),
+        scoring_rules=scoring_rules,
+        materiality_weights=materiality_weights,
+        event_rules={
+            **event_rules,
+            "severity_multipliers": {4: 0.25, 5: 0.5},
+            "status_multipliers": {"confirmed": 1.0, "reported": 1.0},
+        },
+        reference_date="2026-07-22",
+    )
+
+    e01 = next(
+        item
+        for item in result["005930"]["indicator_results"]
+        if item["indicator_id"] == "E01"
+    )
+    assert e01["controversy_penalty"] == pytest.approx(0.25)
+
+
+def test_get_validated_sources_uses_current_contract(tmp_path):
+    sources_path = tmp_path / "sources.csv"
+    pd.DataFrame(
+        [
+            {"source_id": "SRC-OK", "validated": True},
+            {"source_id": "SRC-NO", "validated": False},
+        ]
+    ).to_csv(sources_path, index=False)
+
+    assert get_validated_sources(sources_path) == {"SRC-OK"}

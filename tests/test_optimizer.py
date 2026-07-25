@@ -9,7 +9,24 @@ import pandas as pd
 from src.modeling.optimizer import optimize_portfolio, load_esg_scores, resolve_risk_profile
 
 
-SAMPLE_CSV_PATH = Path("data/sample/stock_prices.sample.csv")
+SAMPLE_CSV_PATH = Path("data/sample/stock_prices.sample.csv").resolve()
+
+
+def balanced_holdings():
+    return [
+        {
+            "ticker": "005930",
+            "quantity": 10,
+            "average_price": 70000,
+            "current_price": 100000,
+        },
+        {
+            "ticker": "000660",
+            "quantity": 10,
+            "average_price": 180000,
+            "current_price": 100000,
+        },
+    ]
 
 
 def test_load_esg_scores():
@@ -108,3 +125,74 @@ def test_optimize_portfolio_empty_holdings_error():
 
     with pytest.raises(ValueError, match="보유 주식이 없습니다"):
         optimize_portfolio(holdings=holdings, price_data=SAMPLE_CSV_PATH)
+
+
+def test_validated_optimization_rejects_missing_esg_aggregate():
+    with pytest.raises(ValueError, match="missing tickers: 000660"):
+        optimize_portfolio(
+            holdings=balanced_holdings(),
+            price_data=SAMPLE_CSV_PATH,
+            esg_input={"005930": 0.4},
+            data_mode="validated",
+        )
+
+
+def test_optimizer_rejects_legacy_reviewed_data_mode():
+    with pytest.raises(ValueError, match="지원하지 않는 data_mode"):
+        optimize_portfolio(
+            holdings=balanced_holdings(),
+            price_data=SAMPLE_CSV_PATH,
+            esg_input={"005930": 0.4, "000660": 0.5},
+            data_mode="reviewed",
+        )
+
+
+def test_optimizer_is_side_effect_free_by_default(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+
+    optimize_portfolio(
+        holdings=balanced_holdings(),
+        price_data=SAMPLE_CSV_PATH,
+        esg_input={"005930": 0.4, "000660": 0.5},
+        data_mode="validated",
+    )
+
+    assert not (tmp_path / "data/processed/optimization_grid_results.csv").exists()
+
+
+def test_optimizer_writes_grid_only_to_explicit_output(tmp_path):
+    output_path = tmp_path / "batch" / "optimization_grid_results.csv"
+
+    result = optimize_portfolio(
+        holdings=balanced_holdings(),
+        price_data=SAMPLE_CSV_PATH,
+        esg_input={"005930": 0.4, "000660": 0.5},
+        data_mode="validated",
+        grid_results_output=output_path,
+    )
+
+    grid = pd.read_csv(output_path)
+    assert len(grid) == 61
+    assert result["recommended_weights"]["005930"] + result["recommended_weights"]["000660"] == pytest.approx(1.0)
+    assert 0.2 <= result["recommended_weights"]["005930"] <= 0.8
+
+
+def test_optimizer_is_deterministic_for_same_inputs():
+    kwargs = {
+        "holdings": balanced_holdings(),
+        "price_data": SAMPLE_CSV_PATH,
+        "esg_input": {"005930": 0.4, "000660": 0.5},
+        "data_mode": "validated",
+    }
+
+    first = optimize_portfolio(**kwargs)
+    second = optimize_portfolio(**kwargs)
+
+    for key in (
+        "recommended_weights",
+        "current_total_risk",
+        "optimized_total_risk",
+        "risk_reduction_rate",
+        "near_optimal_range",
+    ):
+        assert first[key] == second[key]

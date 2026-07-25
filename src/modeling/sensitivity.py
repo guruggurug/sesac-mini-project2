@@ -15,9 +15,9 @@ from src.modeling.optimizer import optimize_portfolio
 def run_sensitivity_analysis(
     holdings: List[Dict[str, Any]],
     price_data: Union[str, Path, pd.DataFrame],
-    esg_input: Optional[Union[str, Path, pd.DataFrame]] = None,
+    esg_input: Optional[Union[str, Path, pd.DataFrame, Dict[str, float]]] = None,
     output_dir: Union[str, Path] = "data/processed",
-    data_mode: str = "reviewed"
+    data_mode: str = "validated"
 ) -> Dict[str, Any]:
     """
     Run sensitivity analysis over multiple parameter combinations and save the results.
@@ -25,9 +25,9 @@ def run_sensitivity_analysis(
     Args:
         holdings: Portfolio holdings.
         price_data: Stock prices.
-        esg_input: ESG indicator records.
+        esg_input: ESG aggregate scores or indicator records.
         output_dir: Output directory path.
-        data_mode: 'reviewed' or 'sample'.
+        data_mode: 'validated', 'sample', or 'fallback'.
 
     Returns:
         Dict[str, Any]: Summary dictionary of the sensitivity analysis.

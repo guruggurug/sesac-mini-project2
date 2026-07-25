@@ -9,11 +9,10 @@ from typing import Dict, Any, List, Optional, Tuple, Union
 import numpy as np
 import pandas as pd
 import yaml
-import os
 
 from src.modeling.price import validate_price_data, calculate_daily_returns
 from src.modeling.downside import calculate_cvar, calculate_company_downside_risks, filter_price_period
-from src.modeling.esg import calculate_esg_risk, load_yaml_config, get_reviewed_sources
+from src.modeling.esg import calculate_esg_risk, load_yaml_config, get_validated_sources
 
 TICKER_SAMSUNG = "005930"
 TICKER_SK = "000660"
@@ -107,7 +106,7 @@ def load_esg_scores(
             scoring_rules = load_yaml_config(config_dir / "esg_scoring_rules.yaml")
             materiality_weights = load_yaml_config(config_dir / "materiality_weights.yaml")
             event_rules = load_yaml_config(config_dir / "event_penalty_rules.yaml")
-            reviewed_sources = get_reviewed_sources(data_dir / "sources.csv")
+            validated_sources = get_validated_sources(data_dir / "sources.csv")
             
             events_path = data_dir / "events.csv"
             events_df = pd.read_csv(events_path) if events_path.exists() else pd.DataFrame()
@@ -118,16 +117,18 @@ def load_esg_scores(
                 scoring_rules=scoring_rules,
                 materiality_weights=materiality_weights,
                 event_rules=event_rules,
-                reviewed_sources=reviewed_sources
+                reviewed_sources=validated_sources
             )
             return {
                 TICKER_SAMSUNG: esg_results[TICKER_SAMSUNG]["esg_risk_score"],
                 TICKER_SK: esg_results[TICKER_SK]["esg_risk_score"]
             }
-        except Exception:
-            return default_esg
-            
-    return default_esg
+        except Exception as error:
+            if allow_sample_defaults:
+                return default_esg
+            raise ValueError("ESG aggregate calculation failed") from error
+
+    return complete_or_raise({}, "aggregate score input is empty")
 
 def resolve_risk_profile(
     risk_priority: str = "balanced",
@@ -231,11 +232,14 @@ def optimize_portfolio(
     esg_weight: Optional[float] = None,
     knowledge_stage: Optional[str] = None,
     price_period_years: int = 3,
+    grid_results_output: Optional[Union[str, Path]] = None,
     **kwargs
 ) -> Dict[str, Any]:
     """
     Run 1% grid search portfolio optimization over 20%-80% weight bounds.
     """
+    if data_mode not in {"sample", "validated", "fallback"}:
+        raise ValueError(f"지원하지 않는 data_mode입니다: {data_mode}")
     # Map compatibility parameters if custom ones are None
     if custom_alpha is None and downside_weight is not None:
         custom_alpha = downside_weight
@@ -306,6 +310,7 @@ def optimize_portfolio(
     esg_scores = {}
     esg_metadata = {}
     allow_sample_esg_defaults = data_mode in ("sample", "fallback")
+    used_sample_esg_defaults = False
     
     # Locate configuration paths
     config_dir = Path("config")
@@ -322,7 +327,7 @@ def optimize_portfolio(
             scoring_rules = load_yaml_config(config_dir / "esg_scoring_rules.yaml")
             materiality_weights = load_yaml_config(config_dir / "materiality_weights.yaml")
             event_rules = load_yaml_config(config_dir / "event_penalty_rules.yaml")
-            reviewed_sources = get_reviewed_sources(data_dir / "sources.csv")
+            validated_sources = get_validated_sources(data_dir / "sources.csv")
             
             # Find default events file
             events_path = data_dir / "events.csv"
@@ -334,27 +339,35 @@ def optimize_portfolio(
                 scoring_rules=scoring_rules,
                 materiality_weights=materiality_weights,
                 event_rules=event_rules,
-                reviewed_sources=reviewed_sources
+                reviewed_sources=validated_sources
             )
             
             for ticker in [TICKER_SAMSUNG, TICKER_SK]:
                 esg_scores[ticker] = esg_results[ticker]["esg_risk_score"]
                 esg_metadata[ticker] = esg_results[ticker]
         except Exception as e:
-            if data_mode == "reviewed":
+            if data_mode == "validated":
                 raise ValueError(f"ESG 실제 데이터 계산 중 치명적인 오류가 발생했습니다: {str(e)}")
             # Fallback for sample mode
             esg_scores = {TICKER_SAMSUNG: 0.42, TICKER_SK: 0.55}
+            used_sample_esg_defaults = True
     elif isinstance(esg_input, dict):
-        esg_scores = {
-            TICKER_SAMSUNG: float(esg_input.get(TICKER_SAMSUNG, 0.42)),
-            TICKER_SK: float(esg_input.get(TICKER_SK, 0.55)),
-        }
+        missing_scores = [
+            ticker
+            for ticker in (TICKER_SAMSUNG, TICKER_SK)
+            if ticker not in {str(key).zfill(6) for key in esg_input}
+        ]
+        esg_scores = load_esg_scores(
+            esg_input,
+            allow_sample_defaults=allow_sample_esg_defaults,
+        )
+        used_sample_esg_defaults = bool(missing_scores)
     else:
-        # Reviewed mode should not quietly use sample values
-        if data_mode == "reviewed":
-            raise ValueError("검증 완료 모드에서 실제 ESG 데이터입력이 제공되지 않았습니다.")
-        esg_scores = {TICKER_SAMSUNG: 0.42, TICKER_SK: 0.55}
+        esg_scores = load_esg_scores(
+            esg_input,
+            allow_sample_defaults=allow_sample_esg_defaults,
+        )
+        used_sample_esg_defaults = allow_sample_esg_defaults
 
     # 6. Company individual downside risks
     comp_downside = calculate_company_downside_risks(
@@ -407,9 +420,11 @@ def optimize_portfolio(
                 "total_risk": round(float(total_risk), 4),
             }
 
-    # Save grid results to CSV for validation
-    os.makedirs("data/processed", exist_ok=True)
-    pd.DataFrame(all_grid_results).to_csv("data/processed/optimization_grid_results.csv", index=False)
+    # Runtime calls stay side-effect free. Offline batches opt into an output path.
+    if grid_results_output is not None:
+        grid_output_path = Path(grid_results_output)
+        grid_output_path.parent.mkdir(parents=True, exist_ok=True)
+        pd.DataFrame(all_grid_results).to_csv(grid_output_path, index=False)
 
     # 8. Equal-objective tie-breaking and Near-optimal range
     # Find candidates with total_risk close to min_total_risk (tolerance of 0.005)
@@ -484,7 +499,7 @@ def optimize_portfolio(
     ]
     if data_mode == "sample":
         warnings.append("현재 샘플 데이터를 사용하여 최적화를 수행했습니다.")
-    if allow_sample_esg_defaults:
+    if used_sample_esg_defaults:
         warnings.append(
             "ESG 집계 점수가 없어 sample/fallback 전용 예시 점수를 사용했습니다. "
             "이 값은 validated 결과로 표시할 수 없습니다."

@@ -1,6 +1,7 @@
 import os
 import sys
 from copy import deepcopy
+from pathlib import Path
 
 import jsonschema
 import pytest
@@ -9,6 +10,7 @@ import pytest
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from app.core.config import BASE_DIR
+from app.core.exceptions import CSVValidationError
 from app.utils.csv_validator import (
     ESG_SCHEMA_PATH,
     EVENTS_SCHEMA_PATH,
@@ -85,3 +87,19 @@ def test_event_status_is_separate_from_enforcement_action():
     invalid_status["status"] = "sanctioned"
     with pytest.raises(jsonschema.ValidationError):
         jsonschema.validate(instance=invalid_status, schema=schema)
+
+
+def test_source_csv_rejects_extra_unquoted_fields(tmp_path):
+    source_path = Path(BASE_DIR) / "data" / "processed" / "sources.csv"
+    source_lines = source_path.read_text(encoding="utf-8").splitlines()
+    malformed_path = tmp_path / "sources.csv"
+    malformed_path.write_text(
+        f"{source_lines[0]}\n{source_lines[1]},unexpected\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(CSVValidationError) as error:
+        validate_csv_file(str(malformed_path), "source")
+
+    assert error.value.code == "INVALID_SOURCE_ROW_WIDTH"
+    assert "2번째 줄" in error.value.message

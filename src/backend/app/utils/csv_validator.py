@@ -171,8 +171,20 @@ def validate_csv_file(file_path: str, schema_type: str) -> list[dict]:
 
             # 4. 각 행 데이터 타입 캐스팅 및 스키마 검증
             for line_num, raw_row in enumerate(reader, start=2): # 1은 헤더이므로 데이터는 2번 라인부터 시작
-                # 중복 컬럼 등으로 인한 None 키 처리 방지
-                clean_row = {k: v for k, v in raw_row.items() if k is not None}
+                # DictReader stores values beyond the declared header under a None key.
+                # Reject them instead of silently dropping malformed, unquoted fields.
+                if None in raw_row:
+                    extra_values = raw_row[None]
+                    extra_count = len(extra_values) if isinstance(extra_values, list) else 1
+                    raise CSVValidationError(
+                        code=f"{code_prefix}_ROW_WIDTH",
+                        message=(
+                            f"{os.path.basename(file_path)}의 {line_num}번째 줄에 "
+                            f"헤더보다 {extra_count}개의 값이 더 있습니다."
+                        ),
+                    )
+
+                clean_row = raw_row
                 
                 try:
                     cast_row = parse_and_cast_row(clean_row, schema)

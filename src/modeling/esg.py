@@ -3,15 +3,13 @@ Dynamic ESG Risk Scoring Module for Data B.
 Calculates Residual Risk, controversy penalties, uncertainty penalties, and weighted ESG scores.
 """
 
-import os
 import yaml
 from pathlib import Path
-from typing import Dict, Any, Union, Optional, List
+from typing import Dict, Any, Union
 import pandas as pd
-import numpy as np
 
-# Default directories relative to workspace root
-DEFAULT_WORKSPACE_DIR = Path("c:/Users/jkim1/Sesac/sesac_pjt/Investment App")
+# Offline batch defaults. Runtime callers inject validated in-memory records.
+DEFAULT_WORKSPACE_DIR = Path(__file__).resolve().parents[2]
 DEFAULT_CONFIG_DIR = DEFAULT_WORKSPACE_DIR / "config"
 DEFAULT_DATA_DIR = DEFAULT_WORKSPACE_DIR / "data" / "processed"
 
@@ -51,17 +49,15 @@ def load_yaml_config(file_path: Path) -> dict:
         return yaml.safe_load(f) or {}
 
 
-def get_reviewed_sources(sources_path: Path) -> set:
-    """Load reviewed source IDs from sources.csv."""
+def get_validated_sources(sources_path: Path) -> set:
+    """Load automatically validated source IDs from sources.csv."""
     if not sources_path.exists():
         return set()
-    try:
-        df = pd.read_csv(sources_path)
-        # Handle reviewed as boolean or string 'true'
-        reviewed_df = df[df["reviewed"].astype(str).str.lower() == "true"]
-        return set(reviewed_df["source_id"].astype(str).unique())
-    except Exception:
-        return set()
+    df = pd.read_csv(sources_path)
+    if "validated" not in df.columns:
+        raise ValueError("sources.csv에 validated 열이 없습니다.")
+    validated_df = df[df["validated"].astype(str).str.lower() == "true"]
+    return set(validated_df["source_id"].astype(str).unique())
 
 
 def calculate_esg_risk(
@@ -83,7 +79,7 @@ def calculate_esg_risk(
         scoring_rules: Scoring rules dict from esg_scoring_rules.yaml.
         materiality_weights: Materiality weights dict from materiality_weights.yaml.
         event_rules: Event penalty rules dict from event_penalty_rules.yaml.
-        reviewed_sources: Set of reviewed official source IDs.
+        reviewed_sources: Set of automatically validated official source IDs.
         reference_date: Analysis date to compute recency decay.
         comparability_mode: "strict" (default) excludes NON_COMPARABLE_INDICATORS from
             the esg_risk_score used in cross-company optimizer math. Per-company
@@ -100,6 +96,7 @@ def calculate_esg_risk(
         reviewed_sources = set()
 
     ref_dt = pd.to_datetime(reference_date)
+    indicator_rules = scoring_rules.get("indicators", scoring_rules)
     companies = ["005930", "000660"]
     results = {}
 
@@ -110,6 +107,28 @@ def calculate_esg_risk(
 
     evt_df = events_df.copy() if not events_df.empty else pd.DataFrame()
     if not evt_df.empty:
+        required_event_columns = {
+            "status",
+            "authority_confirmed",
+            "official_source_url",
+        }
+        missing_event_columns = sorted(required_event_columns - set(evt_df.columns))
+        if missing_event_columns:
+            raise ValueError(
+                "ESG 사건 입력에 자동 검증 열이 없습니다: "
+                + ", ".join(missing_event_columns)
+            )
+        authority_confirmed = evt_df["authority_confirmed"]
+        if authority_confirmed.dtype != bool:
+            authority_confirmed = (
+                authority_confirmed.astype(str).str.strip().str.lower() == "true"
+            )
+        evt_df = evt_df[
+            evt_df["status"].isin({"confirmed", "resolved"})
+            & authority_confirmed
+            & evt_df["official_source_url"].notna()
+            & (evt_df["official_source_url"].astype(str).str.strip().str.len() > 0)
+        ].copy()
         evt_df["company_id"] = evt_df["company_id"].astype(str).str.zfill(6)
         if "linked_indicator_id" in evt_df.columns:
             evt_df["linked_indicator_id"] = evt_df["linked_indicator_id"].astype(str).str.upper()
@@ -159,7 +178,7 @@ def calculate_esg_risk(
                 # Handle unavailable indicators (Data Uncertainty Penalty applies, re-normalize weights)
                 indicator_results.append({
                     "indicator_id": ind_id,
-                    "indicator_name": scoring_rules.get(ind_id, {}).get("name", "지표명 미정"),
+                    "indicator_name": indicator_rules.get(ind_id, {}).get("name", "지표명 미정"),
                     "category": category,
                     "availability": "unavailable",
                     "issue_risk": 0.5,  # Neutral default for missing
@@ -177,7 +196,7 @@ def calculate_esg_risk(
             source_id = str(row["source_id"])
 
             # 1. Normalization
-            rule = scoring_rules.get(ind_id, {})
+            rule = indicator_rules.get(ind_id, {})
             min_b = float(rule.get("min_bound", 0.0))
             max_b = float(rule.get("max_bound", 100.0))
             default_exp = float(rule.get("default_exposure", 0.5))
@@ -388,7 +407,7 @@ def run_esg_scoring_pipeline(
     indicators_df = pd.read_csv(ind_path)
     
     events_df = pd.read_csv(evt_path) if evt_path.exists() else pd.DataFrame()
-    reviewed_sources = get_reviewed_sources(src_path)
+    reviewed_sources = get_validated_sources(src_path)
 
     return calculate_esg_risk(
         indicators_df=indicators_df,

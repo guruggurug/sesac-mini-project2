@@ -153,3 +153,31 @@ def test_daily_schedule_claim_survives_repository_recreation(tmp_path):
     assert second.claim_daily_schedule(
         schedule_key="daily-issues", schedule_date=NOW.date(), now=NOW
     ) is False
+
+
+def test_model_recalculation_is_versioned_and_idempotent(tmp_path):
+    database = tmp_path / "runtime.db"
+    repository = RuntimeStateRepository(database)
+    snapshot_version = "issues-" + "a" * 64
+    first = repository.save_model_recalculation(
+        snapshot_version=snapshot_version,
+        published_at=NOW,
+        model_version="model-v1",
+        input_hash="input-v1",
+        result={"esg_scores": {"005930": 0.3, "000660": 0.4}},
+        recalculated_at=NOW + timedelta(seconds=1),
+    )
+    duplicate = RuntimeStateRepository(database).save_model_recalculation(
+        snapshot_version=snapshot_version,
+        published_at=NOW,
+        model_version="model-v1",
+        input_hash="input-v1",
+        result={"must_not_replace": True},
+        recalculated_at=NOW + timedelta(seconds=2),
+    )
+
+    assert duplicate == first
+    assert duplicate.result["esg_scores"]["005930"] == 0.3
+    assert RuntimeStateRepository(database).load_latest_model_recalculation(
+        snapshot_version
+    ) == first

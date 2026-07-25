@@ -14,6 +14,9 @@
 | BE-RT-01 | KOSPI·KOSDAQ·Samsung·SK hynix Market Quote Service and Cache | `review` | 내부 provider/adapter, TTL 캐시, timeout, mock 단위 테스트 | `COMMON-RT-02` 승인 전 공개 API 계약 확정 금지 |
 | BE-RT-03 | Daily Issue Scheduler, Manual Sync, Lock and Status API | `in_progress` | 공통 coordinator, SQLite 일일 선점, 서울시간 scheduler, lifespan 제어 | 실제 수집 workflow·공개 API는 `COMMON-RT-02` 승인 대기 |
 | BE-RT-03A | Open DART Adapter and Candidate Normalization | `review` | DART provider, runtime raw·rejected 보존, candidate 정규화·Data A 검증, mock 테스트 | Data A 교차 검토와 실제 키 smoke test 필요 |
+| BE-RT-03B | Atomic Data A Snapshot Publisher | `review` | versioned staging 검증, active pointer 원자 교체, repository LKG 연동 | 통합 교차 검토 필요 |
+| BE-RT-03C | Coordinator Publisher and Recalculation Workflow | `review` | 수집→검증→발행→선택적 재계산 내부 workflow | production normalizer 연결 필요 |
+| BE-RT-03D | Side-Effect-Free Data B Recalculation Adapter | `review` | snapshot-bound ESG·최적화 재계산과 SQLite 결과 재사용 | Data B·통합 교차 검토 필요 |
 | BE-RT-04 | Last-Known-Good Market and Issue Fallback | `review` | SQLite 시장 LKG 저장·KIS 장애 fallback | 실제 KIS smoke test와 공개 상태 표시는 승인 대기 |
 
 ## Active Blockers
@@ -23,6 +26,87 @@
 | - | - | 현재 없음 | - | - | - |
 
 ## Work Log
+
+### 2026-07-25 — BE-RT-03B/C/D: Latest Main Reintegration Complete
+
+- **Role**: Backend
+- **Owner**: Backend
+- **Task IDs**: `BE-RT-03B`, `BE-RT-03C`, `BE-RT-03D`
+- **Status**: `review`
+- **Completed**:
+  - 오래된 feature 브랜치를 직접 병합하지 않고 최신 `main` 위에 원자적 Data A snapshot publisher, 내부 issue workflow, Data B 재계산 경계를 기능 단위로 재이식했다.
+  - 최신 Data A 비교가능성 정책을 보존하고 E02·E04·E05·S04·S05·G02·G03이 기업 간 최적화 점수에서 제외되는 현재 계약과 재계산 경계를 정렬했다.
+  - runtime repository가 활성 immutable snapshot을 우선 사용하고 pointer가 없을 때 Git 추적 processed bootstrap을 사용하는 LKG 경계를 복구했다.
+  - snapshot version·발행 시각·모델 버전·입력 hash에 결합된 재계산 결과를 SQLite에 결정적으로 저장하고 동일 입력을 재사용하도록 했다.
+  - `optimize_portfolio()`의 기본 실행에서 `data/processed/optimization_grid_results.csv`를 덮어쓰는 부수효과를 제거했다. 오프라인 배치는 `grid_results_output`을 명시한 경우에만 결과를 기록한다.
+  - 배치 파이프라인과 민감도 분석을 `validated` 데이터 상태 및 명시적 ESG aggregate 입력 계약으로 정렬했다.
+  - 기존 `IssueSyncCoordinator`가 상세 workflow 결과를 보존하면서 legacy 성공 상태 반환도 계속 지원하도록 호환성을 유지했다.
+- **Created files**:
+  - `src/backend/app/services/issue_snapshot_publisher.py`
+  - `src/backend/app/services/issue_sync_workflow.py`
+  - `src/backend/app/services/data_b_recalculation.py`
+  - `src/backend/tests/test_issue_snapshot_publisher.py`
+  - `src/backend/tests/test_issue_sync_workflow.py`
+  - `src/backend/tests/test_data_b_recalculation.py`
+- **Modified files**:
+  - `src/backend/app/core/runtime.py`
+  - `src/backend/app/repositories/esg_repository.py`
+  - `src/backend/app/repositories/event_repository.py`
+  - `src/backend/app/repositories/runtime_state_repository.py`
+  - `src/backend/app/services/sync_coordinator.py`
+  - `src/modeling/esg.py`
+  - `src/modeling/optimizer.py`
+  - `src/modeling/run_pipeline.py`
+  - `src/modeling/sensitivity.py`
+  - 관련 Backend/Data B 테스트
+  - `progress/BACKEND.md`
+- **Validation commands**:
+  - `.venv\Scripts\python.exe scripts\validate_data_a.py`
+  - `.venv\Scripts\python.exe -m pytest -p no:cacheprovider -q tests/test_optimizer.py tests/test_esg.py src/backend/tests/test_issue_snapshot_publisher.py src/backend/tests/test_issue_sync_workflow.py src/backend/tests/test_data_b_recalculation.py src/backend/tests/test_runtime_state_repository.py src/backend/tests/test_sync_coordinator.py --disable-warnings`
+  - `.venv\Scripts\python.exe -m pytest -p no:cacheprovider -q tests src/backend/tests --disable-warnings`
+  - `.venv\Scripts\python.exe -m compileall -q src/backend/app src/modeling`
+  - `git diff --check`
+- **Validation results**:
+  - Data A bundle PASS: candidate 9, source 15, event-source 7, event 6, ESG 72.
+  - 집중 테스트 최초 1건은 구 E02 포함 예상값 때문에 실패했으며 최신 비교가능성 기준값으로 교정 후 `31 passed`.
+  - 전체 회귀 `179 passed, 1 warning`.
+  - optimizer 테스트 전후 `optimization_grid_results.csv` SHA-256 동일.
+  - Python compile 및 whitespace 검사 통과.
+- **Remaining**:
+  - DART/news 후보를 완전한 Data A bundle로 만드는 production normalizer를 `build_internal_issue_sync_workflow()`에 주입한다.
+  - 실제 coordinator 기본 workflow 전환, 공개 `/sync/issues`·`/sync/status`, 600초 쿨다운은 BE-RT-03 후속 범위로 유지한다.
+  - Data B와 Integration이 snapshot-bound 재계산 출력 계약을 교차 검토해야 한다.
+- **Blockers**: 없음
+- **Next recommended task**: production normalizer를 구현·주입한 뒤 scheduler/manual 경로가 동일 workflow를 실행하는 통합 테스트를 추가한다.
+
+### 2026-07-25 — BE-RT-03B/C/D: Latest Main Reintegration Start
+
+- **Role**: Backend
+- **Owner**: Backend
+- **Task IDs**: `BE-RT-03B`, `BE-RT-03C`, `BE-RT-03D`
+- **Status**: `in_progress`
+- **Goal**:
+  - 최신 `main`의 Data A 72행·출처 15건·사건 6건과 Data B 재계산 산출물을 기준으로 원자적 snapshot publisher와 공통 issue workflow를 재이식한다.
+  - validated 런타임 최적화가 `data/processed/`를 덮어쓰지 않도록 side-effect-free callable 계약을 복구한다.
+  - snapshot version에 결합된 재계산 결과만 저장·재사용하고 실패 시 기존 정상 snapshot과 계산 결과를 보존한다.
+- **Allowed files**:
+  - `src/modeling/optimizer.py`, `src/modeling/run_pipeline.py`, 관련 Data B 테스트
+  - `src/backend/app/services/issue_snapshot_publisher.py`
+  - `src/backend/app/services/issue_sync_workflow.py`
+  - `src/backend/app/services/data_b_recalculation.py`
+  - Backend repository/runtime 조립 및 관련 테스트
+  - `progress/BACKEND.md`
+- **Assumptions**:
+  - 기존 feature 브랜치는 최신 `main`보다 뒤처져 있으므로 커밋 전체 병합 대신 기능 단위로 재이식한다.
+  - 공유 스키마와 계산 공식은 변경하지 않는다.
+  - 공개 `/sync/*` API와 외부 뉴스 수집은 이번 작업 범위에 포함하지 않는다.
+- **Validation plan**:
+  - side-effect-free optimizer 집중 테스트
+  - publisher/workflow/recalculation/runtime 저장소 집중 테스트
+  - 전체 `tests` 및 `src/backend/tests` 회귀 테스트
+  - Python compile 및 `git diff --check`
+- **Blockers**: 없음
+- **Next task**: 기존 구현을 최신 `main`과 비교해 필요한 변경만 재이식
 
 ### 2026-07-22 18:01 — BE-RT-03A: Implementation Complete, Cross-Review Required
 
