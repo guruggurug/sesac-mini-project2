@@ -1295,6 +1295,7 @@
 - **Remaining**:
   - Mount a Railway Volume at `/app/data/runtime`.
   - Set `RUNTIME_STATE_DB_PATH=/app/data/runtime/state.db`.
+  - Set `RAILWAY_RUN_UID=0` because Railway mounts Volumes as root while the Docker image declares a non-root runtime user.
   - Deploy and verify cold start, background promotion from `fallback` to current KIS data, and snapshot survival after redeployment.
 - **Blockers**:
   - Durable restart behavior cannot be verified until the Railway volume is mounted.
