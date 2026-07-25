@@ -1,7 +1,12 @@
 {
   "name": "chip-buddy-frontend",
   "private": true,
+  "engines": {
+    "node": ">=24 <25",
+    "npm": ">=11"
+  },
   "scripts": {
+    "build": "npm run css:build",
     "css:build": "tailwindcss -i ./src/frontend/assets/css/app.css -o ./src/frontend/static/css/index.css --minify",
     "css:watch": "tailwindcss -i ./src/frontend/assets/css/app.css -o ./src/frontend/static/css/index.css --watch"
   },

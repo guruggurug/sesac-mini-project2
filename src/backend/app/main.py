@@ -28,6 +28,8 @@ from app.routes.portfolio import router as portfolio_router
 from app.routes.risk import router as risk_router
 from app.routes.issues import router as issues_router
 from app.routes.data import router as data_router
+from app.routes.market import router as market_router
+from app.routes.sync import router as sync_router
 from app.routes.ui import router as ui_router
 
 
@@ -79,3 +81,5 @@ app.include_router(portfolio_router)  # GET / 와 POST /portfolio/optimize 포�
 app.include_router(risk_router)
 app.include_router(issues_router)
 app.include_router(data_router)
+app.include_router(market_router)
+app.include_router(sync_router)

@@ -450,9 +450,10 @@ Stitch에서 화면 생성
 현재 기술 스택의 기본 방향:
 
 - Python 3.11 이상
+- Node.js 24 LTS 및 npm 11 이상(CSS 빌드 전용)
 - FastAPI
 - Pandas / NumPy
-- 프론트엔드: React 기반 권장
+- 프론트엔드: Jinja2 템플릿 및 Tailwind CSS 정적 빌드
 - Google Stitch
 - Google Antigravity
 
@@ -536,21 +537,40 @@ http://localhost:8000/health
 http://localhost:8000/docs
 ```
 
-### 프론트엔드 예시
+### 프론트엔드 CSS 빌드
+
+프로젝트 루트에서 Node.js 24 LTS를 사용합니다. 운영 중인 FastAPI 프로세스에는 Node.js가 필요하지 않습니다.
 
 ```bash
-cd src/frontend
-npm install
-npm run dev
+nvm use
+npm ci
+npm run css:build
 ```
 
-기본 확인 주소:
+Windows PowerShell에서는 프로젝트에 준비된 portable Node 또는 시스템 Node를 자동으로 선택할 수 있습니다.
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\build_frontend.ps1 -Install
+```
+
+생성 파일:
 
 ```text
-http://localhost:5173
+src/frontend/static/css/index.css
 ```
 
-> 실제 명령과 포트가 달라지면 이 README를 즉시 수정해야 합니다.
+UI 또는 Tailwind 클래스를 변경한 뒤에는 CSS를 다시 빌드하고 생성 파일을 함께 검증합니다. 화면은 별도 프론트엔드 개발 서버가 아니라 FastAPI의 `http://localhost:8000`에서 제공됩니다.
+
+### Docker 배포
+
+다단계 빌드는 Node.js 24 LTS 단계에서 CSS를 생성한 뒤 Python 3.11 런타임 이미지만 실행합니다.
+
+```bash
+docker build -t chip-buddy .
+docker run --rm -p 8000:8000 --env-file .env chip-buddy
+```
+
+배포 플랫폼이 `PORT` 환경변수를 제공하면 컨테이너가 해당 포트를 사용합니다. `.env`, 로컬 DB, raw/private 데이터와 개발 의존성은 이미지에 포함되지 않습니다. 런타임 상태를 재시작 후에도 유지하려면 배포 플랫폼의 영속 볼륨을 `/app/data/runtime`에 연결합니다.
 
 ---
 
@@ -558,22 +578,35 @@ http://localhost:5173
 
 ```text
 GET  /health
+GET  /market/quotes
 POST /portfolio/calculate
 POST /risk/esg
 POST /risk/downside
 POST /portfolio/optimize
+POST /portfolio/summary
 GET  /issues/current
 GET  /issues/historical
+POST /sync/issues
+GET  /sync/status
 POST /data/refresh
 ```
 
-`POST /data/refresh`는 BE-RT-03의 실제 수집·잠금·원자적 발행이 구현되기 전까지 HTTP 501을 반환합니다. 구현 후에는 raw 또는 candidate를 먼저 갱신하고 `validate_data_a_bundle()`의 스키마·공식 출처·raw hash·상태·근거·중복 검사를 모두 통과한 경우에만 새 `data/processed/` 스냅샷을 원자적으로 발행해야 합니다.
+`POST /sync/issues`는 공개 수동 동기화 API이며, `GET /sync/status`에서 단계와 결과를 조회합니다. 동일 요청 재사용, 단일 활성 작업 잠금, 10분 수동 쿨다운과 마지막 정상 결과 유지가 적용됩니다. 실제 collector/normalizer가 연결되지 않은 환경에서는 작업이 명시적으로 실패하며 기존 검증 스냅샷을 유지합니다.
+
+`POST /data/refresh`는 이전 내부 호환 경로이며 HTTP 501을 유지합니다. 외부 수집을 연결할 때는 raw 또는 candidate를 먼저 갱신하고 `validate_data_a_bundle()`의 스키마·공식 출처·raw hash·상태·근거·중복 검사를 모두 통과한 경우에만 새 `data/processed/` 스냅샷을 원자적으로 발행해야 합니다.
 
 ---
 
 ## 15. 테스트와 완료 조건
 
 작업 완료 전 담당 영역에 맞는 검증을 실행합니다.
+
+전체 회귀 검증:
+
+```powershell
+.venv\Scripts\python.exe -m pytest -p no:cacheprovider -q
+powershell -ExecutionPolicy Bypass -File scripts\build_frontend.ps1
+```
 
 ### 데이터
 

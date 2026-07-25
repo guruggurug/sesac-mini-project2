@@ -28,11 +28,20 @@ class LocalPriceAdapter(Protocol):
 
 
 @dataclass(frozen=True)
+class ProviderQuote:
+    current_value: float
+    previous_close: float
+    source_url: str
+
+
+@dataclass(frozen=True)
 class InternalQuote:
     instrument_id: str
     price: float
     source: str
     fetched_at: datetime
+    previous_close: float | None = None
+    source_url: str | None = None
 
 
 @dataclass(frozen=True)
@@ -87,6 +96,8 @@ class SQLiteLastKnownGoodAdapter:
             price=quote.price,
             source=quote.source,
             as_of=quote.fetched_at,
+            previous_close=quote.previous_close,
+            source_url=quote.source_url,
         )
 
     def load_quote(self, instrument_id: str) -> InternalQuote | None:
@@ -98,6 +109,8 @@ class SQLiteLastKnownGoodAdapter:
             price=stored.price,
             source=f"last_known_good:{stored.source}",
             fetched_at=stored.as_of,
+            previous_close=stored.previous_close,
+            source_url=stored.source_url,
         )
 
 
@@ -139,14 +152,37 @@ class MarketQuoteService:
             return cached
 
         try:
-            price = self._provider.fetch_price(
-                instrument_id,
-                timeout_seconds=self._provider_timeout_seconds,
+            fetch_quote = getattr(self._provider, "fetch_quote", None)
+            provider_quote = (
+                fetch_quote(
+                    instrument_id,
+                    timeout_seconds=self._provider_timeout_seconds,
+                )
+                if callable(fetch_quote)
+                else None
+            )
+            price = (
+                provider_quote.current_value
+                if provider_quote is not None
+                else self._provider.fetch_price(
+                    instrument_id,
+                    timeout_seconds=self._provider_timeout_seconds,
+                )
             )
             quote = self._make_quote(
                 instrument_id,
                 price,
                 getattr(self._provider, "source_name", "provider"),
+                previous_close=(
+                    provider_quote.previous_close
+                    if provider_quote is not None
+                    else None
+                ),
+                source_url=(
+                    provider_quote.source_url
+                    if provider_quote is not None
+                    else None
+                ),
             )
         except Exception as provider_error:
             if self._last_known_good_adapter is not None:
@@ -199,13 +235,28 @@ class MarketQuoteService:
         with self._lock:
             self._cache[quote.instrument_id] = entry
 
-    def _make_quote(self, instrument_id: str, price: float, source: str) -> InternalQuote:
+    def _make_quote(
+        self,
+        instrument_id: str,
+        price: float,
+        source: str,
+        *,
+        previous_close: float | None = None,
+        source_url: str | None = None,
+    ) -> InternalQuote:
         numeric_price = float(price)
         if numeric_price <= 0:
             raise MarketQuoteError(f"Invalid price for {instrument_id}")
+        numeric_previous_close = (
+            float(previous_close) if previous_close is not None else None
+        )
+        if numeric_previous_close is not None and numeric_previous_close <= 0:
+            raise MarketQuoteError(f"Invalid previous close for {instrument_id}")
         return InternalQuote(
             instrument_id=instrument_id,
             price=numeric_price,
             source=source,
             fetched_at=self._now(),
+            previous_close=numeric_previous_close,
+            source_url=source_url,
         )
