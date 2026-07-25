@@ -1,16 +1,16 @@
 {
-  "run_id": "RUN-20260725-015603",
+  "run_id": "RUN-20260725-022733",
   "model_version": "v1.2-dynamic-esg",
-  "generated_at": "2026-07-25T01:56:03.800074+00:00",
+  "generated_at": "2026-07-25T02:27:33.765031+00:00",
   "data_status": "reviewed",
   "input_files": {
     "esg_indicators": {
       "file": "esg_indicators.csv",
-      "hash": "6682d36ba2fb266b0330e2e3a3c8e9da"
+      "hash": "c95a75d3dc64ad6b165fb51b29029b6e"
     },
     "events": {
       "file": "events.csv",
-      "hash": "6beb0ca644963c426abfc9f097b2a4c6"
+      "hash": "689f2b4cceb7308ef9f8c22a541fe02d"
     },
     "stock_prices": {
       "file": "stock_prices.csv",
