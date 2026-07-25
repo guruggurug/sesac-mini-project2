@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import date, datetime, timezone
+import json
 from pathlib import Path
 import sqlite3
 
@@ -24,6 +25,16 @@ class SyncLockResult:
     acquired: bool
     sync_id: str
     owner_token: str | None
+
+
+@dataclass(frozen=True)
+class StoredModelRecalculation:
+    snapshot_version: str
+    published_at: datetime
+    model_version: str
+    input_hash: str
+    result: dict
+    recalculated_at: datetime
 
 
 class RuntimeStateRepository:
@@ -90,6 +101,92 @@ class RuntimeStateRepository:
             as_of=datetime.fromisoformat(row["as_of"]),
             stored_at=datetime.fromisoformat(row["stored_at"]),
         )
+
+    def save_model_recalculation(
+        self,
+        *,
+        snapshot_version: str,
+        published_at: datetime,
+        model_version: str,
+        input_hash: str,
+        result: dict,
+        recalculated_at: datetime | None = None,
+    ) -> StoredModelRecalculation:
+        if not snapshot_version.startswith("issues-"):
+            raise ValueError("snapshot_version must identify an issue snapshot")
+        published_time = _require_aware(published_at, "published_at")
+        calculated_time = _require_aware(
+            recalculated_at or datetime.now(timezone.utc),
+            "recalculated_at",
+        )
+        payload = json.dumps(
+            result,
+            ensure_ascii=False,
+            sort_keys=True,
+            separators=(",", ":"),
+            allow_nan=False,
+        )
+        with self._connect() as connection:
+            connection.execute(
+                """
+                INSERT OR IGNORE INTO model_recalculations (
+                    snapshot_version, published_at, model_version, input_hash,
+                    result_json, recalculated_at
+                ) VALUES (?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    snapshot_version,
+                    published_time.isoformat(),
+                    model_version,
+                    input_hash,
+                    payload,
+                    calculated_time.isoformat(),
+                ),
+            )
+        stored = self.load_model_recalculation(
+            snapshot_version=snapshot_version,
+            model_version=model_version,
+            input_hash=input_hash,
+        )
+        if stored is None:
+            raise RuntimeError("model recalculation could not be persisted")
+        return stored
+
+    def load_model_recalculation(
+        self,
+        *,
+        snapshot_version: str,
+        model_version: str,
+        input_hash: str,
+    ) -> StoredModelRecalculation | None:
+        with self._connect() as connection:
+            row = connection.execute(
+                """
+                SELECT snapshot_version, published_at, model_version, input_hash,
+                       result_json, recalculated_at
+                FROM model_recalculations
+                WHERE snapshot_version = ? AND model_version = ? AND input_hash = ?
+                """,
+                (snapshot_version, model_version, input_hash),
+            ).fetchone()
+        return _stored_recalculation(row)
+
+    def load_latest_model_recalculation(
+        self, snapshot_version: str
+    ) -> StoredModelRecalculation | None:
+        with self._connect() as connection:
+            row = connection.execute(
+                """
+                SELECT snapshot_version, published_at, model_version, input_hash,
+                       result_json, recalculated_at
+                FROM model_recalculations
+                WHERE snapshot_version = ?
+                ORDER BY recalculated_at DESC, model_version DESC, input_hash DESC
+                LIMIT 1
+                """,
+                (snapshot_version,),
+            ).fetchone()
+        return _stored_recalculation(row)
 
     def acquire_sync_lock(
         self,
@@ -353,6 +450,15 @@ class RuntimeStateRepository:
                     claimed_at TEXT NOT NULL,
                     PRIMARY KEY (schedule_key, schedule_date)
                 );
+                CREATE TABLE IF NOT EXISTS model_recalculations (
+                    snapshot_version TEXT NOT NULL,
+                    published_at TEXT NOT NULL,
+                    model_version TEXT NOT NULL,
+                    input_hash TEXT NOT NULL,
+                    result_json TEXT NOT NULL,
+                    recalculated_at TEXT NOT NULL,
+                    PRIMARY KEY (snapshot_version, model_version, input_hash)
+                );
                 """
             )
             connection.commit()
@@ -365,3 +471,16 @@ def _require_aware(value: datetime, field_name: str) -> datetime:
     if value.tzinfo is None or value.utcoffset() is None:
         raise ValueError(f"{field_name} must include timezone information")
     return value
+
+
+def _stored_recalculation(row: sqlite3.Row | None) -> StoredModelRecalculation | None:
+    if row is None:
+        return None
+    return StoredModelRecalculation(
+        snapshot_version=row["snapshot_version"],
+        published_at=datetime.fromisoformat(row["published_at"]),
+        model_version=row["model_version"],
+        input_hash=row["input_hash"],
+        result=json.loads(row["result_json"]),
+        recalculated_at=datetime.fromisoformat(row["recalculated_at"]),
+    )

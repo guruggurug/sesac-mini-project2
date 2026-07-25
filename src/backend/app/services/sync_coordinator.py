@@ -6,14 +6,14 @@ from typing import Callable, Literal, Protocol
 from uuid import uuid4
 
 from app.repositories.runtime_state_repository import RuntimeStateRepository
-
-
-TerminalSuccessStatus = Literal["success", "partial_success"]
+from app.services.issue_sync_workflow import IssueSyncWorkflowResult
 
 
 class IssueSyncWorkflow(Protocol):
-    async def run(self, report_stage: Callable[[str], None]) -> TerminalSuccessStatus:
-        """Collect, validate, publish, and return a non-failed terminal status."""
+    async def run(
+        self, report_stage: Callable[[str], None]
+    ) -> IssueSyncWorkflowResult | Literal["success", "partial_success"]:
+        """Collect, validate, publish, and return deterministic internal metadata."""
 
 
 class SyncWorkflowUnavailable(RuntimeError):
@@ -21,7 +21,7 @@ class SyncWorkflowUnavailable(RuntimeError):
 
 
 class UnavailableIssueSyncWorkflow:
-    async def run(self, report_stage: Callable[[str], None]) -> TerminalSuccessStatus:
+    async def run(self, report_stage: Callable[[str], None]) -> IssueSyncWorkflowResult:
         raise SyncWorkflowUnavailable(
             "Issue collection and atomic publication workflow is not configured"
         )
@@ -33,6 +33,7 @@ class SyncExecutionResult:
     acquired: bool
     status: str
     error_code: str | None = None
+    workflow_result: IssueSyncWorkflowResult | None = None
 
 
 class IssueSyncCoordinator:
@@ -85,7 +86,11 @@ class IssueSyncCoordinator:
             )
 
         try:
-            status = await self._workflow.run(report_stage)
+            outcome = await self._workflow.run(report_stage)
+            workflow_result = (
+                outcome if isinstance(outcome, IssueSyncWorkflowResult) else None
+            )
+            status = outcome.status if workflow_result is not None else outcome
             if status not in {"success", "partial_success"}:
                 raise RuntimeError("workflow returned an invalid terminal status")
         except Exception as error:
@@ -105,4 +110,4 @@ class IssueSyncCoordinator:
             status=status,
             now=self._now(),
         )
-        return SyncExecutionResult(sync_id, True, status)
+        return SyncExecutionResult(sync_id, True, status, workflow_result=workflow_result)

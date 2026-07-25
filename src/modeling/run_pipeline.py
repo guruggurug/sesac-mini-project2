@@ -1,13 +1,12 @@
 """
 Pipeline Execution Script for Data B.
-Runs all modeling calculations end-to-end using reviewed data and writes results to data/processed/.
+Runs all modeling calculations end-to-end using validated data and writes results to data/processed/.
 """
 
 import os
 import json
 import hashlib
 from pathlib import Path
-import pandas as pd
 from datetime import datetime, timezone
 
 from src.modeling.price import validate_price_data
@@ -38,7 +37,7 @@ def main():
     out_dir = base_dir / "data" / "processed"
     os.makedirs(out_dir, exist_ok=True)
     
-    # 1. Load Reviewed Datasets
+    # 1. Load validated datasets
     ind_csv = data_dir / "esg_indicators.csv"
     evt_csv = data_dir / "events.csv"
     src_csv = data_dir / "sources.csv"
@@ -50,10 +49,6 @@ def main():
         if not path.exists():
             raise FileNotFoundError(f"필수 검수 파일이 누락되었습니다: {path}")
 
-    # Load dataframes
-    ind_df = pd.read_csv(ind_csv)
-    evt_df = pd.read_csv(evt_csv)
-    
     # 2. Compute dynamic ESG risk scores
     print("1. ESG 위험 점수 계산 중...")
     esg_results = run_esg_scoring_pipeline(
@@ -64,6 +59,10 @@ def main():
     )
     with open(out_dir / "company_esg_risks.json", "w", encoding="utf-8") as f:
         json.dump(esg_results, f, ensure_ascii=False, indent=2)
+    esg_scores = {
+        company_id: result["esg_risk_score"]
+        for company_id, result in esg_results.items()
+    }
 
     # 3. Compute downside risk metrics (cvar, mdd, downside_deviation)
     print("2. 가격 하방위험 점수 계산 중...")
@@ -99,11 +98,12 @@ def main():
     opt_result = optimize_portfolio(
         holdings=holdings,
         price_data=price_csv,
-        esg_input=ind_df,
+        esg_input=esg_scores,
         risk_priority="balanced",
-        data_mode="reviewed",
+        data_mode="validated",
         cvar_confidence=0.95,
-        price_period_years=3
+        price_period_years=3,
+        grid_results_output=out_dir / "optimization_grid_results.csv",
     )
     with open(out_dir / "optimization_result.json", "w", encoding="utf-8") as f:
         json.dump(opt_result, f, ensure_ascii=False, indent=2)
@@ -113,9 +113,9 @@ def main():
     sensitivity_summary = run_sensitivity_analysis(
         holdings=holdings,
         price_data=price_csv,
-        esg_input=ind_df,
+        esg_input=esg_scores,
         output_dir=out_dir,
-        data_mode="reviewed"
+        data_mode="validated"
     )
 
     # 7. Generate run metadata
@@ -124,7 +124,7 @@ def main():
         "run_id": datetime.now(timezone.utc).strftime("RUN-%Y%m%d-%H%M%S"),
         "model_version": "v1.2-dynamic-esg",
         "generated_at": datetime.now(timezone.utc).isoformat(),
-        "data_status": "reviewed",
+        "data_status": "validated",
         "input_files": {
             "esg_indicators": {
                 "file": "esg_indicators.csv",

@@ -10,6 +10,7 @@ from app.services.sync_coordinator import (
     IssueSyncCoordinator,
     UnavailableIssueSyncWorkflow,
 )
+from app.services.issue_sync_workflow import IssueSyncWorkflowResult
 
 
 NOW = datetime(2026, 7, 22, 3, 0, tzinfo=timezone.utc)
@@ -25,7 +26,20 @@ class SuccessfulWorkflow:
         report_stage("normalizing")
         report_stage("validating")
         report_stage("publishing")
-        return self.status
+        return IssueSyncWorkflowResult(
+            status=self.status,
+            collected_items=2,
+            snapshot_updated=False,
+            published_snapshot_version=None,
+            published_at=None,
+            candidate_items=2,
+            validated_items=0,
+            rejected_items=0,
+            published_items=0,
+            recalculation_triggered=False,
+            recalculation_status="not_required",
+            recalculated_at=None,
+        )
 
 
 def make_coordinator(repository, workflow, sync_id="sync-new", owner="owner-new"):
@@ -53,6 +67,7 @@ def test_manual_and_scheduled_execution_share_the_same_success_path(tmp_path):
 
     assert manual.status == "success"
     assert scheduled.status == "partial_success"
+    assert manual.workflow_result.candidate_items == 2
     assert repository.get_sync_run("sync-manual")["stage"] == "completed"
     assert repository.get_sync_run("sync-scheduled")["status"] == "partial_success"
 
@@ -97,3 +112,50 @@ def test_invalid_workflow_terminal_status_is_failed(tmp_path):
 
     assert result.status == "failed"
     assert result.error_code == "ISSUE_SYNC_WORKFLOW_FAILED"
+
+
+def test_workflow_failure_code_is_recorded_deterministically(tmp_path):
+    repository = RuntimeStateRepository(tmp_path / "runtime.db")
+
+    class CollectionFailure:
+        async def run(self, report_stage):
+            error = RuntimeError("injected")
+            error.code = "ISSUE_SYNC_COLLECTION_FAILED"
+            raise error
+
+    first = asyncio.run(
+        make_coordinator(repository, CollectionFailure()).execute("manual")
+    )
+
+    assert first.status == "failed"
+    assert first.error_code == "ISSUE_SYNC_COLLECTION_FAILED"
+    assert repository.get_sync_run("sync-new")["error_code"] == first.error_code
+
+
+def test_stage_heartbeats_follow_collecting_to_publishing_order(tmp_path):
+    class TracingRepository(RuntimeStateRepository):
+        def __init__(self, path):
+            super().__init__(path)
+            self.stages = []
+
+        def mark_sync_running(self, **kwargs):
+            super().mark_sync_running(**kwargs)
+            self.stages.append("collecting")
+
+        def heartbeat_sync(self, **kwargs):
+            super().heartbeat_sync(**kwargs)
+            self.stages.append(kwargs["stage"])
+
+    repository = TracingRepository(tmp_path / "runtime.db")
+
+    result = asyncio.run(
+        make_coordinator(repository, SuccessfulWorkflow()).execute("manual")
+    )
+
+    assert result.status == "success"
+    assert repository.stages == [
+        "collecting",
+        "normalizing",
+        "validating",
+        "publishing",
+    ]
