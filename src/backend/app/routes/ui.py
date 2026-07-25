@@ -7,11 +7,11 @@ from app.core.templates import templates
 router = APIRouter(include_in_schema=False)
 
 
-def _render(request: Request, template_name: str):
+def _render(request: Request, template_name: str, **context):
     return templates.TemplateResponse(
         request=request,
         name=template_name,
-        context={"data_status": "sample"},
+        context={"data_status": "sample", **context},
     )
 
 
@@ -50,7 +50,12 @@ def portfolio_edit(request: Request):
 
 @router.get("/portfolio/summary", response_class=HTMLResponse)
 def portfolio_summary(request: Request):
-    return _render(request, "portfolio_summary.html")
+    return _render(
+        request,
+        "portfolio_summary.html",
+        data_status=None,
+        holdings=request.session.get("portfolio_holdings", []),
+    )
 
 
 @router.get("/diagnosis/result", response_class=HTMLResponse)

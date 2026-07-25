@@ -191,6 +191,7 @@ temp/
 # Docker and local infrastructure
 # ============================================
 docker-data/
+.tools/
 .local/
 .cache/
 

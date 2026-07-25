@@ -14,7 +14,18 @@ from app.repositories.esg_repository import ESGRepository
 from app.repositories.price_repository import PriceRepository
 from app.utils.realtime_price import get_realtime_price
 from src.modeling.optimizer import optimize_portfolio as run_optimize
-from app.core.schemas import PurchaseReason, KnowledgeStage, RebalancingProfile, TurnoverLevel, AnalysisSettings
+from app.core.runtime import market_quote_service
+from app.core.schemas import (
+    PurchaseReason,
+    KnowledgeStage,
+    RebalancingProfile,
+    TurnoverLevel,
+    AnalysisSettings,
+    PortfolioSummaryRequest,
+    PortfolioSummaryResponse,
+)
+from app.services.market_quotes import MarketQuoteError
+from app.services.portfolio_summary import calculate_portfolio_summary
 
 router = APIRouter()
 
@@ -298,6 +309,24 @@ def optimize_portfolio(
     if warnings:
         opt_result["warnings"] = list(set(opt_result.get("warnings", []) + warnings))
 
+    request.session["portfolio_holdings"] = [
+        {
+            "ticker": "005930",
+            "quantity": samsung_qty,
+            "average_price": samsung_price or realtime_sam,
+        },
+        {
+            "ticker": "000660",
+            "quantity": sk_qty,
+            "average_price": sk_price or realtime_sk,
+        },
+    ]
+    request.session["portfolio_holdings"] = [
+        holding
+        for holding in request.session["portfolio_holdings"]
+        if holding["quantity"] > 0
+    ]
+
     # ESG 데이터의 scope_mismatch 정보와 data_confidence를 매핑하여 템플릿에 제공
     for company_row in esg_data:
         ticker = str(company_row.get("company_id", company_row.get("ticker", ""))).zfill(6)
@@ -314,13 +343,32 @@ def optimize_portfolio(
         name="diagnosis_result.html",
         context={
             "data": opt_result,
-            # The approved visual template still contains sample presentation values.
-            # Keep the UI label explicit until its fields are fully data-bound.
-            "data_status": "sample",
-            "calculation_data_status": opt_result.get("data_status", "sample"),
+            "data_status": opt_result.get("data_status", data_mode),
             "knowledge_stage": session_knowledge_stage,
         }
     )
+
+
+@router.post(
+    "/portfolio/summary",
+    response_model=PortfolioSummaryResponse,
+)
+def get_portfolio_summary(payload: PortfolioSummaryRequest):
+    try:
+        _, source_data_status, _ = PriceRepository().load_data_as_df()
+        return calculate_portfolio_summary(
+            payload.holdings,
+            market_quote_service,
+            source_data_status=source_data_status,
+        )
+    except MarketQuoteError as error:
+        raise HTTPException(
+            status_code=503,
+            detail={
+                "code": "MARKET_QUOTE_UNAVAILABLE",
+                "message": "현재가 또는 대체 가격을 불러올 수 없습니다.",
+            },
+        ) from error
 
 @router.post("/portfolio/calculate")
 def calculate_current_portfolio(

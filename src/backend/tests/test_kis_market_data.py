@@ -34,7 +34,8 @@ class FakeClient:
 
     def get(self, url, **kwargs):
         self.gets.append((url, kwargs))
-        return FakeResponse(self.quote_payloads.pop(0))
+        item = self.quote_payloads.pop(0)
+        return item if isinstance(item, FakeResponse) else FakeResponse(item)
 
 
 def make_provider(client, clock=None):
@@ -44,11 +45,14 @@ def make_provider(client, clock=None):
         base_url="https://kis.example.test/",
         client=client,
         clock=clock or (lambda: 100.0),
+        sleeper=lambda _: None,
     )
 
 
 def test_stock_quote_uses_official_kis_request_mapping_and_timeout():
-    client = FakeClient([{"rt_cd": "0", "output": {"stck_prpr": "81234"}}])
+    client = FakeClient(
+        [{"rt_cd": "0", "output": {"stck_prpr": "81234", "stck_sdpr": "80000"}}]
+    )
     provider = make_provider(client)
 
     assert provider.fetch_price("005930", 3.0) == 81234.0
@@ -69,7 +73,16 @@ def test_stock_quote_uses_official_kis_request_mapping_and_timeout():
 )
 def test_index_quote_uses_official_kis_index_mapping(instrument_id, index_code):
     client = FakeClient(
-        [{"rt_cd": "0", "output": {"bstp_nmix_prpr": "3210.55"}}]
+        [
+            {
+                "rt_cd": "0",
+                "output": {
+                    "bstp_nmix_prpr": "3210.55",
+                    "bstp_nmix_prdy_vrss": "12.43",
+                    "prdy_vrss_sign": "2",
+                },
+            }
+        ]
     )
     provider = make_provider(client)
 
@@ -83,11 +96,32 @@ def test_index_quote_uses_official_kis_index_mapping(instrument_id, index_code):
     }
 
 
+def test_index_previous_close_is_derived_from_signed_change():
+    client = FakeClient(
+        [
+            {
+                "rt_cd": "0",
+                "output": {
+                    "bstp_nmix_prpr": "800.00",
+                    "bstp_nmix_prdy_vrss": "5.25",
+                    "prdy_vrss_sign": "5",
+                },
+            }
+        ]
+    )
+    provider = make_provider(client)
+
+    quote = provider.fetch_quote("KOSDAQ", 5.0)
+
+    assert quote.current_value == 800.0
+    assert quote.previous_close == 805.25
+
+
 def test_access_token_is_reused_before_expiry():
     client = FakeClient(
         [
-            {"rt_cd": "0", "output": {"stck_prpr": "80000"}},
-            {"rt_cd": "0", "output": {"stck_prpr": "200000"}},
+            {"rt_cd": "0", "output": {"stck_prpr": "80000", "stck_sdpr": "79000"}},
+            {"rt_cd": "0", "output": {"stck_prpr": "200000", "stck_sdpr": "198000"}},
         ]
     )
     provider = make_provider(client)
@@ -105,6 +139,22 @@ def test_kis_error_response_does_not_return_an_invented_price():
 
     with pytest.raises(MarketQuoteError, match="EGW00123"):
         provider.fetch_price("005930", 3.0)
+
+
+def test_transient_server_error_is_retried_once():
+    client = FakeClient(
+        [
+            FakeResponse({}, status_code=500),
+            {
+                "rt_cd": "0",
+                "output": {"stck_prpr": "81234", "stck_sdpr": "80000"},
+            },
+        ]
+    )
+    provider = make_provider(client)
+
+    assert provider.fetch_price("005930", 3.0) == 81234.0
+    assert len(client.gets) == 2
 
 
 def test_kis_credentials_are_required():

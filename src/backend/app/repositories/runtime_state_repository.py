@@ -18,6 +18,8 @@ class StoredMarketQuote:
     source: str
     as_of: datetime
     stored_at: datetime
+    previous_close: float | None = None
+    source_url: str | None = None
 
 
 @dataclass(frozen=True)
@@ -52,6 +54,8 @@ class RuntimeStateRepository:
         source: str,
         as_of: datetime,
         stored_at: datetime | None = None,
+        previous_close: float | None = None,
+        source_url: str | None = None,
     ) -> None:
         numeric_price = float(price)
         if numeric_price <= 0:
@@ -65,13 +69,16 @@ class RuntimeStateRepository:
             connection.execute(
                 """
                 INSERT INTO market_quote_lkg (
-                    instrument_id, price, source, as_of, stored_at
-                ) VALUES (?, ?, ?, ?, ?)
+                    instrument_id, price, source, as_of, stored_at,
+                    previous_close, source_url
+                ) VALUES (?, ?, ?, ?, ?, ?, ?)
                 ON CONFLICT(instrument_id) DO UPDATE SET
                     price = excluded.price,
                     source = excluded.source,
                     as_of = excluded.as_of,
-                    stored_at = excluded.stored_at
+                    stored_at = excluded.stored_at,
+                    previous_close = excluded.previous_close,
+                    source_url = excluded.source_url
                 """,
                 (
                     instrument_id,
@@ -79,6 +86,8 @@ class RuntimeStateRepository:
                     source,
                     source_time.isoformat(),
                     saved_time.isoformat(),
+                    previous_close,
+                    source_url,
                 ),
             )
 
@@ -86,7 +95,8 @@ class RuntimeStateRepository:
         with self._connect() as connection:
             row = connection.execute(
                 """
-                SELECT instrument_id, price, source, as_of, stored_at
+                SELECT instrument_id, price, source, as_of, stored_at,
+                       previous_close, source_url
                 FROM market_quote_lkg
                 WHERE instrument_id = ?
                 """,
@@ -100,6 +110,12 @@ class RuntimeStateRepository:
             source=row["source"],
             as_of=datetime.fromisoformat(row["as_of"]),
             stored_at=datetime.fromisoformat(row["stored_at"]),
+            previous_close=(
+                float(row["previous_close"])
+                if row["previous_close"] is not None
+                else None
+            ),
+            source_url=row["source_url"],
         )
 
     def save_model_recalculation(
@@ -194,6 +210,7 @@ class RuntimeStateRepository:
         sync_id: str,
         sync_type: str,
         owner_token: str,
+        client_request_id: str | None = None,
         now: datetime | None = None,
     ) -> SyncLockResult:
         if sync_type not in {"scheduled", "manual"}:
@@ -219,10 +236,11 @@ class RuntimeStateRepository:
                 """
                 INSERT INTO sync_runs (
                     sync_id, sync_type, status, stage, created_at,
-                    started_at, completed_at, heartbeat_at, error_code
-                ) VALUES (?, ?, 'queued', 'queued', ?, NULL, NULL, ?, NULL)
+                    started_at, completed_at, heartbeat_at, error_code,
+                    client_request_id, result_json
+                ) VALUES (?, ?, 'queued', 'queued', ?, NULL, NULL, ?, NULL, ?, NULL)
                 """,
-                (sync_id, sync_type, timestamp, timestamp),
+                (sync_id, sync_type, timestamp, timestamp, client_request_id),
             )
             connection.execute(
                 """
@@ -310,6 +328,7 @@ class RuntimeStateRepository:
         owner_token: str,
         status: str,
         error_code: str | None = None,
+        result: dict | None = None,
         now: datetime | None = None,
     ) -> None:
         if status not in TERMINAL_SYNC_STATUSES:
@@ -331,10 +350,19 @@ class RuntimeStateRepository:
                 """
                 UPDATE sync_runs
                 SET status = ?, stage = 'completed', completed_at = ?,
-                    heartbeat_at = ?, error_code = ?
+                    heartbeat_at = ?, error_code = ?, result_json = ?
                 WHERE sync_id = ? AND status IN ('queued', 'running')
                 """,
-                (status, timestamp, timestamp, error_code, sync_id),
+                (
+                    status,
+                    timestamp,
+                    timestamp,
+                    error_code,
+                    json.dumps(result, ensure_ascii=False, sort_keys=True)
+                    if result is not None
+                    else None,
+                    sync_id,
+                ),
             ).rowcount
             if updated != 1:
                 raise RuntimeError("active sync state is invalid")
@@ -357,7 +385,8 @@ class RuntimeStateRepository:
             updated = connection.execute(
                 """
                 UPDATE sync_runs
-                SET status = 'failed', stage = 'completed', completed_at = ?,
+                SET status = 'failed', stage = 'completed',
+                    started_at = COALESCE(started_at, created_at), completed_at = ?,
                     heartbeat_at = ?, error_code = 'SERVER_RESTART_INTERRUPTED'
                 WHERE status IN ('queued', 'running')
                 """,
@@ -378,7 +407,58 @@ class RuntimeStateRepository:
                 "SELECT * FROM sync_runs WHERE sync_id = ?",
                 (sync_id,),
             ).fetchone()
-        return dict(row) if row is not None else None
+        return _sync_run(row)
+
+    def get_sync_run_by_client_request_id(
+        self, client_request_id: str
+    ) -> dict | None:
+        with self._connect() as connection:
+            row = connection.execute(
+                """
+                SELECT * FROM sync_runs
+                WHERE client_request_id = ?
+                ORDER BY created_at DESC
+                LIMIT 1
+                """,
+                (client_request_id,),
+            ).fetchone()
+        return _sync_run(row)
+
+    def get_latest_sync_run(self) -> dict | None:
+        with self._connect() as connection:
+            row = connection.execute(
+                """
+                SELECT * FROM sync_runs
+                ORDER BY created_at DESC
+                LIMIT 1
+                """
+            ).fetchone()
+        return _sync_run(row)
+
+    def get_latest_successful_sync(self) -> dict | None:
+        with self._connect() as connection:
+            row = connection.execute(
+                """
+                SELECT * FROM sync_runs
+                WHERE status IN ('success', 'partial_success')
+                ORDER BY completed_at DESC
+                LIMIT 1
+                """
+            ).fetchone()
+        return _sync_run(row)
+
+    def get_latest_completed_manual_sync(self) -> dict | None:
+        with self._connect() as connection:
+            row = connection.execute(
+                """
+                SELECT * FROM sync_runs
+                WHERE sync_type = 'manual'
+                  AND status IN ('success', 'partial_success', 'failed')
+                ORDER BY completed_at DESC
+                LIMIT 1
+                """
+            ).fetchone()
+        return _sync_run(row)
 
     def claim_daily_schedule(
         self,
@@ -421,7 +501,9 @@ class RuntimeStateRepository:
                     price REAL NOT NULL CHECK (price > 0),
                     source TEXT NOT NULL,
                     as_of TEXT NOT NULL,
-                    stored_at TEXT NOT NULL
+                    stored_at TEXT NOT NULL,
+                    previous_close REAL,
+                    source_url TEXT
                 );
                 CREATE TABLE IF NOT EXISTS sync_runs (
                     sync_id TEXT PRIMARY KEY,
@@ -434,7 +516,9 @@ class RuntimeStateRepository:
                     started_at TEXT,
                     completed_at TEXT,
                     heartbeat_at TEXT NOT NULL,
-                    error_code TEXT
+                    error_code TEXT,
+                    client_request_id TEXT,
+                    result_json TEXT
                 );
                 CREATE TABLE IF NOT EXISTS sync_lock (
                     lock_name TEXT PRIMARY KEY CHECK (lock_name = 'issues'),
@@ -461,6 +545,40 @@ class RuntimeStateRepository:
                 );
                 """
             )
+            columns = {
+                row[1]
+                for row in connection.execute(
+                    "PRAGMA table_info(market_quote_lkg)"
+                ).fetchall()
+            }
+            if "previous_close" not in columns:
+                connection.execute(
+                    "ALTER TABLE market_quote_lkg ADD COLUMN previous_close REAL"
+                )
+            if "source_url" not in columns:
+                connection.execute(
+                    "ALTER TABLE market_quote_lkg ADD COLUMN source_url TEXT"
+                )
+            sync_columns = {
+                row[1]
+                for row in connection.execute(
+                    "PRAGMA table_info(sync_runs)"
+                ).fetchall()
+            }
+            if "client_request_id" not in sync_columns:
+                connection.execute(
+                    "ALTER TABLE sync_runs ADD COLUMN client_request_id TEXT"
+                )
+            if "result_json" not in sync_columns:
+                connection.execute(
+                    "ALTER TABLE sync_runs ADD COLUMN result_json TEXT"
+                )
+            connection.execute(
+                """
+                CREATE INDEX IF NOT EXISTS idx_sync_runs_client_request
+                ON sync_runs(client_request_id)
+                """
+            )
             connection.commit()
             self._initialized = True
         finally:
@@ -484,3 +602,12 @@ def _stored_recalculation(row: sqlite3.Row | None) -> StoredModelRecalculation |
         result=json.loads(row["result_json"]),
         recalculated_at=datetime.fromisoformat(row["recalculated_at"]),
     )
+
+
+def _sync_run(row: sqlite3.Row | None) -> dict | None:
+    if row is None:
+        return None
+    result = dict(row)
+    raw_result = result.pop("result_json", None)
+    result["result"] = json.loads(raw_result) if raw_result else None
+    return result

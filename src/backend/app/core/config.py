@@ -49,8 +49,14 @@ TURNOVER_WEIGHTS = {
 # Internal market-data settings. Public realtime API contracts remain pending.
 MARKET_QUOTE_CACHE_TTL_SECONDS = float(os.getenv("MARKET_QUOTE_CACHE_TTL_SECONDS", "15"))
 MARKET_QUOTE_TIMEOUT_SECONDS = float(os.getenv("MARKET_QUOTE_TIMEOUT_SECONDS", "5"))
+MARKET_REFRESH_INTERVAL_SECONDS = int(
+    os.getenv("MARKET_REFRESH_INTERVAL_SECONDS", "15")
+)
 KIS_APP_KEY = os.getenv("KIS_APP_KEY", "")
 KIS_APP_SECRET = os.getenv("KIS_APP_SECRET", "")
+KIS_MIN_REQUEST_INTERVAL_SECONDS = float(
+    os.getenv("KIS_MIN_REQUEST_INTERVAL_SECONDS", "1.0")
+)
 DART_API_KEY = os.getenv("DART_API_KEY", "")
 DART_BASE_URL = os.getenv(
     "DART_BASE_URL",

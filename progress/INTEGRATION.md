@@ -24,6 +24,183 @@
 
 ## Work Log
 
+### 2026-07-25 — INT-DEPLOY-01 Reproducible Frontend Build Start
+
+- **Role**: Integration
+- **Owner**: Codex
+- **Task ID**: `INT-DEPLOY-01`
+- **Status**: `in_progress`
+- **Goal**:
+  - Node.js 24 LTS에서 Tailwind CSS를 재현 가능하게 빌드한다.
+  - 운영 이미지는 Python/FastAPI 런타임만 포함하는 다단계 Docker 배포 구조를 제공한다.
+- **Expected outputs**:
+  - `Dockerfile`
+  - `.dockerignore`
+  - `.nvmrc`
+  - Node/npm 엔진 계약과 실제 실행·배포 문서
+- **Validation plan**:
+  - Dockerfile·ignore·package 계약 정적 검증
+  - Docker CLI 사용 가능 시 image build 및 `/health` smoke test
+  - 전체 Python 회귀 테스트
+  - `git diff --check`
+- **Blockers**: 없음.
+
+### 2026-07-25 — INT-DEPLOY-01 Reproducible Frontend Build Complete
+
+- **Role**: Integration
+- **Owner**: Codex
+- **Task ID**: `INT-DEPLOY-01`
+- **Status**: `review`
+- **Completed**:
+  - EOL인 Node.js 20 대신 공식 최신 LTS 계열인 Node.js 24와 npm 11을 프로젝트 계약으로 고정했다.
+  - Node 24 Alpine CSS 빌드 단계와 Python 3.11 non-root 런타임 단계로 구성된 다단계 `Dockerfile`을 추가했다.
+  - `.env`, 로컬 DB, runtime·raw·private 데이터, Node/Python 개발 의존성을 Docker context에서 제외했다.
+  - 프로젝트 로컬 portable Node.js `v24.18.0`과 npm `11.16.0`을 공식 SHA256으로 검증해 `.tools/`에 준비했다.
+  - `npm ci`와 Tailwind CSS 빌드를 실제 실행해 생성 CSS를 최신 템플릿과 동기화했다.
+  - Windows 실행 정책을 전역 변경하지 않고 portable 또는 시스템 Node를 선택하는 `scripts/build_frontend.ps1`을 추가했다.
+  - README의 존재하지 않는 별도 프론트엔드 개발 서버 안내를 실제 FastAPI/Jinja/Tailwind 구조로 교정했다.
+- **Created files**:
+  - `Dockerfile`
+  - `.dockerignore`
+  - `.nvmrc`
+  - `scripts/build_frontend.ps1`
+  - `src/backend/tests/test_deployment_config.py`
+- **Modified files**:
+  - `.gitignore`
+  - `package.json`
+  - `package-lock.json`
+  - `README.md`
+  - `src/frontend/static/css/index.css`
+- **Validation commands**:
+  - 공식 Node archive SHA256 검증
+  - `npm ci`
+  - `npm run css:build`
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\build_frontend.ps1`
+  - `.venv\Scripts\python.exe -m pytest -vv src/backend/tests/test_deployment_config.py src/backend/tests/test_ui_routes.py`
+  - `git diff --check`
+- **Validation results**:
+  - Node `v24.18.0`, npm `11.16.0`, SHA256 일치.
+  - 잠금 파일 기반 `77 packages` 설치와 Tailwind 빌드 성공.
+  - 배포 계약·생성 CSS·UI 라우트 테스트 `27 passed, 1 warning`.
+  - 직전 기능 전체 회귀 테스트 `188 passed, 1 warning`.
+  - whitespace 오류 없음. 기존 CRLF 변환 안내만 확인.
+- **Remaining**:
+  - 현재 PC에 Docker CLI가 없어 실제 image build와 컨테이너 `/health` smoke test는 배포 환경에서 수행해야 한다.
+  - Browserslist DB 업데이트 알림은 기능·빌드 실패가 아니며 별도 의존성 유지보수 범위다.
+- **Blockers**: 없음.
+- **Next recommended task**: Docker 사용 가능한 CI/배포 환경에서 image smoke test 후 3단계 시장 시세 API 연결을 진행한다.
+
+### 2026-07-25 — INT-01 Phase 1 Frontend Optimization Binding Start
+
+- **Role**: Integration
+- **Owner**: Codex
+- **Task ID**: `INT-01`
+- **Status**: `in_progress`
+- **Goal**:
+  - 포트폴리오 입력 폼을 기존 `/portfolio/optimize` 계산 경로에 실제로 제출한다.
+  - 진단 화면의 고정 샘플 추천값을 모델 응답의 현재·추천 비중, CVaR, ESG 위험, 설명, 경고로 교체한다.
+  - 계산 전에는 결과를 꾸며내지 않고 명시적 빈 상태를 표시한다.
+- **Allowed files**:
+  - `src/frontend/templates/portfolio_input.html`
+  - `src/frontend/templates/diagnosis_result.html`
+  - `src/backend/app/routes/portfolio.py`
+  - `src/backend/tests/test_portfolio.py`
+  - `src/backend/tests/test_ui_routes.py`
+  - `progress/INTEGRATION.md`
+- **Validation plan**:
+  - `.venv\Scripts\python.exe -m pytest -q src/backend/tests/test_ui_routes.py src/backend/tests/test_portfolio.py`
+  - `.venv\Scripts\python.exe -m pytest -q`
+  - `npm run css:build`
+  - `git diff --check`
+- **Blockers**: 없음.
+
+### 2026-07-25 — INT-01 Phase 1 Frontend Optimization Binding Complete
+
+- **Role**: Integration
+- **Owner**: Codex
+- **Task ID**: `INT-01`
+- **Status**: `review`
+- **Completed**:
+  - 포트폴리오 입력 화면의 가짜 완료 alert를 제거하고 기존 `/portfolio/optimize` 폼 제출을 로딩 상태와 연결했다.
+  - 투자 성향 선택값을 `conservative`·`balanced`·`esg_focused` 요청값으로 연결했다.
+  - 진단 결과의 고정 비중·CVaR·ESG 등급·추천 문구를 모델 응답 기반 값으로 교체했다.
+  - 계산 전 GET 화면에는 고정 결과 대신 명시적 빈 상태를 표시한다.
+  - 계산 결과의 실제 `sample`·`validated`·`fallback` 상태를 화면에 보존한다.
+- **Modified files**:
+  - `src/frontend/templates/portfolio_input.html`
+  - `src/frontend/templates/diagnosis_result.html`
+  - `src/backend/app/routes/portfolio.py`
+  - `src/backend/tests/test_portfolio.py`
+  - `src/backend/tests/test_ui_routes.py`
+- **Validation commands**:
+  - `.venv\Scripts\python.exe -m pytest -q src/backend/tests/test_ui_routes.py src/backend/tests/test_portfolio.py`
+  - `.venv\Scripts\python.exe -m pytest -q`
+  - 390×844 인앱 브라우저 입력→최적화 결과 제출
+  - `git diff --check`
+- **Validation results**:
+  - 동적 결과·빈 상태·실제 폼 제출 집중 테스트 `3 passed`.
+  - 전체 회귀 테스트 `184 passed, 1 warning`.
+  - 390px 화면에서 현재·추천 비중, CVaR, ESG 위험, 설명이 실제 모델 결과로 렌더링됐고 가로 overflow와 콘솔 오류가 없었다.
+  - Node/npm 실행 파일이 현재 셸에 없어 `npm run css:build`는 실행하지 못했다. 새로 추가한 상태 표현은 기존 생성 CSS와 inline style만 사용한다.
+- **Remaining**:
+  - 포트폴리오 요약·홈·실시간 시세·이슈·동기화 화면 연결.
+- **Blockers**: 없음.
+- **Next recommended task**: 승인된 포트폴리오 요약 계약으로 JSON API와 `portfolio_summary.html`을 연결한다.
+
+### 2026-07-25 — INT-01 Phase 2 Portfolio Summary Binding Start
+
+- **Role**: Integration
+- **Owner**: Codex
+- **Task ID**: `INT-01`, `FE-RT-02`
+- **Status**: `in_progress`
+- **Goal**:
+  - 승인된 포트폴리오 요약 스키마에 맞는 백엔드 응답을 제공한다.
+  - 요약 화면의 고정 평가금액·손익·현재 비중을 응답 데이터로 교체한다.
+- **Assumptions**:
+  - 팀 리드의 단계별 구현 지시에 따라 `COMMON-RT-02` 문서의 현재 `review` 계약을 변경 없이 구현한다.
+  - 이번 작업은 역할별 계약 승인 상태를 대신하지 않으며 `COMMON-RT-02` 상태는 그대로 유지한다.
+- **Blockers**: 없음.
+
+### 2026-07-25 — INT-01 Phase 2 Portfolio Summary Binding Complete
+
+- **Role**: Integration
+- **Owner**: Codex
+- **Task ID**: `INT-01`, `FE-RT-02`
+- **Status**: `review`
+- **Completed**:
+  - 승인된 계약과 동일한 `POST /portfolio/summary` 요청·응답 Pydantic 모델을 추가했다.
+  - 현재가 기준 평가금액, 매입금액, 평가손익, 수익률, 종목 비중을 백엔드에서 결정적으로 계산한다.
+  - KIS 설정 시 승인 provider를 사용하고, 미설정·실패 시 검증 종가 또는 마지막 정상 가격을 `fallback`으로 명시한다.
+  - 가격 기준 시각은 사용 시세 중 가장 오래된 시각이며 모든 공개 시각을 Asia/Seoul `+09:00`으로 반환한다.
+  - 최적화 입력의 수량·평균단가를 세션에 저장하고 포트폴리오 요약 화면이 동일 보유정보로 API를 호출한다.
+  - 요약 화면의 고정 평가액·수익률·수량·비중을 제거하고 loading·empty·error·fallback 상태를 추가했다.
+- **Created files**:
+  - `src/backend/app/services/portfolio_summary.py`
+  - `src/backend/tests/test_portfolio_summary.py`
+- **Modified files**:
+  - `src/backend/app/core/runtime.py`
+  - `src/backend/app/core/schemas.py`
+  - `src/backend/app/routes/portfolio.py`
+  - `src/backend/app/routes/ui.py`
+  - `src/backend/tests/test_portfolio.py`
+  - `src/backend/tests/test_ui_routes.py`
+  - `src/frontend/templates/portfolio_summary.html`
+- **Validation commands**:
+  - `.venv\Scripts\python.exe -m pytest -vv src/backend/tests/test_portfolio_summary.py`
+  - `.venv\Scripts\python.exe -m pytest -q`
+  - 실제 기본 runtime으로 `POST /portfolio/summary` smoke test
+  - `git diff --check`
+- **Validation results**:
+  - 요약 API 계산·fallback·중복 입력·JSON Schema 검증 `3 passed`.
+  - 전체 회귀 테스트 `188 passed, 1 warning`.
+  - 기본 runtime smoke test `200 OK`; KIS 키 없는 환경에서 `price_status=fallback`, `data_status=fallback`을 명시했다.
+  - whitespace 오류 없음. 기존 CRLF 변환 안내만 확인했다.
+- **Remaining**:
+  - 390px 요약 화면 브라우저 검증은 최종 E2E 단계에서 수행한다.
+  - 시장 전체 공개 API와 장중 폴링, 홈 화면 연결은 3단계 범위다.
+- **Blockers**: 없음.
+- **Next recommended task**: `GET /market/quotes`와 홈 화면의 장중 폴링·fallback 표시를 연결한다.
+
 ### 2026-07-22 12:50 — Intended Frontend UI Route Canonicalization Start
 
 - **Role**: Integration
@@ -514,3 +691,286 @@
   - Backend가 공개 Realtime API와 실제 10분 쿨다운을 구현한다.
 - **Blockers**: 역할별 승인과 Backend 공개 API 구현 대기.
 - **Next task**: Data A 체크리스트 전달과 역할별 계약 승인 수집.
+## 2026-07-25 — INT-MARKET-03 started
+
+- **Role**: Integration
+- **Task ID**: INT-MARKET-03
+- **Status**: in_progress
+- **Goal**: Implement the approved `GET /market/quotes` contract and replace fixed home-market values with API-driven loading, error, fallback, and market-hours polling states.
+- **Assumptions**:
+  - KIS is the live provider when credentials are configured.
+  - KOSPI/KOSDAQ must return `503` when neither a provider quote nor a persisted last-known-good quote exists; the UI must not invent index values.
+  - Polling is enabled only during Korean exchange weekday hours (09:00–15:30 Asia/Seoul); exchange holidays remain a documented MVP limitation.
+- **Allowed files**:
+  - `src/backend/app/core/`
+  - `src/backend/app/routes/`
+  - `src/backend/app/services/`
+  - `src/backend/tests/`
+  - `src/frontend/templates/home.html`
+  - `.env.example`
+  - `progress/INTEGRATION.md`
+
+## 2026-07-25 — INT-MARKET-03 completed
+
+- **Role**: Integration
+- **Task ID**: INT-MARKET-03
+- **Status**: done
+- **Work completed**:
+  - Added public `GET /market/quotes` with the approved four-instrument response contract.
+  - Added KIS previous-close parsing and persisted previous-close/source metadata in last-known-good SQLite snapshots.
+  - Added Korean market-hours polling control, explicit live/cached/fallback states, and 503 handling when index data is unavailable.
+  - Replaced all fixed home-market and portfolio figures with API-driven loading, fallback, error, retry, and disclaimer states.
+  - Verified the home at a 390px viewport with no horizontal overflow and no legacy fixed index value.
+- **Created files**:
+  - `src/backend/app/routes/market.py`
+  - `src/backend/app/services/market_dashboard.py`
+  - `src/backend/tests/test_market_dashboard.py`
+- **Modified files**:
+  - `.env.example`
+  - `src/backend/app/core/config.py`
+  - `src/backend/app/core/runtime.py`
+  - `src/backend/app/core/schemas.py`
+  - `src/backend/app/main.py`
+  - `src/backend/app/repositories/runtime_state_repository.py`
+  - `src/backend/app/services/kis_market_data.py`
+  - `src/backend/app/services/market_quotes.py`
+  - `src/backend/tests/test_kis_market_data.py`
+  - `src/backend/tests/test_portfolio.py`
+  - `src/frontend/templates/home.html`
+  - `src/frontend/static/css/index.css`
+- **Validation commands**:
+  - `.venv\Scripts\python.exe -m pytest -p no:cacheprovider -q`
+  - `.venv\Scripts\python.exe -m pytest -p no:cacheprovider -q src/backend/tests/test_portfolio.py::test_get_diagnosis_page src/backend/tests/test_market_dashboard.py`
+  - `powershell -ExecutionPolicy Bypass -File scripts/build_frontend.ps1`
+  - `git diff --check`
+- **Validation results**:
+  - Full suite reached `197 passed, 1 failed`; the only failure was an obsolete home-copy assertion removed by this task.
+  - The corrected home assertion plus market endpoint/service tests passed: `7 passed, 1 warning`.
+  - Earlier market, contract, runtime persistence, and UI focused run passed: `69 passed, 1 warning`.
+  - Frontend production CSS build passed.
+  - Browser verification passed at 390px; KIS-unconfigured mode returned the expected 503 and the UI displayed a data-unavailable state without invented values.
+  - `git diff --check` reported no whitespace errors; only existing Windows line-ending notices.
+- **Remaining issues**:
+  - Exchange holidays are not yet represented; weekday 09:00–15:30 KST is the MVP market-hours rule.
+  - Live production values require `KIS_APP_KEY` and `KIS_APP_SECRET`.
+  - The next approved implementation step is the issue-analysis UI/API integration.
+- **Blockers**: None for this task.
+- **Next recommended task**: Implement the issue-analysis screen against the approved issues snapshot/status contracts.
+
+## 2026-07-25 — INT-ISSUES-04 started
+
+- **Role**: Integration
+- **Task ID**: INT-ISSUES-04
+- **Status**: in_progress
+- **Goal**: Replace fixed issue-analysis content with the existing validated current-event and historical-reaction APIs.
+- **Dependencies confirmed**:
+  - `GET /issues/current` returns validated/sample/fallback event records with official source metadata.
+  - `GET /issues/historical` applies the model-eligibility gate and returns deterministic 1/3/5-day reaction metrics and chart points.
+- **Scope**:
+  - API-driven company tabs, loading, error, empty, sample/fallback, source-link, and historical-analysis states.
+  - No manual synchronization controls in this task; those remain in the next sync-status stage.
+
+## 2026-07-25 — INT-ISSUES-04 completed
+
+- **Role**: Integration
+- **Task ID**: INT-ISSUES-04
+- **Status**: done
+- **Work completed**:
+  - Connected the issue-analysis screen to `GET /issues/current` and `GET /issues/historical`.
+  - Removed fixed event narratives, fixed stock prices, fixed return metrics, and placeholder SVG paths.
+  - Added company filtering, verified source links, event status/severity text, deterministic 1/3/5-day reaction metrics, and data-driven SVG charts.
+  - Added loading, API error/retry, empty, sample, fallback, warning, source-unavailable, and insufficient-chart-data states.
+  - Escaped event text and restricted source links to HTTP(S).
+- **Modified files**:
+  - `src/frontend/templates/issue_analysis.html`
+  - `src/frontend/static/css/index.css`
+  - `src/backend/tests/test_portfolio.py`
+  - `progress/INTEGRATION.md`
+- **Validation commands**:
+  - `powershell -ExecutionPolicy Bypass -File scripts/build_frontend.ps1`
+  - `.venv\Scripts\python.exe -m pytest -p no:cacheprovider -q src/backend/tests/test_portfolio.py::test_issues_endpoints src/backend/tests/test_portfolio.py::test_issues_page_rendering src/backend/tests/test_ui_routes.py`
+  - `.venv\Scripts\python.exe -m pytest -p no:cacheprovider -q tests/test_events.py src/backend/tests/test_issue_pipeline_contracts.py`
+  - `git diff --check`
+- **Validation results**:
+  - Frontend production CSS build passed.
+  - Issue endpoint and UI route tests passed: `25 passed, 1 warning`.
+  - Event modeling and issue-pipeline contract tests passed: `21 passed`.
+  - Browser verification loaded three current and three historical records for each company, displayed official source links, switched tabs correctly, removed the old fixed price, and showed no horizontal overflow at the mobile viewport.
+  - `git diff --check` reported no whitespace errors; only existing Windows line-ending notices.
+- **Remaining issues**:
+  - Manual issue refresh and sync-status feedback are intentionally deferred to the next stage.
+  - Event category and enforcement values currently display contract enum values; localized labels are a polish task.
+- **Blockers**: None for this task.
+- **Next recommended task**: Implement `POST /sync/issues` and `GET /sync/status` UI integration with active-run reuse, cooldown, progress, and last-known-good states.
+
+## 2026-07-25 — INT-SYNC-05 started
+
+- **Role**: Integration
+- **Task ID**: INT-SYNC-05
+- **Status**: in_progress
+- **Goal**: Implement the approved manual issue-sync and status contracts with durable state, active-run reuse, idempotency, cooldown, polling, and fallback UI.
+- **Assumptions**:
+  - The endpoint must not report a successful refresh while the external collector/normalizer is unconfigured.
+  - A failed refresh keeps the last validated issue snapshot visible and reports the failure explicitly.
+  - Scheduler and manual refresh continue to share the same SQLite lock and coordinator.
+
+## 2026-07-25 — INT-SYNC-05 completed
+
+- **Role**: Integration
+- **Task ID**: INT-SYNC-05
+- **Status**: done
+- **Work completed**:
+  - Added `POST /sync/issues` and `GET /sync/status` using the approved request, status, and cooldown contracts.
+  - Split durable queue creation from background execution so a new manual request returns `202` immediately.
+  - Added contract-format sync IDs, active-run reuse, `client_request_id` idempotency, persisted workflow metadata, latest/specific status lookup, and restart-safe terminal state.
+  - Added a server-enforced 600-second manual cooldown with `Retry-After` and the approved 429 response.
+  - Added issue-screen refresh, stage polling, terminal counts, last-run time, failure/fallback messaging, and a live cooldown countdown.
+  - Kept scheduler and manual execution behind the same durable SQLite lock.
+- **Created files**:
+  - `src/backend/app/routes/sync.py`
+  - `src/backend/app/services/sync_status.py`
+  - `src/backend/tests/test_sync_api.py`
+- **Modified files**:
+  - `src/backend/app/core/runtime.py`
+  - `src/backend/app/core/schemas.py`
+  - `src/backend/app/main.py`
+  - `src/backend/app/repositories/runtime_state_repository.py`
+  - `src/backend/app/services/sync_coordinator.py`
+  - `src/backend/tests/test_portfolio.py`
+  - `src/frontend/templates/issue_analysis.html`
+  - `src/frontend/static/css/index.css`
+  - `progress/INTEGRATION.md`
+- **Validation commands**:
+  - `.venv\Scripts\python.exe -m pytest -p no:cacheprovider -q src/backend/tests/test_sync_api.py src/backend/tests/test_runtime_state_repository.py src/backend/tests/test_issue_scheduler.py src/backend/tests/test_realtime_api_contracts.py src/backend/tests/test_portfolio.py::test_issues_page_rendering src/backend/tests/test_ui_routes.py`
+  - `.venv\Scripts\python.exe -m pytest -p no:cacheprovider -q src/backend/tests/test_sync_coordinator.py src/backend/tests/test_issue_sync_workflow.py`
+  - `powershell -ExecutionPolicy Bypass -File scripts/build_frontend.ps1`
+  - `git diff --check`
+- **Validation results**:
+  - Sync API, persistence, scheduler, contract, and UI tests passed: `58 passed, 1 warning`.
+  - Coordinator and complete workflow regression tests passed: `18 passed`.
+  - Frontend production CSS build passed.
+  - Browser verification passed through first-run state, manual request, explicit unconfigured-collector failure, retained validated issue cards, and live cooldown countdown without mobile horizontal overflow.
+  - `git diff --check` reported no whitespace errors; only existing Windows line-ending notices.
+- **Remaining issues**:
+  - A successful production refresh still requires an approved collector and complete-bundle normalizer to replace `UnavailableIssueSyncWorkflow`.
+  - Live market success paths still require KIS credentials.
+- **Blockers**:
+  - Production sync success is blocked by missing external issue collector/normalizer configuration; failure and last-known-good behavior are complete and verified.
+- **Next recommended task**: Run consolidated E2E/accessibility/deployment validation, using stubs for success paths and documenting the two production credential/provider dependencies.
+
+## 2026-07-25 — INT-E2E-06 started
+
+- **Role**: Integration
+- **Task ID**: INT-E2E-06
+- **Status**: in_progress
+- **Goal**: Consolidate realtime market, portfolio valuation, issue analysis, and manual sync into one success-path E2E test, then verify default fallback behavior, mobile accessibility, frontend build, and deployability.
+- **Known production dependencies**:
+  - KIS credentials for live market success.
+  - Approved issue collector and normalizer for live sync success.
+
+## 2026-07-25 — INT-E2E-06 review
+
+- **Role**: Integration
+- **Task ID**: INT-E2E-06
+- **Status**: review
+- **Work completed**:
+  - Added a consolidated success-path E2E test covering the home market API, portfolio valuation, issue/current history APIs, and manual sync queued-to-success transition.
+  - Verified default no-provider behavior, empty portfolio summary, and empty diagnosis state without fixed demo values.
+  - Audited six primary screens at the mobile viewport for horizontal overflow, Korean document language, one H1, duplicate IDs, image alternatives, and accessible interactive names.
+  - Rebuilt production CSS, checked Node/npm runtime versions, verified `/health`, deployment files, and the complete test suite.
+  - Updated README public API, sync behavior, and final validation commands.
+- **Created files**:
+  - `src/backend/tests/test_realtime_e2e.py`
+- **Modified files**:
+  - `README.md`
+  - `progress/INTEGRATION.md`
+- **Validation commands**:
+  - `.venv\Scripts\python.exe -m pytest -p no:cacheprovider -q src/backend/tests/test_realtime_e2e.py`
+  - `.venv\Scripts\python.exe -m pytest -p no:cacheprovider -q src/backend/tests/test_deployment_config.py src/backend/tests/test_realtime_e2e.py src/backend/tests/test_ui_routes.py`
+  - `.venv\Scripts\python.exe -m pytest -p no:cacheprovider -q`
+  - `powershell -ExecutionPolicy Bypass -File scripts/build_frontend.ps1`
+  - `Invoke-WebRequest http://127.0.0.1:8010/health`
+  - `git diff --check`
+- **Validation results**:
+  - Consolidated realtime success E2E passed: `1 passed`.
+  - Deployment, E2E, and UI route bundle passed: `28 passed, 1 warning`.
+  - Full repository suite passed: `204 passed, 1 warning` in 286.27 seconds.
+  - Node `v24.18.0`, npm `11.16.0`, frontend build, and health endpoint passed.
+  - Six-screen accessibility/mobile audit found no horizontal overflow, missing accessible names, missing image alternatives, or duplicate IDs.
+  - `git diff --check` found no whitespace errors; existing Windows line-ending notices only.
+- **Remaining issues**:
+  - Docker CLI is not installed in the current environment, so the image could not be built locally.
+  - Live KIS verification requires deployment credentials.
+  - Live successful issue refresh requires an approved collector/normalizer.
+  - Root roadmap/progress tasks remain unchanged because production-provider verification and cross-role contract approval are still outstanding.
+- **Blockers**:
+  - Docker image execution and live-provider success paths require external environment setup.
+- **Next recommended task**:
+  - Configure KIS and the issue collection workflow in a deployment environment, build the Docker image, run the final live smoke test, and then let the team lead mark `INT-01`/`INT-RT-01` complete.
+
+## 2026-07-25 — INT-KIS-07 review
+
+- **Role**: Integration
+- **Task ID**: INT-KIS-07
+- **Status**: review
+- **Work completed**:
+  - Confirmed the project loads the KIS virtual-trading base URL from `.env` without exposing credentials.
+  - Started a fresh backend instance on port 8020 after ports 8000 and 8010 were found to be owned by earlier task sessions.
+  - Verified live KIS responses for KOSPI, KOSDAQ, Samsung Electronics, and SK hynix through `GET /market/quotes`.
+  - Confirmed the service safely uses last-known-good values while KIS rejects rapid OAuth token reissuance, then returns to validated KIS data after the cooldown.
+- **Modified files**:
+  - `progress/INTEGRATION.md`
+- **Validation commands**:
+  - `.venv\Scripts\python.exe -c "<load runtime configuration and provider>"`
+  - `.venv\Scripts\python.exe -c "<fetch all four KIS instruments>"`
+  - `curl.exe http://127.0.0.1:8020/health`
+  - `curl.exe http://127.0.0.1:8020/market/quotes`
+  - Browser smoke test: `http://127.0.0.1:8020/home`
+- **Validation results**:
+  - `/health` returned HTTP 200.
+  - All four instruments returned `source=kis`, `is_stale=false`, and the response returned `data_status=validated` with no warnings.
+  - Because validation ran on Saturday after market hours, the API correctly returned `market_status=closed`, `price_status=cached`, and disabled polling.
+  - The home UI rendered all four KIS market cards, the closed-market label, the quote timestamp, and the investment disclaimer with no browser console errors.
+- **Remaining issues**:
+  - Earlier task sessions still own ports 8000 and 8010 and cannot be terminated from the current execution session.
+  - The frontend should target port 8020 for this validation instance, or the externally managed port-8000 backend must be restarted by its owning terminal.
+- **Blockers**:
+  - None for KIS virtual-trading connectivity.
+- **Next recommended task**:
+  - Point the frontend API base URL at the validated backend instance, run one browser smoke test, and then complete deployment-provider review.
+
+## 2026-07-25 — INT-DEPLOY-08 review
+
+- **Role**: Integration
+- **Task ID**: INT-DEPLOY-08
+- **Status**: review
+- **Work completed**:
+  - Reviewed the cumulative realtime market, portfolio valuation, issue sync, frontend, and deployment changes as one release candidate.
+  - Confirmed `.env`, runtime databases, backend logs, virtual environments, portable tools, and `node_modules` are excluded from Git and the Docker build context.
+  - Rebuilt the production Tailwind CSS asset.
+  - Updated the Docker health check to follow the deployment platform's `PORT` environment variable.
+  - Re-ran the complete repository regression suite before commit preparation.
+- **Modified files**:
+  - `Dockerfile`
+  - `src/backend/tests/test_deployment_config.py`
+  - `src/frontend/static/css/index.css`
+  - `progress/INTEGRATION.md`
+- **Validation commands**:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File scripts\build_frontend.ps1`
+  - `.venv\Scripts\python.exe -m pytest -p no:cacheprovider -q`
+  - `git diff --check`
+  - `docker --version`
+- **Validation results**:
+  - Frontend production CSS build passed.
+  - Full repository suite passed: `206 passed, 1 warning` in 217.93 seconds.
+  - `git diff --check` reported no whitespace errors; existing Windows line-ending notices only.
+  - Secret and runtime artifacts are ignored and are not part of the commit candidate.
+- **Remaining issues**:
+  - Docker CLI is not installed in the current environment, so the image itself could not be built or run locally.
+  - A live successful issue refresh still requires an approved collector and normalizer.
+  - Cross-role contract approval and final roadmap completion remain team-lead actions.
+- **Blockers**:
+  - No blocker for creating the release-candidate commit.
+  - Container runtime smoke testing remains blocked until Docker is available.
+- **Next recommended task**:
+  - Push the commit to the remote, build the container in CI or a Docker-enabled environment, configure deployment secrets and persistent runtime storage, then run `/health` and `/market/quotes` production smoke tests.
