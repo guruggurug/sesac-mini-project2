@@ -32,8 +32,13 @@ def calculate_portfolio_summary(
     now: Callable[[], datetime] = lambda: datetime.now(timezone.utc),
 ) -> PortfolioSummaryResponse:
     holding_list = list(holdings)
+    snapshot_lookup = getattr(
+        quote_service,
+        "get_snapshot_quote",
+        quote_service.get_quote,
+    )
     quotes = {
-        holding.ticker: quote_service.get_quote(holding.ticker)
+        holding.ticker: snapshot_lookup(holding.ticker)
         for holding in holding_list
     }
 

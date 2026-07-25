@@ -1,7 +1,7 @@
 from datetime import datetime
 from pathlib import Path
 import sys
-from threading import Barrier
+from threading import Barrier, Event, Lock
 from zoneinfo import ZoneInfo
 
 import pandas as pd
@@ -125,6 +125,104 @@ def test_independent_quote_lookups_run_concurrently():
     response = service.get_quotes()
 
     assert [quote.instrument_id for quote in response.quotes] == list(INSTRUMENTS)
+
+
+def test_public_snapshot_read_never_uses_provider_refresh_path():
+    now = datetime(2026, 7, 24, 10, 15, tzinfo=KST)
+    quotes = make_quotes(now, source="last_known_good:kis")
+
+    class SnapshotOnlyQuoteService:
+        def get_snapshot_quote(self, instrument_id):
+            return quotes[instrument_id]
+
+        def get_quote(self, instrument_id):
+            raise AssertionError("public snapshot read must not call provider")
+
+    service = MarketDashboardService(
+        SnapshotOnlyQuoteService(),
+        price_repository=StubPriceRepository(),
+        now=lambda: now,
+    )
+
+    response = service.get_quotes()
+
+    assert response.data_status == "fallback"
+    assert all(item.price_status == "fallback" for item in response.quotes)
+
+
+def test_background_refresh_is_single_flight_and_rate_limited():
+    now = datetime(2026, 7, 24, 10, 15, tzinfo=KST)
+    clock = [100.0]
+    quotes = make_quotes(now)
+
+    class BlockingRefreshQuoteService:
+        def __init__(self):
+            self.release = Event()
+            self.all_started = Event()
+            self.lock = Lock()
+            self.calls = []
+
+        def refresh_quote(self, instrument_id):
+            with self.lock:
+                self.calls.append(instrument_id)
+                if len(self.calls) == len(INSTRUMENTS):
+                    self.all_started.set()
+            assert self.release.wait(timeout=2)
+            return quotes[instrument_id]
+
+        def get_quote(self, instrument_id):
+            return quotes[instrument_id]
+
+    quote_service = BlockingRefreshQuoteService()
+    service = MarketDashboardService(
+        quote_service,
+        price_repository=StubPriceRepository(),
+        now=lambda: now,
+        clock=lambda: clock[0],
+    )
+
+    assert service.request_refresh() is True
+    assert quote_service.all_started.wait(timeout=2)
+    assert service.request_refresh() is False
+    quote_service.release.set()
+    assert service.wait_for_refresh(timeout=2) is True
+    assert sorted(quote_service.calls) == sorted(INSTRUMENTS)
+
+    assert service.request_refresh() is False
+    clock[0] = 115.0
+    assert service.request_refresh() is True
+    assert service.wait_for_refresh(timeout=2) is True
+    assert len(quote_service.calls) == 8
+
+
+def test_immediate_background_failure_does_not_deadlock_and_uses_retry_backoff():
+    now = datetime(2026, 7, 24, 10, 15, tzinfo=KST)
+    clock = [100.0]
+
+    class ImmediateFailureQuoteService:
+        def refresh_quote(self, instrument_id):
+            raise MarketQuoteError("provider unavailable")
+
+        def get_quote(self, instrument_id):
+            raise MarketQuoteError("snapshot unavailable")
+
+    service = MarketDashboardService(
+        ImmediateFailureQuoteService(),
+        price_repository=StubPriceRepository(),
+        now=lambda: now,
+        clock=lambda: clock[0],
+        failure_retry_seconds=5,
+    )
+
+    assert service.request_refresh() is True
+    with pytest.raises(MarketQuoteError, match="provider unavailable"):
+        service.wait_for_refresh(timeout=2)
+    assert service.request_refresh() is False
+
+    clock[0] = 105.0
+    assert service.request_refresh() is True
+    with pytest.raises(MarketQuoteError, match="provider unavailable"):
+        service.wait_for_refresh(timeout=2)
 
 
 def test_fallback_quote_is_explicitly_stale():

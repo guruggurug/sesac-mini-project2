@@ -10,6 +10,11 @@ router = APIRouter()
 
 @router.get("/market/quotes", response_model=MarketQuotesResponse)
 def get_market_quotes():
+    # Refresh runs in one background worker. The public request only reads the
+    # latest in-memory/SQLite snapshot and never waits for KIS network I/O.
+    request_refresh = getattr(market_dashboard_service, "request_refresh", None)
+    if callable(request_refresh):
+        request_refresh()
     try:
         return market_dashboard_service.get_quotes()
     except MarketQuoteError as error:

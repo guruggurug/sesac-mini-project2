@@ -476,6 +476,7 @@ KIS_APP_KEY=
 KIS_APP_SECRET=
 KIS_BASE_URL=https://openapi.koreainvestment.com:9443
 RUNTIME_STATE_DB_PATH=data/runtime/state.db
+ENABLE_MARKET_REFRESH_ON_STARTUP=false
 
 BACKEND_HOST=0.0.0.0
 BACKEND_PORT=8000
@@ -485,6 +486,10 @@ FRONTEND_API_BASE_URL=http://localhost:8000
 > KIS 키가 없으면 외부 시장 조회를 수행하지 않습니다. 삼성전자·SK하이닉스는 검증 가격 저장소의 최신 종가를 사용하고, KOSPI·KOSDAQ은 실제값을 임의 생성하지 않습니다. 실제 API 키가 없는 경우 `DATA_MODE=sample`로 실행합니다.
 
 `RUNTIME_STATE_DB_PATH`의 SQLite 파일에는 마지막 정상 시장 가격과 단일 활성 이슈 동기화 lock을 저장합니다. 서버 재시작 시 진행 중이던 동기화는 `failed`로 종료하고 lock을 해제하며, 마지막 정상 가격은 유지합니다.
+
+시장 API는 사용자 요청에서 KIS를 직접 기다리지 않습니다. `/market/quotes`와 `/portfolio/summary`는 메모리 또는 SQLite의 마지막 정상 스냅샷을 즉시 반환하고, 단일 백그라운드 작업이 KIS 값을 갱신합니다. `ENABLE_MARKET_REFRESH_ON_STARTUP`은 Railway에서 기본 활성화되고 로컬에서는 기본 비활성화됩니다.
+
+Railway에서는 Volume을 `/app/data/runtime`에 마운트하고 `RUNTIME_STATE_DB_PATH=/app/data/runtime/state.db`로 설정해야 마지막 정상 시장 가격이 재배포 후에도 유지됩니다. Volume이 없으면 컨테이너 교체 시 SQLite 스냅샷이 사라지며, 최초 KIS 갱신 전까지 지수 데이터가 준비되지 않을 수 있습니다.
 
 이슈 scheduler는 `ENABLE_ISSUE_SCHEDULER=true`일 때만 서울 시간 `ISSUE_SYNC_HOUR_KST`:`ISSUE_SYNC_MINUTE_KST`에 실행됩니다. 실제 수집·검증·원자적 발행 workflow가 연결되기 전에는 활성화하지 않습니다.
 

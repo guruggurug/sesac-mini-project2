@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import datetime, timezone
-from threading import Lock
+from threading import Event, Lock
 from time import monotonic
 from typing import Callable, Protocol
 
@@ -48,6 +48,13 @@ class InternalQuote:
 class _CacheEntry:
     quote: InternalQuote
     expires_at: float
+
+
+@dataclass
+class _InFlightLookup:
+    event: Event
+    quote: InternalQuote | None = None
+    error: Exception | None = None
 
 
 class LastKnownGoodAdapter(Protocol):
@@ -141,16 +148,137 @@ class MarketQuoteService:
         self._clock = clock
         self._now = now
         self._cache: dict[str, _CacheEntry] = {}
+        self._inflight: dict[str, _InFlightLookup] = {}
         self._lock = Lock()
 
     def get_quote(self, instrument_id: str) -> InternalQuote:
+        return self._get_or_refresh_quote(instrument_id, force_refresh=False)
+
+    def refresh_quote(self, instrument_id: str) -> InternalQuote:
+        """Refresh one instrument while coalescing concurrent provider work."""
+        return self._get_or_refresh_quote(instrument_id, force_refresh=True)
+
+    def get_snapshot_quote(self, instrument_id: str) -> InternalQuote:
+        """Return cached/LKG data immediately without calling the provider."""
         if instrument_id not in SUPPORTED_INSTRUMENTS:
             raise ValueError(f"Unsupported instrument_id: {instrument_id}")
 
-        cached = self._get_cached(instrument_id)
+        current = self._clock()
+        with self._lock:
+            entry = self._cache.get(instrument_id)
+            if entry is not None:
+                if current < entry.expires_at:
+                    return entry.quote
+                return replace(
+                    entry.quote,
+                    source=_fallback_source(entry.quote.source),
+                )
+
+        if self._last_known_good_adapter is not None:
+            stored_quote = self._last_known_good_adapter.load_quote(instrument_id)
+            if stored_quote is not None:
+                return stored_quote
+
+        if instrument_id in {"005930", "000660"}:
+            try:
+                price = self._local_adapter.latest_close(instrument_id)
+                return self._make_quote(instrument_id, price, "local_repository")
+            except Exception as local_error:
+                raise MarketQuoteError(
+                    f"No snapshot or local quote available for {instrument_id}"
+                ) from local_error
+
+        raise MarketQuoteError(f"No snapshot quote available for {instrument_id}")
+
+    def _get_or_refresh_quote(
+        self,
+        instrument_id: str,
+        *,
+        force_refresh: bool,
+    ) -> InternalQuote:
+        if instrument_id not in SUPPORTED_INSTRUMENTS:
+            raise ValueError(f"Unsupported instrument_id: {instrument_id}")
+
+        cached, flight, is_leader = self._begin_lookup(
+            instrument_id,
+            force_refresh=force_refresh,
+        )
         if cached is not None:
             return cached
+        if not is_leader:
+            flight.event.wait()
+            if flight.quote is not None:
+                return flight.quote
+            error = flight.error or MarketQuoteError(
+                f"Shared quote lookup failed for {instrument_id}"
+            )
+            raise MarketQuoteError(str(error)) from error
 
+        try:
+            quote = self._load_quote(instrument_id)
+        except Exception as error:
+            failure = (
+                error
+                if isinstance(error, MarketQuoteError)
+                else MarketQuoteError(f"Quote lookup failed for {instrument_id}")
+            )
+            self._finish_lookup(instrument_id, flight, error=failure)
+            if failure is error:
+                raise failure
+            raise failure from error
+
+        self._finish_lookup(instrument_id, flight, quote=quote)
+        return quote
+
+    def clear_cache(self) -> None:
+        with self._lock:
+            self._cache.clear()
+
+    def _begin_lookup(
+        self,
+        instrument_id: str,
+        *,
+        force_refresh: bool,
+    ) -> tuple[InternalQuote | None, _InFlightLookup, bool]:
+        current = self._clock()
+        with self._lock:
+            entry = self._cache.get(instrument_id)
+            if entry is not None and not force_refresh:
+                if current < entry.expires_at:
+                    return entry.quote, _InFlightLookup(Event()), False
+                self._cache.pop(instrument_id, None)
+
+            existing = self._inflight.get(instrument_id)
+            if existing is not None:
+                return None, existing, False
+
+            flight = _InFlightLookup(Event())
+            self._inflight[instrument_id] = flight
+            return None, flight, True
+
+    def _finish_lookup(
+        self,
+        instrument_id: str,
+        flight: _InFlightLookup,
+        *,
+        quote: InternalQuote | None = None,
+        error: Exception | None = None,
+    ) -> None:
+        with self._lock:
+            if quote is not None:
+                self._cache[instrument_id] = _CacheEntry(
+                    quote=quote,
+                    expires_at=self._clock() + self._cache_ttl_seconds,
+                )
+                flight.quote = quote
+            else:
+                flight.error = error or MarketQuoteError(
+                    f"Quote lookup failed for {instrument_id}"
+                )
+            self._inflight.pop(instrument_id, None)
+            flight.event.set()
+
+    def _load_quote(self, instrument_id: str) -> InternalQuote:
         try:
             fetch_quote = getattr(self._provider, "fetch_quote", None)
             provider_quote = (
@@ -188,7 +316,6 @@ class MarketQuoteService:
             if self._last_known_good_adapter is not None:
                 stored_quote = self._last_known_good_adapter.load_quote(instrument_id)
                 if stored_quote is not None:
-                    self._put_cached(stored_quote)
                     return stored_quote
             if instrument_id not in {"005930", "000660"}:
                 raise MarketQuoteError(
@@ -209,31 +336,7 @@ class MarketQuoteService:
                 raise MarketQuoteError(
                     f"Unable to persist last-known-good quote for {instrument_id}"
                 ) from persistence_error
-        self._put_cached(quote)
         return quote
-
-    def clear_cache(self) -> None:
-        with self._lock:
-            self._cache.clear()
-
-    def _get_cached(self, instrument_id: str) -> InternalQuote | None:
-        current = self._clock()
-        with self._lock:
-            entry = self._cache.get(instrument_id)
-            if entry is None:
-                return None
-            if current >= entry.expires_at:
-                self._cache.pop(instrument_id, None)
-                return None
-            return entry.quote
-
-    def _put_cached(self, quote: InternalQuote) -> None:
-        entry = _CacheEntry(
-            quote=quote,
-            expires_at=self._clock() + self._cache_ttl_seconds,
-        )
-        with self._lock:
-            self._cache[quote.instrument_id] = entry
 
     def _make_quote(
         self,
@@ -260,3 +363,7 @@ class MarketQuoteService:
             previous_close=numeric_previous_close,
             source_url=source_url,
         )
+
+
+def _fallback_source(source: str) -> str:
+    return source if source.startswith("last_known_good:") else f"last_known_good:{source}"

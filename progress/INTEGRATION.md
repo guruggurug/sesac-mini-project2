@@ -1174,3 +1174,128 @@
 - **Blockers**:
   - Automated in-app browser inspection was interrupted by a browser runtime crash; route rendering, API contracts, loading/error states, and mobile CSS are covered by the passing test/build bundle, but the final deployed visual check remains.
 - **Next recommended task**: Merge and monitor the Railway deployment, then perform a mobile visual smoke test against `https://chip-buddy.up.railway.app/`.
+
+## 2026-07-26 — INT-BE-AUDIT-12 review
+
+- **Role**: Integration
+- **Task ID**: INT-BE-AUDIT-12
+- **Status**: review
+- **Goal**: Reassess backend completion before expanding frontend debugging.
+- **Evidence reviewed**:
+  - `ROADMAP.md`, root `PROGRESS.md`, and Backend/Integration role logs.
+  - FastAPI runtime wiring, public routes, market/portfolio services, issue workflow, scheduler, and backend tests.
+- **Findings**:
+  - Initial backend tasks `BE-01` through `BE-06` are implemented, but realtime tasks `BE-RT-01` through `BE-RT-04` remain `review` or `in_progress`.
+  - Production runtime wires `/sync/issues` and the daily scheduler to `UnavailableIssueSyncWorkflow`; a manual or scheduled sync therefore cannot collect and publish real issues.
+  - `/data/refresh` intentionally returns `501 ISSUE_SYNC_NOT_IMPLEMENTED`.
+  - The scheduler is disabled unless `ENABLE_ISSUE_SCHEDULER=true`.
+  - Realtime E2E tests inject successful fake quote and sync services, so they verify API contracts but do not verify production runtime wiring.
+  - The session signing secret is hard-coded and CORS is configured as wildcard plus credentials.
+  - The deployed market endpoint still reflects the old sequential implementation and took 23.85 seconds; deployment of commit `376fec8` remains unverified.
+- **Validated backend capabilities**:
+  - Health, validated/sample repositories, CVaR/optimization, issue query/analysis, market quote contracts, portfolio summary, SQLite locks/LKG storage, and atomic snapshot components have automated coverage.
+  - Full repository regression suite passed before this audit: `215 passed, 1 warning`.
+- **Blocking dependency**:
+  - A production issue workflow requires a complete-bundle normalizer/classifier owned by Data A. The repository currently contains DART raw/candidate collection, but no production normalizer that turns candidates into an automatically verified complete Data A bundle.
+- **Required action**:
+  - Team lead must confirm whether backend completion means DART-only candidate collection with warnings, or the full DART+news automated classification and publication flow defined by the roadmap.
+- **Next recommended task**: Implement production runtime wiring and runtime-level E2E tests after the issue collection scope is confirmed; independently harden session/CORS configuration and deployment readiness.
+
+## 2026-07-26 — INT-KIS-STABILITY-13 started
+
+- **Role**: Integration
+- **Task ID**: INT-KIS-STABILITY-13
+- **Status**: in_progress
+- **Goal**: Diagnose production KIS quote instability without exposing credentials or changing shared API contracts.
+- **Observed evidence**:
+  - Production `GET /market/quotes` returned `200` but took 23.85 seconds.
+  - The deployed `/home` still served the previous frontend/runtime version when measured.
+- **Validation plan**:
+  - Inspect token caching, retry, rate limiting, timeout, quote concurrency, and last-known-good behavior.
+  - Compare direct provider timing with local service and production endpoint timing using bounded requests.
+  - Separate upstream KIS failures from stale deployment and application orchestration problems.
+
+## 2026-07-26 — INT-KIS-STABILITY-13 in progress
+
+- **Role**: Integration
+- **Task ID**: INT-KIS-STABILITY-13
+- **Status**: in_progress
+- **Findings**:
+  - A clean local cold request using the configured KIS credentials returned `200` in 24.13 seconds.
+  - An immediately following request still did not complete within 10 seconds.
+  - Production returned `200` in 23.85 seconds, so the latency is reproducible outside the browser.
+  - The configured values are a 5-second per-operation timeout, 15-second quote cache, 15-second UI refresh, and a one-second KIS request interval.
+  - The `httpx` timeout is applied to individual network phases/operations rather than enforcing a strict end-to-end dashboard deadline.
+  - Access tokens are cached only in process memory; Railway restart/redeploy causes token reissuance, while KIS documents token reuse and a one-minute reissuance limit.
+  - Concurrent dashboard requests previously created duplicate per-instrument provider work; a single-flight guard now coalesces identical in-process lookups.
+  - A synchronous request path still waits for KIS before returning, so single-flight prevents amplification but does not solve cold-start latency.
+- **Modified files**:
+  - `src/backend/app/services/market_quotes.py`
+  - `src/backend/tests/test_market_quotes.py`
+  - `progress/INTEGRATION.md`
+- **Validation commands**:
+  - `.venv\Scripts\python.exe -m pytest -q src/backend/tests/test_market_quotes.py src/backend/tests/test_market_dashboard.py src/backend/tests/test_kis_market_data.py`
+  - Local Uvicorn cold/warm `GET /market/quotes` probes with bounded curl timeouts.
+- **Validation results**:
+  - Focused KIS/market regression bundle passed: `26 passed, 1 warning`.
+  - Eight concurrent identical lookups are covered and produce one provider request.
+  - Cold/warm timing remains outside the UI latency budget.
+- **Required architecture change**:
+  - Move KIS refresh off the public request path.
+  - Return a cached or SQLite last-known-good four-instrument snapshot immediately.
+  - Refresh the snapshot in one background worker with single-flight, a strict refresh deadline, backoff, and observable sanitized failure codes.
+  - Persist runtime state on a Railway volume so last-known-good data survives deployment replacement.
+- **Remaining**:
+  - Implement and test the background market snapshot refresher.
+  - Add readiness/degraded-state visibility without exposing credentials.
+  - Verify latency under cold start, overlapping requests, provider timeout, and Railway restart.
+- **Blockers**:
+  - A Railway persistent volume must be mounted for durable last-known-good state; code alone cannot make an ephemeral filesystem survive redeployment.
+- **Next recommended task**: Implement stale-while-revalidate market snapshots before further frontend polling work.
+
+## 2026-07-26 — INT-KIS-STABILITY-13 review
+
+- **Role**: Integration
+- **Task ID**: INT-KIS-STABILITY-13
+- **Status**: review
+- **Work completed**:
+  - Removed synchronous KIS network waits from public `/market/quotes` and `/portfolio/summary` requests.
+  - Added immediate in-memory/SQLite last-known-good snapshot reads with explicit stale/fallback sources.
+  - Added a single background market refresh worker with per-instrument single-flight, success interval, failure retry backoff, and sanitized failure logging.
+  - Added Railway startup refresh while keeping local/test startup free from automatic external calls.
+  - Deferred expensive historical-price validation unless a snapshot lacks a trustworthy previous close.
+  - Removed historical-price loading from realtime portfolio valuation because quote provenance already determines validated/fallback state.
+  - Documented the required Railway volume mount and runtime database path.
+  - Fixed a fast-future callback lock re-entry deadlock found during live runtime validation.
+- **Modified files**:
+  - `.env.example`
+  - `README.md`
+  - `src/backend/app/core/config.py`
+  - `src/backend/app/main.py`
+  - `src/backend/app/routes/market.py`
+  - `src/backend/app/routes/portfolio.py`
+  - `src/backend/app/services/market_dashboard.py`
+  - `src/backend/app/services/market_quotes.py`
+  - `src/backend/app/services/portfolio_summary.py`
+  - `src/backend/tests/test_market_dashboard.py`
+  - `src/backend/tests/test_market_quotes.py`
+  - `progress/INTEGRATION.md`
+- **Validation commands**:
+  - Focused KIS, market, portfolio, API contract, deployment, and realtime E2E pytest bundles.
+  - Local Uvicorn cold snapshot, portfolio summary, and overlapping request probes.
+  - `.venv\Scripts\python.exe -m pytest -q`
+  - `git diff --check`
+- **Validation results**:
+  - Focused market/integration bundle passed: `55 passed, 1 warning`.
+  - Final full repository suite passed: `222 passed, 1 warning` in 342.90 seconds.
+  - Before the redesign, a clean KIS-backed cold request took 24.13 seconds and a following request exceeded 10 seconds.
+  - After the redesign, `/market/quotes` returned the LKG snapshot in 0.691 seconds and repeated calls completed in 0.027, 0.008, and 0.007 seconds while refresh ran in the background.
+  - `/portfolio/summary` returned in 0.016 seconds from the same snapshot.
+  - `git diff --check` reported no whitespace errors; Windows line-ending notices only.
+- **Remaining**:
+  - Mount a Railway Volume at `/app/data/runtime`.
+  - Set `RUNTIME_STATE_DB_PATH=/app/data/runtime/state.db`.
+  - Deploy and verify cold start, background promotion from `fallback` to current KIS data, and snapshot survival after redeployment.
+- **Blockers**:
+  - Durable restart behavior cannot be verified until the Railway volume is mounted.
+- **Next recommended task**: Deploy this branch, configure the Railway volume, and run production latency/state-transition smoke tests.

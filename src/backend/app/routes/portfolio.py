@@ -14,7 +14,7 @@ from app.repositories.esg_repository import ESGRepository
 from app.repositories.price_repository import PriceRepository
 from app.utils.realtime_price import get_realtime_price
 from src.modeling.optimizer import optimize_portfolio as run_optimize
-from app.core.runtime import market_quote_service
+from app.core.runtime import market_dashboard_service, market_quote_service
 from app.core.schemas import (
     PurchaseReason,
     KnowledgeStage,
@@ -355,11 +355,19 @@ def optimize_portfolio(
 )
 def get_portfolio_summary(payload: PortfolioSummaryRequest):
     try:
-        _, source_data_status, _ = PriceRepository().load_data_as_df()
+        request_refresh = getattr(
+            market_dashboard_service,
+            "request_refresh_for",
+            None,
+        )
+        if callable(request_refresh):
+            request_refresh(market_quote_service)
         return calculate_portfolio_summary(
             payload.holdings,
             market_quote_service,
-            source_data_status=source_data_status,
+            # This endpoint values holdings from market snapshots only. A
+            # local/LKG quote is marked fallback by calculate_portfolio_summary.
+            source_data_status="validated",
         )
     except MarketQuoteError as error:
         raise HTTPException(
