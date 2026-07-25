@@ -71,6 +71,7 @@ def test_unintended_ui_templates_are_absent_from_production():
     "path",
     [
         "/login",
+        "/home",
         "/settings",
         "/portfolio/input",
         "/portfolio/edit",
@@ -82,6 +83,7 @@ def test_unintended_ui_templates_are_absent_from_production():
 def test_ui_uses_generated_local_tailwind_stylesheet(path: str):
     response = client.get(path)
 
-    assert "/static/css/index.css" in response.text
+    assert 'href="/static/css/index.css"' in response.text
+    assert 'href="http://testserver/static/css/index.css"' not in response.text
     assert "cdn.tailwindcss.com" not in response.text
     assert "tailwind.config" not in response.text
