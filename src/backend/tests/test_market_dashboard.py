@@ -1,6 +1,7 @@
 from datetime import datetime
 from pathlib import Path
 import sys
+from threading import Barrier
 from zoneinfo import ZoneInfo
 
 import pandas as pd
@@ -10,7 +11,7 @@ from fastapi.testclient import TestClient
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from app.services.market_dashboard import MarketDashboardService
+from app.services.market_dashboard import INSTRUMENTS, MarketDashboardService
 from app.services.market_quotes import InternalQuote, MarketQuoteError
 import app.routes.market as market_route
 
@@ -103,6 +104,27 @@ def test_closed_market_disables_polling_and_marks_all_quotes_closed():
     assert response.refresh_interval_seconds is None
     assert all(quote.market_status == "closed" for quote in response.quotes)
     assert all(quote.price_status == "cached" for quote in response.quotes)
+
+
+def test_independent_quote_lookups_run_concurrently():
+    now = datetime(2026, 7, 24, 10, 15, tzinfo=KST)
+    barrier = Barrier(4, timeout=2)
+    quotes = make_quotes(now)
+
+    class ConcurrentQuoteService:
+        def get_quote(self, instrument_id):
+            barrier.wait()
+            return quotes[instrument_id]
+
+    service = MarketDashboardService(
+        ConcurrentQuoteService(),
+        price_repository=StubPriceRepository(),
+        now=lambda: now,
+    )
+
+    response = service.get_quotes()
+
+    assert [quote.instrument_id for quote in response.quotes] == list(INSTRUMENTS)
 
 
 def test_fallback_quote_is_explicitly_stale():

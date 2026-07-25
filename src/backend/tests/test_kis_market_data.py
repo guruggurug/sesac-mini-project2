@@ -133,6 +133,42 @@ def test_access_token_is_reused_before_expiry():
     assert len(client.gets) == 2
 
 
+def test_failed_token_request_enters_cooldown():
+    clock = [100.0]
+
+    class FailingTokenClient:
+        def __init__(self):
+            self.posts = 0
+
+        def post(self, url, **kwargs):
+            self.posts += 1
+            raise TimeoutError("token request timed out")
+
+        def get(self, url, **kwargs):
+            raise AssertionError("quote request must not run without a token")
+
+    client = FailingTokenClient()
+    provider = KISMarketDataProvider(
+        app_key="test-app-key",
+        app_secret="test-app-secret",
+        client=client,
+        clock=lambda: clock[0],
+        token_failure_cooldown_seconds=15,
+        sleeper=lambda _: None,
+    )
+
+    with pytest.raises(MarketQuoteError, match="access token request failed"):
+        provider.fetch_price("KOSPI", 1.0)
+    with pytest.raises(MarketQuoteError, match="cooling down"):
+        provider.fetch_price("KOSDAQ", 1.0)
+    assert client.posts == 1
+
+    clock[0] = 115.0
+    with pytest.raises(MarketQuoteError, match="access token request failed"):
+        provider.fetch_price("KOSPI", 1.0)
+    assert client.posts == 2
+
+
 def test_kis_error_response_does_not_return_an_invented_price():
     client = FakeClient([{"rt_cd": "1", "msg_cd": "EGW00123", "output": {}}])
     provider = make_provider(client)

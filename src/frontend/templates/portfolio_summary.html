@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="/static/css/index.css">
 </head>
 <body data-ui-screen="portfolio-summary" class="bg-[#FAF8F5] text-on-surface flex justify-center items-start min-h-screen">
-    {% if data_status in ["sample", "fallback"] %}<div class="fixed top-1 right-2 z-[100] rounded-full bg-[#F5E8DD] px-2 py-1 text-[10px] font-bold text-[#964B00]">{{ "샘플 데이터" if data_status == "sample" else "대체 데이터" }}</div>{% endif %}
+    <div id="summary-data-status" class="hidden fixed top-1 right-2 z-[100] rounded-full bg-[#F5E8DD] px-2 py-1 text-[10px] font-bold text-[#964B00]"></div>
     <!-- 390px Mobile App Container Shell -->
     <div class="w-full max-w-[390px] min-h-screen flex flex-col relative shadow-2xl bg-[#FAF8F5] overflow-x-hidden">
         
@@ -37,100 +37,55 @@
                 </a>
             </div>
 
-            <!-- Welcome Section -->
             <section class="py-stack-lg">
-                <div class="flex items-center gap-2 mb-stack-sm">
-                    <span class="px-3 py-1 bg-primary/10 text-primary rounded-full text-[12px] font-semibold">균형투자형</span>
-                </div>
                 <h2 class="font-bold text-[20px] text-[#2A1800]">나의 포트폴리오 요약</h2>
-                <p class="font-normal text-[14px] text-[#4A4746] mt-1">안정적인 수익과 위험 분산을 지향합니다.</p>
+                <p id="summary-as-of" class="font-normal text-[13px] text-[#4A4746] mt-1">보유정보를 기준으로 평가합니다.</p>
             </section>
 
-            <!-- Bento Grid Portfolio Stats -->
-            <div class="grid grid-cols-2 gap-4 mb-stack-lg">
-                <div class="col-span-2 p-5 bg-white border border-[#E5DEC9] rounded-2xl shadow-sm">
-                    <p class="font-medium text-[12px] text-[#7A7571] mb-1">총 자산 평가액</p>
-                    <div class="flex items-baseline gap-2">
-                        <span class="text-3xl font-bold text-primary">19,207,500</span>
-                        <span class="text-[14px] text-on-surface-variant">원</span>
-                    </div>
-                    <div class="mt-4 flex items-center gap-2 text-[#E53E3E] font-semibold">
-                        <span class="material-symbols-outlined text-[18px]">trending_up</span>
-                        <span class="text-[12px]">+4.2% (820,000원)</span>
-                    </div>
-                </div>
+            <div id="summary-loading" class="bg-white border border-[#E5DEC9] rounded-xl p-6 text-center">
+                <span class="material-symbols-outlined animate-spin text-primary text-[32px]">sync</span>
+                <p class="mt-2 text-[13px] text-[#7A7571]">포트폴리오를 평가하고 있습니다.</p>
+            </div>
 
-                <!-- Asset Cards -->
-                <!-- Samsung Card -->
-                <div class="p-4 bg-white border border-[#E5DEC9] rounded-2xl shadow-sm flex flex-col justify-between">
-                    <div>
-                        <div class="flex justify-between items-start mb-2">
-                            <span class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center">
-                                <img class="w-5 h-5 opacity-80" alt="Samsung logo" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCZyahlOjrx6vJ_ROfLiyz8NStyESx7FEym9jXGihnOCgvFZNdO-K21SyVXWzdA_84Aivsen2-O7j8zUPj-vadoNVNeym9De79UtQ38s4tfO4Z6ootT5ERjHUBBfYaEKog20Ufp3fAW0S---VhblwmRjqf3qwXHWMYHy5vXHN5tcPrr_ja_kQsEfjn1iNMovKFrOQ0sJWyqmaaNXvk-a-PhnOQrniV5Cpz6IWquli8PZlgd6RA5Y68To0pJ8IAzhnHH3Vhy1iMxizA">
-                            </span>
-                            <span class="text-[12px] text-on-surface-variant font-medium">삼성전자</span>
-                        </div>
-                        <p class="text-xl font-bold text-primary">150주</p>
-                        <p class="text-[12px] text-on-surface-variant">72,500원</p>
-                    </div>
-                    <div class="mt-4 h-1.5 w-full bg-primary/10 rounded-full overflow-hidden">
-                        <div class="h-full bg-primary rounded-full" style="width: 65%;"></div>
-                    </div>
-                </div>
+            <div id="summary-empty" class="hidden bg-white border border-[#E5DEC9] rounded-xl p-6 text-center">
+                <span class="material-symbols-outlined text-primary text-[36px]">account_balance_wallet</span>
+                <h3 class="mt-2 font-bold text-[16px] text-[#2A1800]">저장된 보유정보가 없습니다</h3>
+                <p class="mt-2 text-[13px] text-[#7A7571]">포트폴리오를 입력하고 분석하면 평가 결과를 확인할 수 있습니다.</p>
+                <a href="/portfolio/input" class="mt-4 block w-full py-3 bg-primary text-white rounded-xl font-bold">포트폴리오 입력하기</a>
+            </div>
 
-                <!-- SK Hynix Card -->
-                <div class="p-4 bg-white border border-[#E5DEC9] rounded-2xl shadow-sm flex flex-col justify-between">
+            <div id="summary-error" class="hidden bg-red-50 border border-red-200 rounded-xl p-5">
+                <div class="flex items-start gap-3">
+                    <span class="material-symbols-outlined text-red-600">error</span>
                     <div>
-                        <div class="flex justify-between items-start mb-2">
-                            <span class="w-8 h-8 rounded-lg bg-red-50 flex items-center justify-center">
-                                <img class="w-5 h-5 opacity-80" alt="SK Hynix logo" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAGhutCZRSmepbkXhx9bbkgnI1njiRejGC3gi3Vx8n-zP84Ssj5PSNV-259onBgaCq1fPmHW4vOT4EGTHbpefI37qfYpqRCA_glOaoTY3JGFLMlFWTJe-moo4rmcr-1TeDIQh9dpGsuxJYGEmPxVzI7-OnqkYtQL7Og93h5CV9e96Jt-4H5xzbU9rULxT1wIHlvITaji-F4Iws2akKj6_nsweVlbXSlUtJ4WDW3uSz0tIsaJTd4L1tuJtocFGnlrBCAwSM_Vud46EM">
-                            </span>
-                            <span class="text-[12px] text-on-surface-variant font-medium">SK하이닉스</span>
-                        </div>
-                        <p class="text-xl font-bold text-primary">45주</p>
-                        <p class="text-[12px] text-on-surface-variant">185,200원</p>
-                    </div>
-                    <div class="mt-4 h-1.5 w-full bg-primary/10 rounded-full overflow-hidden">
-                        <div class="h-full bg-primary/40 rounded-full" style="width: 35%;"></div>
+                        <h3 class="font-bold text-[15px] text-[#2A1800]">평가 정보를 불러오지 못했습니다</h3>
+                        <p id="summary-error-message" class="mt-1 text-[12px] text-[#7A7571]">잠시 후 다시 시도해 주세요.</p>
                     </div>
                 </div>
             </div>
 
-            <!-- Risk Level Chart Area -->
-            <section class="mb-stack-lg p-5 bg-white border border-[#E5DEC9] rounded-2xl shadow-sm overflow-hidden relative">
-                <div class="relative z-10">
-                    <h3 class="font-bold text-[16px] text-[#2A1800] mb-4">자산 구성비</h3>
-                    <div class="flex items-center justify-center py-4">
-                        <div class="relative w-36 h-36">
-                            <div class="absolute inset-0 rounded-full border-[14px] border-primary/10"></div>
-                            <div class="absolute inset-0 rounded-full border-[14px] border-primary border-t-transparent border-l-transparent" style="transform: rotate(45deg);"></div>
-                            <div class="absolute inset-0 flex flex-col items-center justify-center">
-                                <span class="text-[12px] text-on-surface-variant">안전</span>
-                                <span class="text-[20px] font-bold text-primary">72%</span>
-                            </div>
-                        </div>
+            <div id="summary-content" class="hidden flex flex-col gap-4">
+                <div class="p-5 bg-white border border-[#E5DEC9] rounded-2xl shadow-sm">
+                    <p class="font-medium text-[12px] text-[#7A7571] mb-1">총 자산 평가액</p>
+                    <div class="flex items-baseline gap-2">
+                        <span id="total-market-value" class="text-3xl font-bold text-primary">0</span>
+                        <span class="text-[14px] text-on-surface-variant">원</span>
                     </div>
-                    <div class="space-y-2 mt-3">
-                        <div class="flex justify-between items-center text-[14px]">
-                            <div class="flex items-center gap-2">
-                                <div class="w-2.5 h-2.5 rounded-full bg-primary"></div>
-                                <span class="text-[#1c1b1b]">삼성전자</span>
-                            </div>
-                            <span class="font-bold text-[#1c1b1b]">10,875,000원</span>
-                        </div>
-                        <div class="flex justify-between items-center text-[14px]">
-                            <div class="flex items-center gap-2">
-                                <div class="w-2.5 h-2.5 rounded-full bg-primary/40"></div>
-                                <span class="text-[#1c1b1b]">SK하이닉스</span>
-                            </div>
-                            <span class="font-bold text-[#1c1b1b]">8,332,500원</span>
-                        </div>
+                    <div id="total-return-line" class="mt-4 flex items-center gap-2 font-semibold">
+                        <span id="total-return-icon" class="material-symbols-outlined text-[18px]">trending_flat</span>
+                        <span id="total-return-value" class="text-[12px]">0.00% (0원)</span>
                     </div>
                 </div>
-            </section>
 
-            <!-- Action Button -->
-            <div class="mt-4">
+                <div id="position-cards" class="grid grid-cols-2 gap-4"></div>
+
+                <section class="p-5 bg-white border border-[#E5DEC9] rounded-2xl shadow-sm">
+                    <h3 class="font-bold text-[16px] text-[#2A1800] mb-4">자산 구성비</h3>
+                    <div id="position-composition" class="space-y-3"></div>
+                </section>
+
+                <div id="summary-warnings" class="hidden bg-[#F5E8DD] border border-[#E5DEC9] rounded-xl p-4 text-[12px] text-[#4A4746]"></div>
+
                 <button onclick="location.href='/portfolio/input'" class="w-full h-14 bg-primary text-white rounded-xl font-bold text-[16px] shadow-lg shadow-primary/20 active:scale-[0.98] transition-transform flex items-center justify-center gap-2">
                     <span class="material-symbols-outlined">edit</span>
                     포트폴리오 수정하기
@@ -156,11 +111,107 @@
                 <span class="text-[12px] font-medium mt-0.5">이슈 분석</span>
             </a>
             <!-- 4. 설정 -->
-            <a href="/settings" class="flex flex-col items-center justify-center text-[#8A8A8A] hover:text-[#964B00] transition-colors py-1.5 mx-2">
+            <a href="/portfolio/edit" class="flex flex-col items-center justify-center text-[#8A8A8A] hover:text-[#964B00] transition-colors py-1.5 mx-2">
                 <span class="material-symbols-outlined">settings</span>
                 <span class="text-[12px] font-medium mt-0.5">설정</span>
             </a>
         </nav>
     </div>
+    <script>
+        const portfolioHoldings = {{ holdings | tojson }};
+        const loadingState = document.getElementById('summary-loading');
+        const emptyState = document.getElementById('summary-empty');
+        const errorState = document.getElementById('summary-error');
+        const contentState = document.getElementById('summary-content');
+
+        const formatWon = value => Math.round(value).toLocaleString('ko-KR');
+        const formatSignedWon = value => `${value >= 0 ? '+' : ''}${formatWon(value)}원`;
+        const formatRate = value => `${value >= 0 ? '+' : ''}${(value * 100).toFixed(2)}%`;
+
+        function showSummaryError(message) {
+            loadingState.classList.add('hidden');
+            contentState.classList.add('hidden');
+            errorState.classList.remove('hidden');
+            document.getElementById('summary-error-message').textContent = message;
+        }
+
+        function renderPortfolioSummary(summary) {
+            loadingState.classList.add('hidden');
+            contentState.classList.remove('hidden');
+
+            const statusBadge = document.getElementById('summary-data-status');
+            if (summary.data_status === 'sample' || summary.data_status === 'fallback') {
+                statusBadge.textContent = summary.data_status === 'sample' ? '샘플 데이터' : '대체 데이터';
+                statusBadge.classList.remove('hidden');
+            }
+
+            document.getElementById('summary-as-of').textContent =
+                `가격 기준 ${new Date(summary.prices_as_of).toLocaleString('ko-KR')}`;
+            document.getElementById('total-market-value').textContent =
+                formatWon(summary.total_market_value);
+            document.getElementById('total-return-value').textContent =
+                `${formatRate(summary.total_return_rate)} (${formatSignedWon(summary.total_unrealized_profit_loss)})`;
+
+            const returnLine = document.getElementById('total-return-line');
+            const returnIcon = document.getElementById('total-return-icon');
+            const isProfit = summary.total_unrealized_profit_loss >= 0;
+            returnLine.style.color = isProfit ? '#E53E3E' : '#3182CE';
+            returnIcon.textContent = isProfit ? 'trending_up' : 'trending_down';
+
+            document.getElementById('position-cards').innerHTML = summary.positions.map(position => `
+                <article class="p-4 bg-white border border-[#E5DEC9] rounded-2xl shadow-sm flex flex-col justify-between">
+                    <div>
+                        <p class="text-[12px] text-[#7A7571] font-medium">${position.stock_name}</p>
+                        <p class="mt-2 text-xl font-bold text-primary">${position.quantity.toLocaleString('ko-KR')}주</p>
+                        <p class="text-[12px] text-[#7A7571]">현재가 ${formatWon(position.current_price)}원</p>
+                        <p class="text-[11px] text-[#7A7571]">평균 ${formatWon(position.average_price)}원</p>
+                    </div>
+                    <div class="mt-4 h-1.5 w-full bg-primary/10 rounded-full overflow-hidden">
+                        <div class="h-full bg-primary rounded-full" style="width: ${position.current_weight * 100}%"></div>
+                    </div>
+                </article>
+            `).join('');
+
+            document.getElementById('position-composition').innerHTML = summary.positions.map(position => `
+                <div>
+                    <div class="flex justify-between items-center text-[14px]">
+                        <span class="text-[#1c1b1b]">${position.stock_name} · ${(position.current_weight * 100).toFixed(1)}%</span>
+                        <span class="font-bold text-[#1c1b1b]">${formatWon(position.market_value)}원</span>
+                    </div>
+                    <p class="mt-1 text-[11px] text-[#7A7571]">${formatRate(position.return_rate)} · ${formatSignedWon(position.unrealized_profit_loss)}</p>
+                </div>
+            `).join('');
+
+            if (summary.warnings.length) {
+                const warningBox = document.getElementById('summary-warnings');
+                warningBox.textContent = summary.warnings.join(' ');
+                warningBox.classList.remove('hidden');
+            }
+        }
+
+        async function loadPortfolioSummary() {
+            if (!portfolioHoldings.length) {
+                loadingState.classList.add('hidden');
+                emptyState.classList.remove('hidden');
+                return;
+            }
+
+            try {
+                const response = await fetch('/portfolio/summary', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({holdings: portfolioHoldings}),
+                });
+                if (!response.ok) {
+                    throw new Error('현재가 또는 대체 가격을 사용할 수 없습니다.');
+                }
+                renderPortfolioSummary(await response.json());
+            } catch (error) {
+                showSummaryError(error.message);
+            }
+        }
+
+        loadPortfolioSummary();
+    </script>
 </body>
 </html>

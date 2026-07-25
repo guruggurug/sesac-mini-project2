@@ -85,13 +85,13 @@ def test_data_refresh_does_not_report_false_success_before_sync_implementation()
     assert response.json()["detail"]["code"] == "ISSUE_SYNC_NOT_IMPLEMENTED"
 
 def test_get_diagnosis_page():
-    """
-    GET /home 진단 홈 페이지가 정상적으로 HTML을 렌더링하는지 테스트
-    """
+    """GET /home renders the API-driven market dashboard."""
     response = client.get("/home")
     assert response.status_code == 200
     assert "text/html" in response.headers["content-type"]
-    assert "현재 투자 위험도" in response.text
+    assert "시장 현황" in response.text
+    assert 'fetch("/market/quotes"' in response.text
+    assert "AbortController" in response.text
     assert "Chip Buddy" in response.text
 
 def test_portfolio_optimize_form_submit():
@@ -115,6 +115,75 @@ def test_portfolio_optimize_form_submit():
     assert "삼성전자" in html_content
     assert "SK하이닉스" in html_content
     assert "예상 CVaR" in html_content
+
+    summary_page = client.get("/portfolio/summary")
+    assert summary_page.status_code == 200
+    assert '"ticker": "005930"' in summary_page.text
+    assert '"quantity": 70' in summary_page.text
+    assert '"average_price": 70000.0' in summary_page.text
+
+
+def test_portfolio_optimize_renders_model_result_instead_of_fixed_values(monkeypatch):
+    model_result = {
+        "current_weights": {"005930": 0.4, "000660": 0.6},
+        "recommended_weights": {"005930": 0.55, "000660": 0.45},
+        "current_total_risk": 0.5,
+        "optimized_total_risk": 0.4,
+        "risk_reduction_rate": 0.2,
+        "current_cvar": 0.05,
+        "optimized_cvar": 0.04,
+        "current_esg_risk": 0.3,
+        "optimized_esg_risk": 0.25,
+        "company_risks": {
+            "005930": {
+                "esg_risk": 0.2,
+                "downside_risk": 0.03,
+                "total_risk": 0.22,
+                "risk_level": "low",
+                "data_confidence": "high",
+                "scope_mismatch": False,
+            },
+            "000660": {
+                "esg_risk": 0.4,
+                "downside_risk": 0.06,
+                "total_risk": 0.45,
+                "risk_level": "medium",
+                "data_confidence": "high",
+                "scope_mismatch": False,
+            },
+        },
+        "explanation": [
+            "테스트 모델이 삼성전자 추천 비중을 55%로 계산했습니다.",
+            "가격 하방위험과 ESG 관리위험을 함께 반영했습니다.",
+        ],
+        "warnings": ["미래 수익률을 예측하는 결과가 아닙니다."],
+        "data_status": "validated",
+    }
+    monkeypatch.setattr(
+        "app.routes.portfolio.run_optimize",
+        lambda **_: model_result,
+    )
+
+    response = client.post(
+        "/portfolio/optimize",
+        data={
+            "samsung_qty": 4,
+            "samsung_price": 70000,
+            "sk_qty": 6,
+            "sk_price": 180000,
+            "risk_priority": "balanced",
+        },
+    )
+
+    assert response.status_code == 200
+    assert 'data-current-samsung-weight="40.0"' in response.text
+    assert 'data-recommended-samsung-weight="55.0"' in response.text
+    assert "종합 위험 20.0% 개선" in response.text
+    assert "-4.00%" in response.text
+    assert "테스트 모델이 삼성전자 추천 비중을 55%로 계산했습니다." in response.text
+    assert "미래 수익률을 예측하는 결과가 아닙니다." in response.text
+    assert "위험을 12.5% 감소" not in response.text
+    assert "샘플 데이터" not in response.text
 
 def test_issues_endpoints():
     """
@@ -296,13 +365,18 @@ def test_portfolio_optimize_realtime_endpoint():
 
 def test_issues_page_rendering():
     """
-    GET /issues 웹 페이지가 정상적으로 HTML을 렌더링하고 동적 데이터를 표시하는지 테스트
+    GET /issues 웹 페이지가 API 기반 이슈 분석 UI를 렌더링하는지 테스트
     """
     response = client.get("/issues")
     assert response.status_code == 200
     assert "text/html" in response.headers["content-type"]
     assert "이슈 분석" in response.text
-    # 사건 데이터 내용이 동적으로 포함되어 있는지 확인
     assert 'data-ui-screen="issue-analysis"' in response.text
-    # 과거 유사 사례가 정상적으로 연산 및 바인딩 되었는지 확인
-    assert "과거 유사 사례 영향 분석" in response.text
+    assert 'fetch("/issues/current"' in response.text
+    assert 'fetch("/issues/historical"' in response.text
+    assert 'fetch("/sync/issues"' in response.text
+    assert '"/sync/status"' in response.text
+    assert "새 이슈 확인" in response.text
+    assert "과거 사건 주가 영향" in response.text
+    assert "HBM 공급망 관련 공정거래 이슈" not in response.text
+    assert "78,200원" not in response.text

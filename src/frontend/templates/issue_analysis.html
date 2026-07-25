@@ -4,345 +4,514 @@
     <meta charset="utf-8">
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <title>이슈 분석 - Chip Buddy</title>
-    <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=block" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=block" rel="stylesheet">
     <link rel="stylesheet" href="/static/css/index.css">
 </head>
 <body data-ui-screen="issue-analysis" class="bg-[#FAF8F5] text-on-surface flex justify-center items-start min-h-screen">
-    {% if data_status in ["sample", "fallback"] %}<div class="fixed top-1 right-2 z-[100] rounded-full bg-[#F5E8DD] px-2 py-1 text-[10px] font-bold text-[#964B00]">{{ "샘플 데이터" if data_status == "sample" else "대체 데이터" }}</div>{% endif %}
-    <!-- 390px Mobile App Container Shell -->
     <div class="w-full max-w-[390px] min-h-screen flex flex-col relative shadow-2xl bg-[#FAF8F5] overflow-x-hidden">
-        
-        <!-- Header -->
         <header class="fixed top-0 w-full max-w-[390px] z-50 bg-[#FAF8F5] border-b border-[#E5DEC9] flex justify-between items-center px-4 h-16">
-            <a href="/home" class="flex items-center gap-2">
+            <a href="/home" class="flex items-center gap-2" aria-label="Chip Buddy 홈">
                 <span class="material-symbols-outlined text-[#964B00] text-[28px]">waves</span>
-                <h1 class="font-bold text-[18px] leading-[24px] text-[#2A1800] tracking-tight">Chip Buddy</h1>
+                <h1 class="font-bold text-[18px] text-[#2A1800] tracking-tight">Chip Buddy</h1>
             </a>
-            <div class="flex items-center gap-3 relative">
-                <button class="material-symbols-outlined text-[#964B00]">notifications</button>
-                <button id="profile-trigger" class="material-symbols-outlined text-[#964B00] hover:text-[#7a3d00] transition-colors" onclick="event.stopPropagation(); document.getElementById('profile-popup').classList.toggle('hidden');">account_circle</button>
-                <div id="profile-popup" class="hidden absolute right-0 top-10 w-64 bg-surface-container-low rounded-xl shadow-lg border border-outline-variant z-[60] overflow-hidden">
-                    <div class="p-4 border-b border-outline-variant flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-full overflow-hidden flex items-center justify-center bg-[#F5E8DD]"><span class="material-symbols-outlined text-[24px] text-primary">account_circle</span></div>
-                        <div class="flex flex-col">
-                            <span class="font-bold text-[18px] text-on-surface">김버디</span>
-                            <span class="text-[14px] text-on-surface-variant">buddy@chipbuddy.io</span>
-                        </div>
-                    </div>
-                    <div class="p-2">
-                        <a href="/settings" class="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-surface-variant/20 rounded-lg transition-colors text-on-surface">
-                            <span class="material-symbols-outlined text-[20px]">settings</span>
-                            <span class="font-medium text-[14px]">설정</span>
-                        </a>
-                        <a href="/login" class="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-surface-variant/20 rounded-lg transition-colors text-error">
-                            <span class="material-symbols-outlined text-[20px]">logout</span>
-                            <span class="font-medium text-[14px]">로그아웃</span>
-                        </a>
-                    </div>
-                </div>
-            </div>
+            <a href="/login" class="material-symbols-outlined text-[#964B00]" aria-label="계정">account_circle</a>
         </header>
 
-        <!-- Top Sticky Company Tab Navigation -->
-        <nav class="fixed top-16 w-full max-w-[390px] bg-[#FAF8F5] border-b border-[#E5DEC9] z-40">
-            <div class="flex w-full">
-                <button class="flex-1 py-3 relative flex flex-col items-center justify-center font-bold text-[#964B00] transition-colors" id="tab-samsung" onclick="switchIssueTab('samsung')">
-                    <span class="text-[14px]">삼성전자</span>
-                    <div class="absolute bottom-0 w-full h-[2px] bg-[#964B00]" id="indicator-samsung"></div>
+        <nav class="fixed top-16 w-full max-w-[390px] bg-[#FAF8F5] border-b border-[#E5DEC9] z-40" aria-label="기업 선택">
+            <div class="flex w-full" role="tablist">
+                <button type="button" role="tab" aria-selected="true" data-company-tab="005930" class="company-tab flex-1 py-3 relative font-bold text-[#964B00]">
+                    삼성전자
+                    <span class="tab-indicator absolute bottom-0 left-0 w-full h-[2px] bg-[#964B00]"></span>
                 </button>
-                <button class="flex-1 py-3 relative flex flex-col items-center justify-center font-medium text-[#8A8A8A] transition-colors" id="tab-sk" onclick="switchIssueTab('sk')">
-                    <span class="text-[14px]">SK하이닉스</span>
-                    <div class="absolute bottom-0 w-full h-[2px] bg-transparent" id="indicator-sk"></div>
+                <button type="button" role="tab" aria-selected="false" data-company-tab="000660" class="company-tab flex-1 py-3 relative font-medium text-[#8A8A8A]">
+                    SK하이닉스
+                    <span class="tab-indicator absolute bottom-0 left-0 w-full h-[2px] bg-transparent"></span>
                 </button>
             </div>
         </nav>
 
-        <!-- Main Content Area -->
-        <main class="mt-28 flex-1 px-4 pt-4 pb-24 flex flex-col gap-4">
-            
-            <!-- Samsung Electronics Issue Content -->
-            <div class="flex flex-col gap-4" id="content-samsung">
-                <!-- Recent Compliance & ESG Issues Card -->
-                <section class="bg-white border rounded-xl overflow-hidden shadow-sm border-[#E5DEC9] p-4">
-                    <div class="flex items-center justify-between mb-3">
-                        <div class="flex items-center gap-2">
-                            <span class="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center text-sm">🔵</span>
-                            <span class="font-bold text-[15px] text-[#2A1800]">삼성전자</span>
-                        </div>
-                        <span class="font-medium text-[12px] text-[#7A7571]">분석 중</span>
-                    </div>
-                    <div class="space-y-2">
-                        <p class="font-medium text-[12px] text-[#7A7571]">2024.05.20</p>
-                        <h2 class="font-bold text-[16px] text-[#2A1800] leading-tight">삼성전자 HBM 공급망 관련 공정거래 이슈</h2>
-                        
-                        <!-- ESG Risk Description Accordion -->
-                        <details class="group bg-[#FAF8F5] rounded-lg border border-[#E5DEC9] mt-3">
-                            <summary class="flex items-center justify-between p-3 cursor-pointer list-none">
-                                <span class="font-medium text-[12px] text-[#7A7571]">리스크 상세 분석</span>
-                                <span class="material-symbols-outlined transition-transform group-open:rotate-180 text-[#7A7571]">expand_more</span>
-                            </summary>
-                            <div class="px-3 pb-3 pt-1">
-                                <p class="font-normal text-[13px] text-[#4A4746] leading-relaxed">
-                                    고대역폭 메모리(HBM) 시장 내 경쟁 우위 확보 과정에서의 독점 규제 및 기술 유출 방지 관련 규제 당국의 조사가 착수되었습니다. 현재 공정거래위원회는 주요 고객사와의 장기 공급 계약 조건에 부당한 경쟁 제한 요소가 포함되어 있는지 여부를 집중적으로 확인하고 있는 것으로 파악됩니다.
-                                </p>
-                            </div>
-                        </details>
-                    </div>
-                    <div class="mt-4">
-                        <button class="font-medium text-[12px] text-[#7A7571] flex items-center gap-1 hover:text-primary transition-colors">
-                            공식 출처 확인
-                            <span class="material-symbols-outlined text-[16px]">open_in_new</span>
-                        </button>
-                    </div>
-                </section>
-
-                <!-- Stock Price Comparison Card -->
-                <section class="bg-white border rounded-xl p-4 border-[#E5DEC9]">
-                    <div class="flex flex-col items-center py-1">
-                        <div class="flex items-center gap-2 mb-1">
-                            <span class="w-2.5 h-2.5 rounded-full bg-[#964B00]"></span>
-                            <span class="font-bold text-[15px] text-[#2A1800]">삼성전자 현재가</span>
-                        </div>
-                        <div class="flex items-baseline gap-2">
-                            <span class="text-[28px] font-bold text-[#2A1800] leading-none">78,200원</span>
-                            <span class="text-[#3182CE] font-bold text-[16px] flex items-center">
-                                <span class="material-symbols-outlined text-[20px]">arrow_drop_down</span>
-                                1.2%
-                            </span>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- Historical Case Impact Card -->
-                <section class="bg-white border rounded-xl overflow-hidden shadow-sm border-[#E5DEC9] p-4">
-                    <h2 class="font-bold text-[16px] text-[#2A1800] leading-tight mb-4">과거 유사 사례 영향 분석</h2>
-                    
-                    <!-- Stats Grid -->
-                    <div class="grid grid-cols-3 gap-2 mb-4">
-                        <div class="bg-[#FAF8F5] p-3 rounded-lg border border-[#E5DEC9] text-center">
-                            <p class="font-medium text-[11px] text-[#7A7571]">Day+1 수익률</p>
-                            <p class="font-bold text-[15px] text-[#3182CE]">-1.8%</p>
-                        </div>
-                        <div class="bg-[#FAF8F5] p-3 rounded-lg border border-[#E5DEC9] text-center">
-                            <p class="font-medium text-[11px] text-[#7A7571]">Day+3 누적</p>
-                            <p class="font-bold text-[15px] text-[#3182CE]">-4.2%</p>
-                        </div>
-                        <div class="bg-[#FAF8F5] p-3 rounded-lg border border-[#E5DEC9] text-center">
-                            <p class="font-medium text-[11px] text-[#7A7571]">최대 낙폭</p>
-                            <p class="font-bold text-[15px] text-[#3182CE]">-6.1%</p>
-                        </div>
-                    </div>
-
-                    <!-- Chart Placeholder SVG -->
-                    <div class="relative h-40 w-full mt-2">
-                        <svg class="w-full h-full overflow-visible" viewBox="0 0 340 150">
-                            <defs>
-                                <linearGradient id="lineGradientSam" x1="0%" x2="0%" y1="0%" y2="100%">
-                                    <stop offset="0%" stop-color="#3182CE" stop-opacity="0.2"></stop>
-                                    <stop offset="100%" stop-color="#3182CE" stop-opacity="0"></stop>
-                                </linearGradient>
-                            </defs>
-                            <line stroke="#ddc1ae" stroke-dasharray="2,2" x1="0" x2="340" y1="30" y2="30"></line>
-                            <line stroke="#ddc1ae" stroke-dasharray="2,2" x1="0" x2="340" y1="75" y2="75"></line>
-                            <line stroke="#ddc1ae" stroke-dasharray="2,2" x1="0" x2="340" y1="120" y2="120"></line>
-                            <path d="M 0 30 L 80 50 L 160 110 L 250 125 L 340 100 V 150 H 0 Z" fill="url(#lineGradientSam)"></path>
-                            <path d="M 0 30 L 80 50 L 160 110 L 250 125 L 340 100" fill="none" stroke="#3182CE" stroke-width="2.5"></path>
-                            <circle cx="0" cy="30" fill="#3182CE" r="4"></circle>
-                            <circle cx="160" cy="110" fill="#3182CE" r="4"></circle>
-                            <circle cx="250" cy="125" fill="#3182CE" r="4"></circle>
-                        </svg>
-                        <div class="flex justify-between font-medium text-[11px] text-[#7A7571] mt-1">
-                            <span>이슈 발생</span>
-                            <span>T+3</span>
-                            <span>T+7</span>
-                        </div>
-                    </div>
-                </section>
-            </div>
-
-            <!-- SK Hynix Issue Content -->
-            <div class="hidden flex flex-col gap-4" id="content-sk">
-                <!-- Recent Compliance & ESG Issues Card -->
-                <section class="bg-white border rounded-xl overflow-hidden shadow-sm border-[#E5DEC9] p-4">
-                    <div class="flex items-center justify-between mb-3">
-                        <div class="flex items-center gap-2">
-                            <span class="w-8 h-8 rounded-full bg-red-50 flex items-center justify-center text-sm">🔴</span>
-                            <span class="font-bold text-[15px] text-[#2A1800]">SK하이닉스</span>
-                        </div>
-                        <span class="font-medium text-[12px] text-[#7A7571]">분석 중</span>
-                    </div>
-                    <div class="space-y-2">
-                        <p class="font-medium text-[12px] text-[#7A7571]">2024.06.15</p>
-                        <h2 class="font-bold text-[16px] text-[#2A1800] leading-tight">SK하이닉스 HBM3E 12단 독점 공급망 이슈</h2>
-                        
-                        <!-- ESG Risk Description Accordion -->
-                        <details class="group bg-[#FAF8F5] rounded-lg border border-[#E5DEC9] mt-3">
-                            <summary class="flex items-center justify-between p-3 cursor-pointer list-none">
-                                <span class="font-medium text-[12px] text-[#7A7571]">리스크 상세 분석</span>
-                                <span class="material-symbols-outlined transition-transform group-open:rotate-180 text-[#7A7571]">expand_more</span>
-                            </summary>
-                            <div class="px-3 pb-3 pt-1">
-                                <p class="font-normal text-[13px] text-[#4A4746] leading-relaxed">
-                                    AI 반도체 시장 전반의 HBM3E 독점 공급 구조와 관련하여 엔비디아 향 신규 공정 수율 및 투자 집행 시점에 대한 시장 관심이 고조되고 있습니다. 전력 효율성 증대 요구에 부응하는 차세대 packaging 기술 관련 특허 및 글로벌 경쟁사 진입 여부가 주가 모멘텀의 핵심 변수로 작용하고 있습니다.
-                                </p>
-                            </div>
-                        </details>
-                    </div>
-                    <div class="mt-4">
-                        <button class="font-medium text-[12px] text-[#7A7571] flex items-center gap-1 hover:text-primary transition-colors">
-                            공식 출처 확인
-                            <span class="material-symbols-outlined text-[16px]">open_in_new</span>
-                        </button>
-                    </div>
-                </section>
-
-                <!-- Stock Price Comparison Card -->
-                <section class="bg-white border rounded-xl p-4 border-[#E5DEC9]">
-                    <div class="flex flex-col items-center py-1">
-                        <div class="flex items-center gap-2 mb-1">
-                            <span class="w-2.5 h-2.5 rounded-full bg-red-600"></span>
-                            <span class="font-bold text-[15px] text-[#2A1800]">SK하이닉스 현재가</span>
-                        </div>
-                        <div class="flex items-baseline gap-2">
-                            <span class="text-[28px] font-bold text-[#2A1800] leading-none">185,000원</span>
-                            <span class="text-[#ba1a1a] font-bold text-[16px] flex items-center">
-                                <span class="material-symbols-outlined text-[20px]">arrow_drop_up</span>
-                                1.15%
-                            </span>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- Historical Case Impact Card -->
-                <section class="bg-white border rounded-xl overflow-hidden shadow-sm border-[#E5DEC9] p-4">
-                    <h2 class="font-bold text-[16px] text-[#2A1800] leading-tight mb-4">과거 유사 사례 영향 분석</h2>
-                    
-                    <!-- Stats Grid -->
-                    <div class="grid grid-cols-3 gap-2 mb-4">
-                        <div class="bg-[#FAF8F5] p-3 rounded-lg border border-[#E5DEC9] text-center">
-                            <p class="font-medium text-[11px] text-[#7A7571]">Day+1 수익률</p>
-                            <p class="font-bold text-[15px] text-[#ba1a1a]">+2.4%</p>
-                        </div>
-                        <div class="bg-[#FAF8F5] p-3 rounded-lg border border-[#E5DEC9] text-center">
-                            <p class="font-medium text-[11px] text-[#7A7571]">Day+3 누적</p>
-                            <p class="font-bold text-[15px] text-[#ba1a1a]">+5.1%</p>
-                        </div>
-                        <div class="bg-[#FAF8F5] p-3 rounded-lg border border-[#E5DEC9] text-center">
-                            <p class="font-medium text-[11px] text-[#7A7571]">최대 상승</p>
-                            <p class="font-bold text-[15px] text-[#ba1a1a]">+8.2%</p>
-                        </div>
-                    </div>
-
-                    <!-- Chart Placeholder SVG -->
-                    <div class="relative h-40 w-full mt-2">
-                        <svg class="w-full h-full overflow-visible" viewBox="0 0 340 150">
-                            <defs>
-                                <linearGradient id="lineGradientSK" x1="0%" x2="0%" y1="0%" y2="100%">
-                                    <stop offset="0%" stop-color="#ba1a1a" stop-opacity="0.25"></stop>
-                                    <stop offset="100%" stop-color="#ba1a1a" stop-opacity="0"></stop>
-                                </linearGradient>
-                            </defs>
-                            <line stroke="#ddc1ae" stroke-dasharray="2,2" x1="0" x2="340" y1="30" y2="30"></line>
-                            <line stroke="#ddc1ae" stroke-dasharray="2,2" x1="0" x2="340" y1="75" y2="75"></line>
-                            <line stroke="#ddc1ae" stroke-dasharray="2,2" x1="0" x2="340" y1="120" y2="120"></line>
-                            <path d="M 0 120 L 80 90 L 160 50 L 250 35 L 340 25 V 150 H 0 Z" fill="url(#lineGradientSK)"></path>
-                            <path d="M 0 120 L 80 90 L 160 50 L 250 35 L 340 25" fill="none" stroke="#ba1a1a" stroke-width="2.5"></path>
-                            <circle cx="0" cy="120" fill="#ba1a1a" r="4"></circle>
-                            <circle cx="160" cy="50" fill="#ba1a1a" r="4"></circle>
-                            <circle cx="340" cy="25" fill="#ba1a1a" r="4"></circle>
-                        </svg>
-                        <div class="flex justify-between font-medium text-[11px] text-[#7A7571] mt-1">
-                            <span>이슈 발생</span>
-                            <span>T+3</span>
-                            <span>T+7</span>
-                        </div>
-                    </div>
-                </section>
-            </div>
-
-            <!-- Disclaimer Notice -->
-            <footer class="mt-4">
-                <div class="bg-white p-4 rounded-xl border border-[#E5DEC9] flex gap-3 items-start">
-                    <span class="material-symbols-outlined text-[#7A7571] shrink-0 text-[18px] mt-0.5">info</span>
-                    <p class="text-[12px] leading-relaxed text-[#4A4746]">
-                        과거 사례의 주가 흐름은 현재 사건의 결과를 보장하지 않습니다. 본 분석은 참고용이며 최종 투자 결정은 본인의 책임하에 이루어져야 합니다.
-                    </p>
+        <main class="mt-28 flex-1 px-4 pt-4 pb-24 space-y-4">
+            <section class="flex items-start justify-between gap-3">
+                <div>
+                    <p class="text-[12px] font-medium uppercase tracking-wider text-[#7A7571]">Verified events</p>
+                    <h2 class="text-[19px] font-bold text-[#2A1800]">이슈 분석</h2>
+                    <p class="mt-1 text-[13px] leading-5 text-[#564334]">공식 출처가 확인된 사건과 과거 주가 반응을 보여줍니다.</p>
                 </div>
+                <span id="data-status" class="shrink-0 rounded-full bg-[#EEE9E4] px-2.5 py-1 text-[11px] font-bold text-[#564334]">불러오는 중</span>
+            </section>
+
+            <section class="rounded-xl border border-[#E5DEC9] bg-white p-4 shadow-sm" aria-labelledby="sync-heading">
+                <div class="flex items-start justify-between gap-3">
+                    <div>
+                        <h3 id="sync-heading" class="text-[15px] font-bold text-[#2A1800]">최신 이슈 확인</h3>
+                        <p id="sync-message" class="mt-1 text-[12px] leading-5 text-[#69635F]">최근 동기화 상태를 확인하고 있습니다.</p>
+                    </div>
+                    <button id="sync-button" type="button" disabled class="inline-flex shrink-0 items-center gap-1 rounded-lg bg-[#964B00] px-3 py-2 text-[12px] font-bold text-white disabled:cursor-not-allowed disabled:bg-[#C8B8AC]">
+                        <span id="sync-button-icon" class="material-symbols-outlined text-[17px]">refresh</span>
+                        <span id="sync-button-label">확인 중</span>
+                    </button>
+                </div>
+                <div class="mt-3 flex items-center justify-between border-t border-[#EEE9E4] pt-3">
+                    <span id="sync-state" class="rounded-full bg-[#EEE9E4] px-2 py-1 text-[10px] font-bold text-[#564334]">기록 조회 중</span>
+                    <span id="sync-time" class="text-[10px] text-[#7A7571]"></span>
+                </div>
+                <dl id="sync-counts" class="mt-3 hidden grid-cols-4 gap-1.5 text-center">
+                    <div class="rounded-lg bg-[#FAF8F5] p-2"><dt class="text-[9px] text-[#7A7571]">수집</dt><dd id="sync-collected" class="mt-1 text-[12px] font-bold text-[#2A1800]">0</dd></div>
+                    <div class="rounded-lg bg-[#FAF8F5] p-2"><dt class="text-[9px] text-[#7A7571]">검증</dt><dd id="sync-validated" class="mt-1 text-[12px] font-bold text-[#2A1800]">0</dd></div>
+                    <div class="rounded-lg bg-[#FAF8F5] p-2"><dt class="text-[9px] text-[#7A7571]">제외</dt><dd id="sync-rejected" class="mt-1 text-[12px] font-bold text-[#2A1800]">0</dd></div>
+                    <div class="rounded-lg bg-[#FAF8F5] p-2"><dt class="text-[9px] text-[#7A7571]">발행</dt><dd id="sync-published" class="mt-1 text-[12px] font-bold text-[#2A1800]">0</dd></div>
+                </dl>
+            </section>
+
+            <div id="issue-loading" class="space-y-3" role="status">
+                <div class="h-40 rounded-xl bg-[#EEE9E4] animate-pulse"></div>
+                <div class="h-56 rounded-xl bg-[#EEE9E4] animate-pulse"></div>
+                <span class="sr-only">이슈 분석 데이터를 불러오는 중입니다.</span>
+            </div>
+
+            <section id="issue-error" class="hidden rounded-xl border border-[#E7B8B8] bg-[#FFF5F5] p-4" role="alert">
+                <h3 class="font-bold text-[14px] text-[#8B1E1E]">이슈 데이터를 표시할 수 없어요</h3>
+                <p id="issue-error-message" class="mt-1 text-[13px] leading-5 text-[#6B3A3A]">잠시 후 다시 시도해 주세요.</p>
+                <button id="issue-retry" type="button" class="mt-3 rounded-lg border border-[#8B1E1E] px-3 py-2 text-[13px] font-bold text-[#8B1E1E]">다시 시도</button>
+            </section>
+
+            <div id="issue-content" class="hidden space-y-4">
+                <div id="issue-warning" class="hidden rounded-lg bg-[#FFF8E8] p-3 text-[12px] leading-5 text-[#6C4C10]"></div>
+
+                <section aria-labelledby="current-issues-heading">
+                    <div class="mb-2 flex items-end justify-between">
+                        <h3 id="current-issues-heading" class="font-bold text-[16px] text-[#2A1800]">확인된 주요 이슈</h3>
+                        <span id="current-count" class="text-[12px] text-[#7A7571]"></span>
+                    </div>
+                    <div id="current-issues" class="space-y-3"></div>
+                </section>
+
+                <section aria-labelledby="historical-heading">
+                    <div class="mb-2">
+                        <h3 id="historical-heading" class="font-bold text-[16px] text-[#2A1800]">과거 사건 주가 영향</h3>
+                        <p class="mt-1 text-[12px] leading-5 text-[#7A7571]">사건 반응 시작일을 0%로 둔 누적 수익률입니다.</p>
+                    </div>
+                    <div id="historical-issues" class="space-y-3"></div>
+                </section>
+            </div>
+
+            <footer class="bg-white p-4 rounded-xl border border-[#E5DEC9] flex gap-3 items-start">
+                <span class="material-symbols-outlined text-[#7A7571] shrink-0 text-[18px] mt-0.5">info</span>
+                <p class="text-[12px] leading-relaxed text-[#4A4746]">과거 주가 흐름은 현재 사건의 결과나 미래 수익률을 보장하지 않습니다. 본 분석은 참고용이며 투자 판단과 책임은 이용자에게 있습니다.</p>
             </footer>
         </main>
 
-        <!-- Bottom Navigation Bar (4 tabs: 홈, 진단/최적화, 이슈 분석, 설정) -->
-        <nav class="fixed bottom-0 left-0 right-0 max-w-[390px] mx-auto bg-[#FAF8F5] border-t border-[#E5DEC9] z-50 h-16 grid grid-cols-4 items-center">
-            <!-- 1. 홈 -->
-            <a href="/home" class="flex flex-col items-center justify-center text-[#8A8A8A] hover:text-[#964B00] transition-colors py-1.5 mx-2">
-                <span class="material-symbols-outlined">home</span>
-                <span class="text-[12px] font-medium mt-0.5">홈</span>
+        <nav class="fixed bottom-0 left-0 right-0 max-w-[390px] mx-auto bg-[#FAF8F5] border-t border-[#E5DEC9] z-50 h-16 grid grid-cols-4 items-center" aria-label="주요 메뉴">
+            <a href="/home" class="flex flex-col items-center justify-center text-[#8A8A8A] py-1.5 mx-2">
+                <span class="material-symbols-outlined">home</span><span class="text-[12px] font-medium mt-0.5">홈</span>
             </a>
-            <!-- 2. 진단/최적화 -->
-            <a href="/diagnosis/result" class="flex flex-col items-center justify-center text-[#8A8A8A] hover:text-[#964B00] transition-colors py-1.5 mx-2">
-                <span class="material-symbols-outlined">analytics</span>
-                <span class="text-[12px] font-medium mt-0.5">진단/최적화</span>
+            <a href="/diagnosis/result" class="flex flex-col items-center justify-center text-[#8A8A8A] py-1.5 mx-2">
+                <span class="material-symbols-outlined">analytics</span><span class="text-[12px] font-medium mt-0.5">진단</span>
             </a>
-            <!-- 3. 이슈 분석 (Active) -->
-            <a href="/issue/analysis" class="flex flex-col items-center justify-center text-[#964B00] bg-[#F5E8DD] rounded-xl py-1.5 mx-2">
-                <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">layers</span>
-                <span class="text-[12px] font-bold mt-0.5">이슈 분석</span>
+            <a href="/issue/analysis" aria-current="page" class="flex flex-col items-center justify-center text-[#964B00] bg-[#F5E8DD] rounded-xl py-1.5 mx-2">
+                <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">layers</span><span class="text-[12px] font-bold mt-0.5">이슈</span>
             </a>
-            <!-- 4. 설정 -->
-            <a href="/settings" class="flex flex-col items-center justify-center text-[#8A8A8A] hover:text-[#964B00] transition-colors py-1.5 mx-2">
-                <span class="material-symbols-outlined">settings</span>
-                <span class="text-[12px] font-medium mt-0.5">설정</span>
+            <a href="/portfolio/edit" class="flex flex-col items-center justify-center text-[#8A8A8A] py-1.5 mx-2">
+                <span class="material-symbols-outlined">settings</span><span class="text-[12px] font-medium mt-0.5">설정</span>
             </a>
         </nav>
     </div>
 
-    <!-- Company Tab Switcher Script -->
     <script>
-        function switchIssueTab(company) {
-            const tabSam = document.getElementById('tab-samsung');
-            const tabSK = document.getElementById('tab-sk');
-            const indicatorSam = document.getElementById('indicator-samsung');
-            const indicatorSK = document.getElementById('indicator-sk');
-            const contentSam = document.getElementById('content-samsung');
-            const contentSK = document.getElementById('content-sk');
+        (() => {
+            const state = {
+                companyId: "005930",
+                current: [],
+                historical: [],
+                warnings: [],
+            };
+            let syncPollTimer = null;
+            let cooldownTimer = null;
+            const loading = document.getElementById("issue-loading");
+            const content = document.getElementById("issue-content");
+            const errorBox = document.getElementById("issue-error");
+            const statusBadge = document.getElementById("data-status");
+            const syncButton = document.getElementById("sync-button");
 
-            if (company === 'samsung') {
-                tabSam.classList.add('text-[#964B00]', 'font-bold');
-                tabSam.classList.remove('text-[#8A8A8A]', 'font-medium');
-                indicatorSam.classList.remove('bg-transparent');
-                indicatorSam.classList.add('bg-[#964B00]');
+            const escapeHtml = (value) => String(value ?? "")
+                .replaceAll("&", "&amp;")
+                .replaceAll("<", "&lt;")
+                .replaceAll(">", "&gt;")
+                .replaceAll('"', "&quot;")
+                .replaceAll("'", "&#039;");
 
-                tabSK.classList.add('text-[#8A8A8A]', 'font-medium');
-                tabSK.classList.remove('text-[#964B00]', 'font-bold');
-                indicatorSK.classList.remove('bg-[#964B00]');
-                indicatorSK.classList.add('bg-transparent');
+            const safeUrl = (value) => {
+                try {
+                    const url = new URL(value);
+                    return ["http:", "https:"].includes(url.protocol) ? url.href : null;
+                } catch {
+                    return null;
+                }
+            };
 
-                contentSam.classList.remove('hidden');
-                contentSK.classList.add('hidden');
-            } else if (company === 'sk') {
-                tabSK.classList.add('text-[#964B00]', 'font-bold');
-                tabSK.classList.remove('text-[#8A8A8A]', 'font-medium');
-                indicatorSK.classList.remove('bg-transparent');
-                indicatorSK.classList.add('bg-[#964B00]');
+            const formatDate = (value) => {
+                if (!value) return "날짜 정보 없음";
+                const date = new Date(`${value}T00:00:00`);
+                return Number.isNaN(date.getTime())
+                    ? escapeHtml(value)
+                    : new Intl.DateTimeFormat("ko-KR", { dateStyle: "medium" }).format(date);
+            };
 
-                tabSam.classList.add('text-[#8A8A8A]', 'font-medium');
-                tabSam.classList.remove('text-[#964B00]', 'font-bold');
-                indicatorSam.classList.remove('bg-[#964B00]');
-                indicatorSam.classList.add('bg-transparent');
+            const formatDateTime = (value) => value
+                ? new Intl.DateTimeFormat("ko-KR", {
+                    dateStyle: "short",
+                    timeStyle: "short",
+                }).format(new Date(value))
+                : "기록 없음";
 
-                contentSK.classList.remove('hidden');
-                contentSam.classList.add('hidden');
+            const formatRate = (value) => {
+                if (value === null || value === undefined) return "데이터 부족";
+                const numeric = Number(value);
+                const sign = numeric > 0 ? "+" : "";
+                return `${sign}${(numeric * 100).toFixed(2)}%`;
+            };
+
+            const rateClass = (value) => {
+                if (value === null || value === undefined || Number(value) === 0) return "text-[#69635F]";
+                return Number(value) > 0 ? "text-[#BA1A1A]" : "text-[#0066A6]";
+            };
+
+            const statusLabel = (value) => ({
+                reported: "주의 정보",
+                confirmed: "공식 확인",
+                resolved: "조치 완료",
+            }[value] || "상태 확인 중");
+
+            const severityLabel = (value) => {
+                const numeric = Number(value);
+                if (!Number.isFinite(numeric)) return "위험도 정보 없음";
+                if (numeric >= 4) return `높음 · ${numeric}/5`;
+                if (numeric >= 2) return `중간 · ${numeric}/5`;
+                return `낮음 · ${numeric}/5`;
+            };
+
+            const emptyMarkup = (message) => `
+                <div class="rounded-xl border border-dashed border-[#CFC6BF] bg-white p-5 text-center">
+                    <span class="material-symbols-outlined text-[#8A817B]">inventory_2</span>
+                    <p class="mt-2 text-[13px] leading-5 text-[#69635F]">${escapeHtml(message)}</p>
+                </div>`;
+
+            const currentCard = (event) => {
+                const sourceUrl = safeUrl(event.official_source_url);
+                return `
+                    <article class="rounded-xl border border-[#E5DEC9] bg-white p-4 shadow-sm">
+                        <div class="flex items-start justify-between gap-3">
+                            <div class="min-w-0">
+                                <p class="text-[12px] font-medium text-[#7A7571]">${formatDate(event.event_date)} · ${escapeHtml(statusLabel(event.status))}</p>
+                                <h4 class="mt-1 text-[15px] font-bold leading-5 text-[#2A1800]">${escapeHtml(event.summary || "요약 정보 없음")}</h4>
+                            </div>
+                            <span class="shrink-0 rounded-full bg-[#FFF0CF] px-2 py-1 text-[10px] font-bold text-[#785500]">${escapeHtml(severityLabel(event.severity))}</span>
+                        </div>
+                        <dl class="mt-3 grid grid-cols-2 gap-2 text-[11px]">
+                            <div class="rounded-lg bg-[#FAF8F5] p-2"><dt class="text-[#7A7571]">분류</dt><dd class="mt-0.5 font-semibold text-[#4A4746]">${escapeHtml(event.event_category || "미분류")}</dd></div>
+                            <div class="rounded-lg bg-[#FAF8F5] p-2"><dt class="text-[#7A7571]">조치</dt><dd class="mt-0.5 font-semibold text-[#4A4746]">${escapeHtml(event.enforcement_action || "확인 중")}</dd></div>
+                        </dl>
+                        ${event.note ? `<details class="mt-3 rounded-lg border border-[#E5DEC9] bg-[#FAF8F5]"><summary class="cursor-pointer p-3 text-[12px] font-semibold text-[#564334]">검증 메모 보기</summary><p class="px-3 pb-3 text-[12px] leading-5 text-[#69635F]">${escapeHtml(event.note)}</p></details>` : ""}
+                        ${sourceUrl ? `<a href="${escapeHtml(sourceUrl)}" target="_blank" rel="noopener noreferrer" class="mt-3 inline-flex items-center gap-1 text-[12px] font-bold text-[#964B00]">공식 출처 확인 <span class="material-symbols-outlined text-[16px]">open_in_new</span></a>` : '<p class="mt-3 text-[11px] text-[#7A7571]">공식 출처 링크 없음</p>'}
+                    </article>`;
+            };
+
+            const chartSvg = (chartData) => {
+                const points = Array.isArray(chartData)
+                    ? chartData.filter((point) => Number.isFinite(Number(point.cumulative_return)))
+                    : [];
+                if (points.length < 2) return '<p class="mt-3 text-[12px] text-[#7A7571]">차트를 만들 거래일 데이터가 부족합니다.</p>';
+                const values = points.map((point) => Number(point.cumulative_return));
+                const min = Math.min(...values, 0);
+                const max = Math.max(...values, 0);
+                const range = Math.max(max - min, 0.001);
+                const coords = values.map((value, index) => {
+                    const x = 8 + (index / (values.length - 1)) * 304;
+                    const y = 112 - ((value - min) / range) * 92;
+                    return `${x.toFixed(1)},${y.toFixed(1)}`;
+                }).join(" ");
+                const zeroY = 112 - ((0 - min) / range) * 92;
+                return `
+                    <svg class="mt-3 h-32 w-full" viewBox="0 0 320 128" role="img" aria-label="사건 이후 누적 수익률 선 그래프">
+                        <line x1="8" x2="312" y1="${zeroY.toFixed(1)}" y2="${zeroY.toFixed(1)}" stroke="#D8CEC7" stroke-dasharray="4 4"></line>
+                        <polyline points="${coords}" fill="none" stroke="#964B00" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></polyline>
+                    </svg>`;
+            };
+
+            const historicalCard = (event) => `
+                <article class="rounded-xl border border-[#E5DEC9] bg-white p-4 shadow-sm">
+                    <p class="text-[12px] text-[#7A7571]">${formatDate(event.market_event_date)} · ${escapeHtml(event.event_id)}</p>
+                    <h4 class="mt-1 text-[14px] font-bold leading-5 text-[#2A1800]">${escapeHtml(event.summary || "사건 요약 없음")}</h4>
+                    <div class="mt-3 grid grid-cols-4 gap-1.5">
+                        ${[
+                            ["T+1", event.return_1d],
+                            ["T+3", event.return_3d],
+                            ["T+5", event.return_5d],
+                            ["최저", event.event_relative_min_return],
+                        ].map(([label, value]) => `
+                            <div class="rounded-lg border border-[#E5DEC9] bg-[#FAF8F5] p-2 text-center">
+                                <p class="text-[10px] text-[#7A7571]">${label}</p>
+                                <p class="mt-1 text-[12px] font-bold ${rateClass(value)}">${formatRate(value)}</p>
+                            </div>`).join("")}
+                    </div>
+                    ${chartSvg(event.chart_data)}
+                    <p class="mt-1 text-[10px] text-[#7A7571]">반응 시작일 ${formatDate(event.reaction_start_date)} · 회복 ${event.recovery_days === null ? "미확인" : `${escapeHtml(event.recovery_days)}거래일`}</p>
+                </article>`;
+
+            const renderTabs = () => {
+                document.querySelectorAll(".company-tab").forEach((tab) => {
+                    const active = tab.dataset.companyTab === state.companyId;
+                    tab.setAttribute("aria-selected", String(active));
+                    tab.classList.toggle("font-bold", active);
+                    tab.classList.toggle("text-[#964B00]", active);
+                    tab.classList.toggle("font-medium", !active);
+                    tab.classList.toggle("text-[#8A8A8A]", !active);
+                    tab.querySelector(".tab-indicator").classList.toggle("bg-[#964B00]", active);
+                    tab.querySelector(".tab-indicator").classList.toggle("bg-transparent", !active);
+                });
+            };
+
+            const renderCompany = () => {
+                renderTabs();
+                const current = state.current
+                    .filter((event) => String(event.company_id).padStart(6, "0") === state.companyId)
+                    .sort((left, right) => String(right.event_date).localeCompare(String(left.event_date)));
+                const historical = state.historical
+                    .filter((event) => String(event.company_id).padStart(6, "0") === state.companyId)
+                    .sort((left, right) => String(right.market_event_date).localeCompare(String(left.market_event_date)));
+                document.getElementById("current-count").textContent = `${current.length}건`;
+                document.getElementById("current-issues").innerHTML = current.length
+                    ? current.map(currentCard).join("")
+                    : emptyMarkup("표시할 검증 이슈가 없습니다.");
+                document.getElementById("historical-issues").innerHTML = historical.length
+                    ? historical.map(historicalCard).join("")
+                    : emptyMarkup("주가 반응을 계산할 수 있는 과거 사건이 없습니다.");
+            };
+
+            const mergeDataStatus = (currentStatus, historicalStatus) => {
+                if ([currentStatus, historicalStatus].includes("fallback")) return "fallback";
+                if ([currentStatus, historicalStatus].includes("sample")) return "sample";
+                return "validated";
+            };
+
+            const setStatusBadge = (dataStatus) => {
+                const labels = { validated: "검증 데이터", sample: "샘플 데이터", fallback: "대체 데이터" };
+                statusBadge.textContent = labels[dataStatus] || "상태 확인";
+                statusBadge.className = dataStatus === "validated"
+                    ? "shrink-0 rounded-full bg-[#E7F3EA] px-2.5 py-1 text-[11px] font-bold text-[#245B31]"
+                    : "shrink-0 rounded-full bg-[#FFF0CF] px-2.5 py-1 text-[11px] font-bold text-[#785500]";
+            };
+
+            async function loadIssues() {
+                try {
+                    const [currentResponse, historicalResponse] = await Promise.all([
+                        fetch("/issues/current", { headers: { Accept: "application/json" } }),
+                        fetch("/issues/historical", { headers: { Accept: "application/json" } }),
+                    ]);
+                    if (!currentResponse.ok || !historicalResponse.ok) {
+                        throw new Error("이슈 또는 과거 주가 분석 API 요청에 실패했습니다.");
+                    }
+                    const [currentPayload, historicalPayload] = await Promise.all([
+                        currentResponse.json(),
+                        historicalResponse.json(),
+                    ]);
+                    state.current = Array.isArray(currentPayload.events) ? currentPayload.events : [];
+                    state.historical = Array.isArray(historicalPayload.events) ? historicalPayload.events : [];
+                    state.warnings = [
+                        currentPayload.warning,
+                        ...(Array.isArray(currentPayload.warnings) ? currentPayload.warnings : []),
+                        ...(Array.isArray(historicalPayload.warnings) ? historicalPayload.warnings : []),
+                    ].filter(Boolean);
+                    setStatusBadge(mergeDataStatus(currentPayload.data_status, historicalPayload.data_status));
+                    const warning = document.getElementById("issue-warning");
+                    warning.textContent = state.warnings.join(" ");
+                    warning.classList.toggle("hidden", state.warnings.length === 0);
+                    renderCompany();
+                    loading.classList.add("hidden");
+                    errorBox.classList.add("hidden");
+                    content.classList.remove("hidden");
+                } catch (error) {
+                    loading.classList.add("hidden");
+                    content.classList.add("hidden");
+                    errorBox.classList.remove("hidden");
+                    statusBadge.textContent = "데이터 없음";
+                    document.getElementById("issue-error-message").textContent = error.message;
+                }
             }
-        }
 
-        document.addEventListener('click', (e) => {
-            const popup = document.getElementById('profile-popup');
-            const trigger = document.getElementById('profile-trigger');
-            if (popup && !popup.classList.contains('hidden') && !popup.contains(e.target) && !trigger.contains(e.target)) {
-                popup.classList.add('hidden');
+            const stageLabel = (stage) => ({
+                queued: "대기 중",
+                collecting: "수집 중",
+                normalizing: "정규화 중",
+                validating: "자동 검증 중",
+                publishing: "스냅샷 발행 중",
+                recalculating: "위험 재계산 중",
+                completed: "완료",
+            }[stage] || "상태 확인");
+
+            const statusLabelForSync = (status) => ({
+                queued: "대기",
+                running: "진행 중",
+                success: "성공",
+                partial_success: "일부 성공",
+                failed: "실패",
+            }[status] || "기록 없음");
+
+            const stopSyncPolling = () => {
+                if (syncPollTimer) window.clearTimeout(syncPollTimer);
+                syncPollTimer = null;
+            };
+
+            const startCooldown = (availableAt) => {
+                if (cooldownTimer) window.clearInterval(cooldownTimer);
+                const update = () => {
+                    const remaining = Math.ceil((new Date(availableAt).getTime() - Date.now()) / 1000);
+                    if (remaining <= 0) {
+                        window.clearInterval(cooldownTimer);
+                        cooldownTimer = null;
+                        syncButton.disabled = false;
+                        document.getElementById("sync-button-label").textContent = "새 이슈 확인";
+                        return;
+                    }
+                    syncButton.disabled = true;
+                    const minutes = Math.floor(remaining / 60);
+                    const seconds = String(remaining % 60).padStart(2, "0");
+                    document.getElementById("sync-button-label").textContent = `${minutes}:${seconds} 후 가능`;
+                };
+                update();
+                cooldownTimer = window.setInterval(update, 1000);
+            };
+
+            const renderSyncStatus = (payload) => {
+                const active = ["queued", "running"].includes(payload.status);
+                const stateElement = document.getElementById("sync-state");
+                stateElement.textContent = active
+                    ? stageLabel(payload.stage)
+                    : statusLabelForSync(payload.status);
+                stateElement.className = payload.status === "success"
+                    ? "rounded-full bg-[#E7F3EA] px-2 py-1 text-[10px] font-bold text-[#245B31]"
+                    : payload.status === "failed" || payload.status === "partial_success"
+                        ? "rounded-full bg-[#FFF0CF] px-2 py-1 text-[10px] font-bold text-[#785500]"
+                        : "rounded-full bg-[#EEE9E4] px-2 py-1 text-[10px] font-bold text-[#564334]";
+                document.getElementById("sync-message").textContent = payload.message;
+                document.getElementById("sync-time").textContent = payload.completed_at
+                    ? `완료 ${formatDateTime(payload.completed_at)}`
+                    : `요청 ${formatDateTime(payload.requested_at)}`;
+                document.getElementById("sync-collected").textContent = payload.collected_items;
+                document.getElementById("sync-validated").textContent = payload.validated_items;
+                document.getElementById("sync-rejected").textContent = payload.rejected_items;
+                document.getElementById("sync-published").textContent = payload.published_items;
+                document.getElementById("sync-counts").classList.toggle(
+                    "hidden",
+                    active && payload.collected_items === 0,
+                );
+                document.getElementById("sync-counts").classList.toggle(
+                    "grid",
+                    !(active && payload.collected_items === 0),
+                );
+                document.getElementById("sync-button-icon").classList.toggle("animate-spin", active);
+
+                if (active) {
+                    syncButton.disabled = true;
+                    document.getElementById("sync-button-label").textContent = "확인 중";
+                    stopSyncPolling();
+                    syncPollTimer = window.setTimeout(
+                        () => loadSyncStatus(payload.sync_id),
+                        2000,
+                    );
+                    return;
+                }
+
+                stopSyncPolling();
+                if (payload.manual_refresh_available_at && new Date(payload.manual_refresh_available_at) > new Date()) {
+                    startCooldown(payload.manual_refresh_available_at);
+                } else {
+                    syncButton.disabled = false;
+                    document.getElementById("sync-button-label").textContent = "새 이슈 확인";
+                }
+                if (payload.status === "success" || payload.status === "partial_success") {
+                    loadIssues();
+                }
+            };
+
+            async function loadSyncStatus(syncId = null) {
+                const url = syncId
+                    ? `/sync/status?sync_id=${encodeURIComponent(syncId)}`
+                    : "/sync/status";
+                try {
+                    const response = await fetch(url, { headers: { Accept: "application/json" } });
+                    if (response.status === 404) {
+                        document.getElementById("sync-state").textContent = "첫 동기화 전";
+                        document.getElementById("sync-message").textContent = "아직 동기화 기록이 없습니다.";
+                        document.getElementById("sync-time").textContent = "";
+                        syncButton.disabled = false;
+                        document.getElementById("sync-button-label").textContent = "새 이슈 확인";
+                        return;
+                    }
+                    if (!response.ok) throw new Error("동기화 상태 조회에 실패했습니다.");
+                    renderSyncStatus(await response.json());
+                } catch (error) {
+                    document.getElementById("sync-state").textContent = "상태 오류";
+                    document.getElementById("sync-message").textContent = error.message;
+                    syncButton.disabled = false;
+                    document.getElementById("sync-button-label").textContent = "다시 확인";
+                }
             }
-        });
+
+            async function requestSync() {
+                stopSyncPolling();
+                syncButton.disabled = true;
+                document.getElementById("sync-button-icon").classList.add("animate-spin");
+                document.getElementById("sync-button-label").textContent = "요청 중";
+                document.getElementById("sync-message").textContent = "수동 동기화를 요청하고 있습니다.";
+                const requestId = `web-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+                try {
+                    const response = await fetch("/sync/issues", {
+                        method: "POST",
+                        headers: {
+                            Accept: "application/json",
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                            requested_by: "user",
+                            reason: "manual_refresh",
+                            client_request_id: requestId,
+                        }),
+                    });
+                    const payload = await response.json();
+                    if (response.status === 429) {
+                        document.getElementById("sync-state").textContent = "대기 필요";
+                        document.getElementById("sync-message").textContent = payload.message;
+                        startCooldown(payload.next_allowed_at);
+                        return;
+                    }
+                    if (!response.ok) throw new Error(payload.detail || "동기화 요청에 실패했습니다.");
+                    renderSyncStatus(payload);
+                } catch (error) {
+                    document.getElementById("sync-button-icon").classList.remove("animate-spin");
+                    document.getElementById("sync-state").textContent = "요청 실패";
+                    document.getElementById("sync-message").textContent = error.message;
+                    syncButton.disabled = false;
+                    document.getElementById("sync-button-label").textContent = "다시 시도";
+                }
+            }
+
+            document.querySelectorAll(".company-tab").forEach((tab) => {
+                tab.addEventListener("click", () => {
+                    state.companyId = tab.dataset.companyTab;
+                    renderCompany();
+                });
+            });
+            document.getElementById("issue-retry").addEventListener("click", () => {
+                errorBox.classList.add("hidden");
+                loading.classList.remove("hidden");
+                loadIssues();
+            });
+            syncButton.addEventListener("click", requestSync);
+            loadIssues();
+            loadSyncStatus();
+        })();
     </script>
 </body>
 </html>

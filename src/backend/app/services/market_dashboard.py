@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, time
 from zoneinfo import ZoneInfo
 
@@ -43,8 +44,26 @@ class MarketDashboardService:
         items: list[MarketQuoteItem] = []
         warnings: list[str] = []
 
+        # Bound endpoint latency by the slowest independent provider lookup,
+        # rather than the sum of all four provider timeouts.
+        with ThreadPoolExecutor(
+            max_workers=len(INSTRUMENTS),
+            thread_name_prefix="market-quotes",
+        ) as executor:
+            futures = {
+                instrument_id: executor.submit(
+                    self._quote_service.get_quote,
+                    instrument_id,
+                )
+                for instrument_id in INSTRUMENTS
+            }
+            quotes = {
+                instrument_id: futures[instrument_id].result()
+                for instrument_id in INSTRUMENTS
+            }
+
         for instrument_id in INSTRUMENTS:
-            quote = self._quote_service.get_quote(instrument_id)
+            quote = quotes[instrument_id]
             previous_close = quote.previous_close
             if previous_close is None:
                 previous_close = local_previous_closes.get(instrument_id)

@@ -1104,3 +1104,73 @@
   - Docker CLI is not installed locally, so the container image cannot be built in this environment.
   - If Dockerfile mode still fails, the full build log above the final Railpack summary is required to identify the next cause.
 - **Next recommended task**: Deploy the merged config in the user's Railway project and verify `/health`, `/login`, and `/static/css/index.css`.
+
+## 2026-07-26 — INT-FE-API-11 started
+
+- **Role**: Integration
+- **Task ID**: INT-FE-API-11
+- **Status**: in_progress
+- **Goal**: Restore the missing API-driven home, portfolio, diagnosis, issue-analysis, and sync UI behavior, then remove the production market quote timeout.
+- **Production evidence**:
+  - `GET /health` returns `200`.
+  - `GET /issues/current` returns `200` with event data.
+  - `GET /market/quotes` exceeds a 20-second client timeout.
+  - The deployed home template contains fixed market and portfolio values and no API request.
+- **Recovery source**:
+  - Unreachable Git commit `1b1b1b4b462789011b2f962a702f7c54ecc8a17c` contains the previously validated API-integrated templates and tests.
+- **Allowed files**:
+  - `src/frontend/templates/`
+  - `src/frontend/static/css/index.css`
+  - `src/backend/app/services/`
+  - `src/backend/tests/`
+  - `progress/INTEGRATION.md`
+- **Validation plan**:
+  - Restore only the relevant Git-recoverable templates, preserving later HTTPS and deployment fixes.
+  - Add focused UI/API and timeout regression tests.
+  - Rebuild Tailwind CSS and run browser checks at the mobile viewport.
+  - Run the full repository test suite before commit preparation.
+
+## 2026-07-26 — INT-FE-API-11 review
+
+- **Role**: Integration
+- **Task ID**: INT-FE-API-11
+- **Status**: review
+- **Work completed**:
+  - Restored API-driven home, portfolio input/result, diagnosis, and issue-analysis templates while preserving same-origin HTTPS static asset paths.
+  - Replaced production hard-coded dashboard values with `/market/quotes`, `/portfolio/*`, and `/issues/*` API consumers and explicit loading, error, empty, sample, fallback, and source states.
+  - Added a 15-second browser timeout and user-facing fallback message for market quotes.
+  - Made the four independent market quote requests concurrent and added a short KIS token-failure cooldown so one upstream failure does not repeatedly consume the full timeout.
+  - Rebuilt the production Tailwind stylesheet.
+- **Modified files**:
+  - `src/frontend/templates/home.html`
+  - `src/frontend/templates/issue_analysis.html`
+  - `src/frontend/templates/portfolio_input.html`
+  - `src/frontend/templates/portfolio_summary.html`
+  - `src/frontend/templates/diagnosis_result.html`
+  - `src/frontend/static/css/index.css`
+  - `src/backend/app/services/market_dashboard.py`
+  - `src/backend/app/services/kis_market_data.py`
+  - `src/backend/tests/test_market_dashboard.py`
+  - `src/backend/tests/test_kis_market_data.py`
+  - `src/backend/tests/test_portfolio.py`
+  - `src/backend/tests/test_realtime_e2e.py`
+  - `src/backend/tests/test_ui_routes.py`
+  - `progress/INTEGRATION.md`
+- **Validation commands**:
+  - `.venv\Scripts\python.exe -m pytest src/backend/tests/test_market_dashboard.py src/backend/tests/test_kis_market_data.py src/backend/tests/test_portfolio.py src/backend/tests/test_ui_routes.py src/backend/tests/test_realtime_e2e.py`
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File scripts\build_frontend.ps1`
+  - `.venv\Scripts\python.exe -m pytest`
+  - Local Uvicorn request to `GET /market/quotes`
+  - `git diff --check`
+- **Validation results**:
+  - Focused integration bundle passed: `63 passed, 1 warning`.
+  - Full repository suite passed: `215 passed, 1 warning` in 463.98 seconds.
+  - Production Tailwind build passed.
+  - Local `/market/quotes` returned `200` with four ordered fallback quotes in 12.67 seconds.
+  - `git diff --check` reported no whitespace errors; existing Windows line-ending notices only.
+- **Remaining**:
+  - Merge the feature branch into `main` so Railway can auto-deploy it.
+  - Verify `/home`, `/market/quotes`, `/issues`, and the portfolio calculation flow on the new Railway deployment.
+- **Blockers**:
+  - Automated in-app browser inspection was interrupted by a browser runtime crash; route rendering, API contracts, loading/error states, and mobile CSS are covered by the passing test/build bundle, but the final deployed visual check remains.
+- **Next recommended task**: Merge and monitor the Railway deployment, then perform a mobile visual smoke test against `https://chip-buddy.up.railway.app/`.

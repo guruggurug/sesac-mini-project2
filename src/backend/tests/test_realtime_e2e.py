@@ -155,7 +155,7 @@ def test_realtime_dashboard_success_flow_across_public_apis(tmp_path, monkeypatc
         )
 
     assert home.status_code == 200
-    assert 'data-ui-screen="home"' in home.text
+    assert 'fetch("/market/quotes"' in home.text
     assert market.status_code == 200
     assert len(market.json()["quotes"]) == 4
     assert market.json()["polling_enabled"] is True
@@ -166,7 +166,7 @@ def test_realtime_dashboard_success_flow_across_public_apis(tmp_path, monkeypatc
     assert sum(item["current_weight"] for item in portfolio.json()["positions"]) == 1
 
     assert issue_page.status_code == 200
-    assert 'data-ui-screen="issue-analysis"' in issue_page.text
+    assert 'fetch("/issues/current"' in issue_page.text
     assert current_issues.status_code == historical_issues.status_code == 200
     assert current_issues.json()["events"]
     assert historical_issues.json()["events"]

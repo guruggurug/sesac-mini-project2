@@ -34,6 +34,7 @@ class KISMarketDataProvider:
         clock: Callable[[], float] = monotonic,
         min_request_interval_seconds: float = 1.0,
         retry_backoff_seconds: float = 0.25,
+        token_failure_cooldown_seconds: float = 15.0,
         sleeper: Callable[[float], None] = sleep,
     ) -> None:
         if not app_key or not app_secret:
@@ -48,9 +49,14 @@ class KISMarketDataProvider:
             0.0,
         )
         self._retry_backoff_seconds = max(float(retry_backoff_seconds), 0.0)
+        self._token_failure_cooldown_seconds = max(
+            float(token_failure_cooldown_seconds),
+            0.0,
+        )
         self._sleep = sleeper
         self._access_token: str | None = None
         self._token_expires_at = 0.0
+        self._token_failure_until = 0.0
         self._token_lock = Lock()
         self._request_lock = Lock()
         self._last_request_at: float | None = None
@@ -129,27 +135,37 @@ class KISMarketDataProvider:
         current = self._clock()
         if self._access_token and current < self._token_expires_at:
             return self._access_token
+        if current < self._token_failure_until:
+            raise MarketQuoteError("KIS access token request is cooling down")
 
         with self._token_lock:
             current = self._clock()
             if self._access_token and current < self._token_expires_at:
                 return self._access_token
+            if current < self._token_failure_until:
+                raise MarketQuoteError("KIS access token request is cooling down")
 
-            response = self._client.post(
-                f"{self._base_url}{self.TOKEN_PATH}",
-                headers={"Content-Type": "application/json"},
-                json={
-                    "grant_type": "client_credentials",
-                    "appkey": self._app_key,
-                    "appsecret": self._app_secret,
-                },
-                timeout=timeout_seconds,
-            )
-            response.raise_for_status()
-            payload = response.json()
-            token = payload.get("access_token")
-            if not token:
-                raise MarketQuoteError("KIS access token response is invalid")
+            try:
+                response = self._client.post(
+                    f"{self._base_url}{self.TOKEN_PATH}",
+                    headers={"Content-Type": "application/json"},
+                    json={
+                        "grant_type": "client_credentials",
+                        "appkey": self._app_key,
+                        "appsecret": self._app_secret,
+                    },
+                    timeout=timeout_seconds,
+                )
+                response.raise_for_status()
+                payload = response.json()
+                token = payload.get("access_token")
+                if not token:
+                    raise MarketQuoteError("KIS access token response is invalid")
+            except Exception as error:
+                self._token_failure_until = (
+                    current + self._token_failure_cooldown_seconds
+                )
+                raise MarketQuoteError("KIS access token request failed") from error
 
             try:
                 expires_in = max(float(payload.get("expires_in", 3600)), 1.0)
@@ -158,6 +174,7 @@ class KISMarketDataProvider:
             safety_margin = min(60.0, expires_in * 0.1)
             self._access_token = str(token)
             self._token_expires_at = current + expires_in - safety_margin
+            self._token_failure_until = 0.0
             return self._access_token
 
     def _wait_for_request_slot(self) -> None:

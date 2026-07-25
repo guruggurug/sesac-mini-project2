@@ -87,3 +87,36 @@ def test_ui_uses_generated_local_tailwind_stylesheet(path: str):
     assert 'href="http://testserver/static/css/index.css"' not in response.text
     assert "cdn.tailwindcss.com" not in response.text
     assert "tailwind.config" not in response.text
+
+
+def test_portfolio_input_submits_real_form_without_fake_completion_alert():
+    response = client.get("/portfolio/input")
+
+    assert response.status_code == 200
+    assert 'action="/portfolio/optimize"' in response.text
+    assert 'name="samsung_qty"' in response.text
+    assert 'name="sk_qty"' in response.text
+    assert 'name="risk_priority"' in response.text
+    assert "analysisForm.addEventListener('submit'" in response.text
+    assert "포트폴리오 분석이 완료되었습니다!" not in response.text
+
+
+def test_diagnosis_get_uses_explicit_empty_state_instead_of_fixed_result():
+    response = client.get("/diagnosis/result")
+
+    assert response.status_code == 200
+    assert 'data-result-state="empty"' in response.text
+    assert "아직 계산된 진단 결과가 없습니다" in response.text
+    assert "위험을 12.5% 감소" not in response.text
+
+
+def test_portfolio_summary_uses_api_states_instead_of_fixed_valuation():
+    response = client.get("/portfolio/summary")
+
+    assert response.status_code == 200
+    assert "fetch('/portfolio/summary'" in response.text
+    assert 'id="summary-loading"' in response.text
+    assert 'id="summary-empty"' in response.text
+    assert 'id="summary-error"' in response.text
+    assert "19,207,500" not in response.text
+    assert "820,000원" not in response.text
