@@ -7,38 +7,38 @@
     "005930": 0.25,
     "000660": 0.75
   },
-  "current_total_risk": 0.6376,
-  "optimized_total_risk": 0.6376,
-  "risk_reduction_rate": 0.0,
+  "current_total_risk": 0.6775,
+  "optimized_total_risk": 0.6776,
+  "risk_reduction_rate": -0.0001,
   "current_cvar": 0.0775,
   "optimized_cvar": 0.0774,
-  "current_esg_risk": 0.0633,
-  "optimized_esg_risk": 0.0635,
+  "current_esg_risk": 0.2113,
+  "optimized_esg_risk": 0.2115,
   "turnover": 0.0075,
   "company_risks": {
     "005930": {
-      "esg_risk": 0.1041,
+      "esg_risk": 0.2543,
       "downside_risk": 0.0644,
-      "total_risk": 0.544,
+      "total_risk": 0.5845,
       "risk_level": "high",
       "data_confidence": "medium",
-      "data_completeness": 0.75,
+      "data_completeness": 1.0,
       "scope_mismatch": true
     },
     "000660": {
-      "esg_risk": 0.05,
+      "esg_risk": 0.1972,
       "downside_risk": 0.0838,
-      "total_risk": 0.6848,
+      "total_risk": 0.7245,
       "risk_level": "high",
-      "data_confidence": "medium",
-      "data_completeness": 0.6667,
+      "data_confidence": "high",
+      "data_completeness": 1.0,
       "scope_mismatch": false
     }
   },
   "recommendation_confidence": "medium",
   "near_optimal_range": {
     "samsung_min": 0.24,
-    "samsung_max": 0.45
+    "samsung_max": 0.44
   },
   "explanation": [
     "현재 보유 비중이 종합 위험 관점에서 최적 수준에 근접해 유지 전략을 추천합니다.",
@@ -46,7 +46,7 @@
     "과도한 매매 비용 및 리밸런싱 부담을 줄이기 위해 턴오버 페널티를 안정적으로 반영했습니다."
   ],
   "data_status": "reviewed",
-  "generated_at": "2026-07-25T01:55:44.078411+00:00",
+  "generated_at": "2026-07-25T02:27:17.444204+00:00",
   "warnings": [
     "이 결과는 미래 주가나 기대수익률 예측이 아닙니다.",
     "삼성전자와 SK하이닉스 모두 반도체 산업에 속하므로 산업 집중위험이 유지됩니다.",

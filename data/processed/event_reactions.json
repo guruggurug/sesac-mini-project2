@@ -233,6 +233,240 @@
           "date": "2023-08-07"
         }
       ]
+    },
+    {
+      "event_id": "EVT-0006",
+      "company_id": "000660",
+      "company_name": "SK하이닉스",
+      "event_date": "2024-05-10",
+      "market_event_date": "2026-03-17",
+      "reaction_start_date": "2026-03-17",
+      "return_1d": 0.0887,
+      "return_3d": 0.0381,
+      "return_5d": 0.0165,
+      "event_relative_min_return": -0.168,
+      "window_max_drawdown": 0.2358,
+      "max_drawdown": -0.168,
+      "recovery_days": 1,
+      "abnormal_return_1d": 0.094,
+      "abnormal_return_3d": 0.0594,
+      "abnormal_return_5d": 0.0119,
+      "benchmark_name": "SOX",
+      "status": "confirmed",
+      "summary": "SK하이닉스 소속 근로자 업무상 질병으로 요양 중 사망(2024-05-10 발생, 사외)",
+      "chart_data": [
+        {
+          "day": 0,
+          "cumulative_return": 0.0,
+          "date": "2026-03-17"
+        },
+        {
+          "day": 1,
+          "cumulative_return": 0.0887,
+          "date": "2026-03-18"
+        },
+        {
+          "day": 2,
+          "cumulative_return": 0.0443,
+          "date": "2026-03-19"
+        },
+        {
+          "day": 3,
+          "cumulative_return": 0.0381,
+          "date": "2026-03-20"
+        },
+        {
+          "day": 4,
+          "cumulative_return": -0.0381,
+          "date": "2026-03-23"
+        },
+        {
+          "day": 5,
+          "cumulative_return": 0.0165,
+          "date": "2026-03-24"
+        },
+        {
+          "day": 6,
+          "cumulative_return": 0.0258,
+          "date": "2026-03-25"
+        },
+        {
+          "day": 7,
+          "cumulative_return": -0.0381,
+          "date": "2026-03-26"
+        },
+        {
+          "day": 8,
+          "cumulative_return": -0.0495,
+          "date": "2026-03-27"
+        },
+        {
+          "day": 9,
+          "cumulative_return": -0.1,
+          "date": "2026-03-30"
+        },
+        {
+          "day": 10,
+          "cumulative_return": -0.168,
+          "date": "2026-03-31"
+        }
+      ]
+    },
+    {
+      "event_id": "EVT-0007",
+      "company_id": "005930",
+      "company_name": "삼성전자",
+      "event_date": "2025-12-23",
+      "market_event_date": "2025-12-23",
+      "reaction_start_date": "2025-12-23",
+      "return_1d": -0.0036,
+      "return_3d": 0.0717,
+      "return_5d": 0.1525,
+      "event_relative_min_return": -0.0036,
+      "window_max_drawdown": 0.0156,
+      "max_drawdown": -0.0036,
+      "recovery_days": 2,
+      "abnormal_return_1d": -0.0063,
+      "abnormal_return_3d": 0.0726,
+      "abnormal_return_5d": 0.127,
+      "benchmark_name": "SOX",
+      "status": "confirmed",
+      "summary": "삼성디스플레이 아산2캠퍼스 협력사 직원 끼임사고로 사망 1명·부상 1명(2025-12-23)",
+      "chart_data": [
+        {
+          "day": 0,
+          "cumulative_return": 0.0,
+          "date": "2025-12-23"
+        },
+        {
+          "day": 1,
+          "cumulative_return": -0.0036,
+          "date": "2025-12-24"
+        },
+        {
+          "day": 2,
+          "cumulative_return": 0.0493,
+          "date": "2025-12-26"
+        },
+        {
+          "day": 3,
+          "cumulative_return": 0.0717,
+          "date": "2025-12-29"
+        },
+        {
+          "day": 4,
+          "cumulative_return": 0.0753,
+          "date": "2025-12-30"
+        },
+        {
+          "day": 5,
+          "cumulative_return": 0.1525,
+          "date": "2026-01-02"
+        },
+        {
+          "day": 6,
+          "cumulative_return": 0.2386,
+          "date": "2026-01-05"
+        },
+        {
+          "day": 7,
+          "cumulative_return": 0.2457,
+          "date": "2026-01-06"
+        },
+        {
+          "day": 8,
+          "cumulative_return": 0.2646,
+          "date": "2026-01-07"
+        },
+        {
+          "day": 9,
+          "cumulative_return": 0.2448,
+          "date": "2026-01-08"
+        },
+        {
+          "day": 10,
+          "cumulative_return": 0.2466,
+          "date": "2026-01-09"
+        }
+      ]
+    },
+    {
+      "event_id": "EVT-0008",
+      "company_id": "000660",
+      "company_name": "SK하이닉스",
+      "event_date": "2026-06-25",
+      "market_event_date": "2026-06-26",
+      "reaction_start_date": "2026-06-26",
+      "return_1d": -0.0168,
+      "return_3d": -0.0423,
+      "return_5d": -0.0928,
+      "event_relative_min_return": -0.2233,
+      "window_max_drawdown": 0.2233,
+      "max_drawdown": -0.2233,
+      "recovery_days": null,
+      "abnormal_return_1d": -0.0552,
+      "abnormal_return_3d": -0.0536,
+      "abnormal_return_5d": -0.0491,
+      "benchmark_name": "SOX",
+      "status": "confirmed",
+      "summary": "SK하이닉스 소속 근로자 산재보험법상 업무상 질병 승인(2025-03-05) 후 요양 중 사망(2026-06-25)",
+      "chart_data": [
+        {
+          "day": 0,
+          "cumulative_return": 0.0,
+          "date": "2026-06-26"
+        },
+        {
+          "day": 1,
+          "cumulative_return": -0.0168,
+          "date": "2026-06-29"
+        },
+        {
+          "day": 2,
+          "cumulative_return": -0.0086,
+          "date": "2026-06-30"
+        },
+        {
+          "day": 3,
+          "cumulative_return": -0.0423,
+          "date": "2026-07-01"
+        },
+        {
+          "day": 4,
+          "cumulative_return": -0.1818,
+          "date": "2026-07-02"
+        },
+        {
+          "day": 5,
+          "cumulative_return": -0.0928,
+          "date": "2026-07-03"
+        },
+        {
+          "day": 6,
+          "cumulative_return": -0.1235,
+          "date": "2026-07-06"
+        },
+        {
+          "day": 7,
+          "cumulative_return": -0.1766,
+          "date": "2026-07-07"
+        },
+        {
+          "day": 8,
+          "cumulative_return": -0.2233,
+          "date": "2026-07-08"
+        },
+        {
+          "day": 9,
+          "cumulative_return": -0.1822,
+          "date": "2026-07-09"
+        },
+        {
+          "day": 10,
+          "cumulative_return": -0.1844,
+          "date": "2026-07-10"
+        }
+      ]
     }
   ]
 }
