@@ -1,0 +1,268 @@
+<!DOCTYPE html><html class="light" lang="ko" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport">
+<title>Chip Buddy - Settings</title>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', path='css/index.css') }}">
+<style>
+        body {
+            -webkit-tap-highlight-color: transparent;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        /* Custom Toggle Switch */
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+        }
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ede0d5;
+            transition: .4s;
+            border-radius: 24px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider {
+            background-color: #964b00;
+        }
+        input:checked + .slider:before {
+            transform: translateX(20px);
+        }
+    </style>
+</head>
+<body class="font-body-lg text-on-surface bg-background flex justify-center items-start min-h-screen">
+<!-- 390px Mobile App Container Shell -->
+<div class="w-full max-w-[390px] min-h-screen flex flex-col relative shadow-2xl bg-background overflow-x-hidden">
+<!-- TopAppBar -->
+<header class="w-full sticky top-0 z-50 bg-surface border-b border-outline-variant flex items-center justify-between px-margin-mobile h-16">
+<div class="flex items-center gap-4">
+<button onclick="history.back()" class="hover:bg-surface-variant/50 transition-colors p-2 rounded-full active:scale-95 duration-150 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary" data-icon="arrow_back">arrow_back</span>
+</button>
+<h1 class="font-title-md text-title-md text-primary">설정</h1>
+</div>
+<div class="flex items-center">
+<span class="font-headline-lg text-headline-lg font-bold text-primary opacity-0">Chip Buddy</span>
+</div>
+</header>
+<main class="px-margin-mobile py-8 pb-32">
+<!-- Bento Style Layout for Settings -->
+<div class="grid grid-cols-1 gap-gutter">
+<!-- Account Management Section -->
+<section class="flex flex-col gap-4">
+<h2 class="font-label-md text-label-md text-on-surface-variant px-2">계정 관리</h2>
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden shadow-sm">
+<!-- Profile Row -->
+<div class="flex items-center justify-between p-gutter hover:bg-surface-variant/20 transition-all cursor-pointer active:scale-[0.98]">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-full bg-surface-container flex items-center justify-center text-primary overflow-hidden" style="background-color: rgb(245, 232, 221);"><span class="material-symbols-outlined text-on-secondary-container" style="font-size: 40px;">account_circle</span></div>
+<div>
+<p class="font-title-md text-body-lg font-bold">김버디</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">buddy@chipbuddy.io</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline" data-icon="chevron_right">chevron_right</span>
+</div>
+<div class="h-[1px] bg-outline-variant mx-gutter"></div>
+<!-- Setting Rows -->
+<div class="flex items-center justify-between p-gutter hover:bg-surface-variant/20 transition-all cursor-pointer active:scale-[0.98]">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-primary" data-icon="lock">lock</span>
+<span class="font-body-lg text-body-lg">비밀번호 변경</span>
+</div>
+<span class="material-symbols-outlined text-outline" data-icon="chevron_right">chevron_right</span>
+</div>
+<div class="h-[1px] bg-outline-variant mx-gutter"></div>
+<div onclick="location.href='/portfolio/input'" class="flex items-center justify-between p-gutter hover:bg-surface-variant/20 transition-all cursor-pointer active:scale-[0.98]">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-primary" data-icon="edit_square">edit_square</span>
+<span class="font-body-lg text-body-lg">포트폴리오 수정하기</span>
+</div>
+<span class="material-symbols-outlined text-outline" data-icon="chevron_right">chevron_right</span>
+</div>
+<div class="h-[1px] bg-outline-variant mx-gutter"></div>
+<div onclick="location.href='/login'" class="flex items-center justify-between p-gutter hover:bg-surface-variant/20 transition-all cursor-pointer active:scale-[0.98]">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-error" data-icon="logout">logout</span>
+<span class="font-body-lg text-body-lg text-error">로그아웃</span>
+</div>
+<span class="material-symbols-outlined text-outline" data-icon="chevron_right">chevron_right</span>
+</div>
+</div>
+</section>
+<!-- Notifications Section -->
+<section class="flex flex-col gap-4">
+<h2 class="font-label-md text-label-md text-on-surface-variant px-2">알림 설정</h2>
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden shadow-sm">
+<div class="flex items-center justify-between p-gutter">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-primary" data-icon="trending_up">trending_up</span>
+<span class="font-body-lg text-body-lg">주가 변동 알림</span>
+</div>
+<label class="toggle-switch">
+<input checked="" type="checkbox">
+<span class="slider"></span>
+</label>
+</div>
+<div class="h-[1px] bg-outline-variant mx-gutter"></div>
+<div class="flex items-center justify-between p-gutter">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-primary" data-icon="ads_click">ads_click</span>
+<span class="font-body-lg text-body-lg">목표 수익률 알림</span>
+</div>
+<label class="toggle-switch">
+<input checked="" type="checkbox">
+<span class="slider"></span>
+</label>
+</div>
+<div class="h-[1px] bg-outline-variant mx-gutter"></div>
+<div class="flex items-center justify-between p-gutter">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-primary" data-icon="newspaper">newspaper</span>
+<span class="font-body-lg text-body-lg">투자 뉴스 알림</span>
+</div>
+<label class="toggle-switch">
+<input type="checkbox">
+<span class="slider"></span>
+</label>
+</div>
+</div>
+</section>
+<!-- App Configuration -->
+<section class="flex flex-col gap-4">
+<h2 class="font-label-md text-label-md text-on-surface-variant px-2">앱 환경 설정</h2>
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden shadow-sm">
+<div class="flex items-center justify-between p-gutter">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-primary" data-icon="dark_mode">dark_mode</span>
+<span class="font-body-lg text-body-lg">다크 모드</span>
+</div>
+<label class="toggle-switch">
+<input type="checkbox">
+<span class="slider"></span>
+</label>
+</div>
+<div class="h-[1px] bg-outline-variant mx-gutter"></div>
+<div class="flex items-center justify-between p-gutter hover:bg-surface-variant/20 transition-all cursor-pointer active:scale-[0.98]">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-primary" data-icon="info">info</span>
+<span class="font-body-lg text-body-lg">앱 버전 정보</span>
+</div>
+<span class="font-label-md text-label-md text-on-surface-variant">v2.4.1</span>
+</div>
+</div>
+</section>
+<!-- Support Section -->
+<section class="flex flex-col gap-4">
+<h2 class="font-label-md text-label-md text-on-surface-variant px-2">고객 지원 및 정보</h2>
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden shadow-sm">
+<div class="flex items-center justify-between p-gutter hover:bg-surface-variant/20 transition-all cursor-pointer active:scale-[0.98]">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-primary" data-icon="campaign">campaign</span>
+<span class="font-body-lg text-body-lg">공지사항</span>
+</div>
+<span class="material-symbols-outlined text-outline" data-icon="chevron_right">chevron_right</span>
+</div>
+<div class="h-[1px] bg-outline-variant mx-gutter"></div>
+<div class="flex items-center justify-between p-gutter hover:bg-surface-variant/20 transition-all cursor-pointer active:scale-[0.98]">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-primary" data-icon="mail">mail</span>
+<span class="font-body-lg text-body-lg">문의하기</span>
+</div>
+<span class="material-symbols-outlined text-outline" data-icon="chevron_right">chevron_right</span>
+</div>
+<div class="h-[1px] bg-outline-variant mx-gutter"></div>
+<div class="flex items-center justify-between p-gutter hover:bg-surface-variant/20 transition-all cursor-pointer active:scale-[0.98]">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-primary" data-icon="verified_user">verified_user</span>
+<span class="font-body-lg text-body-lg">개인정보 처리방침</span>
+</div>
+<span class="material-symbols-outlined text-outline" data-icon="chevron_right">chevron_right</span>
+</div>
+<div class="h-[1px] bg-outline-variant mx-gutter"></div>
+<div class="flex items-center justify-between p-gutter hover:bg-surface-variant/20 transition-all cursor-pointer active:scale-[0.98]">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-primary" data-icon="description">description</span>
+<span class="font-body-lg text-body-lg">이용 약관</span>
+</div>
+<span class="material-symbols-outlined text-outline" data-icon="chevron_right">chevron_right</span>
+</div>
+</div>
+</section>
+</div>
+<!-- Decorative Asset -->
+
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 right-0 max-w-[390px] mx-auto bg-[#FAF8F5] border-t border-[#E5DEC9] z-50 h-16 grid grid-cols-4 items-center">
+<!-- 홈 -->
+<a class="flex flex-col items-center justify-center text-[#8A8A8A] hover:text-[#964B00] transition-colors py-1.5 mx-2" href="/home">
+<span class="material-symbols-outlined">home</span>
+<span class="text-[12px] font-medium mt-0.5">홈</span>
+</a>
+<!-- 진단/최적화 -->
+<a class="flex flex-col items-center justify-center text-[#8A8A8A] hover:text-[#964B00] transition-colors py-1.5 mx-2" href="/diagnosis/result">
+<span class="material-symbols-outlined">analytics</span>
+<span class="text-[12px] font-medium mt-0.5">진단/최적화</span>
+</a>
+<!-- 이슈 분석 -->
+<a class="flex flex-col items-center justify-center text-[#8A8A8A] hover:text-[#964B00] transition-colors py-1.5 mx-2" href="/issue/analysis">
+<span class="material-symbols-outlined">layers</span>
+<span class="text-[12px] font-medium mt-0.5">이슈 분석</span>
+</a>
+<!-- 설정 (현재 화면) -->
+<a class="flex flex-col items-center justify-center text-[#964B00] bg-[#F5E8DD] rounded-xl py-1.5 mx-2" href="/settings">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">settings</span>
+<span class="text-[12px] font-bold mt-0.5">설정</span>
+</a>
+</nav>
+</div>
+<script>
+        // Simple Interaction logic
+        document.querySelectorAll('.toggle-switch input').forEach(toggle => {
+            toggle.addEventListener('change', (e) => {
+                const label = e.target.closest('div').querySelector('.font-body-lg').innerText;
+                console.log(`${label} changed to: ${e.target.checked}`);
+            });
+        });
+
+        // Navigation simulation
+        document.querySelectorAll('nav a').forEach(navItem => {
+            navItem.addEventListener('click', (e) => {
+                // In a real app, this would route
+                console.log('Navigating to:', navItem.querySelector('span:last-child').innerText);
+            });
+        });
+    </script>
+
+
+
+
+
+
+
+</body></html>

@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>Chip Buddy</title>
+    <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #FAF2EB;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            font-family: "Hanken Grotesk", sans-serif;
+        }
+        .shell {
+            width: 100%;
+            max-width: 390px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            background: #FAF2EB;
+            overflow-x: hidden;
+        }
+        .splash-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            opacity: 0;
+            transition: opacity 0.7s ease-out;
+        }
+        .splash-content.visible {
+            opacity: 1;
+        }
+        .splash-title {
+            font-size: 40px;
+            font-weight: 700;
+            color: #6B3E08;
+            letter-spacing: -0.01em;
+            line-height: 1;
+        }
+    </style>
+</head>
+<body data-ui-screen="splash">
+    <!-- 390px Mobile App Container Shell -->
+    <div class="shell">
+        <div id="splash-content" class="splash-content">
+            <h1 class="splash-title">Chip Buddy</h1>
+        </div>
+    </div>
+
+    <!-- Fade in, hold, then move to login -->
+    <script>
+        requestAnimationFrame(() => {
+            document.getElementById('splash-content').classList.add('visible');
+        });
+        setTimeout(() => {
+            location.href = '/login';
+        }, 3000);
+    </script>
+</body>
+</html>

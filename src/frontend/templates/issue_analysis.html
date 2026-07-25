@@ -19,9 +19,28 @@
                 <span class="material-symbols-outlined text-[#964B00] text-[28px]">waves</span>
                 <h1 class="font-bold text-[18px] leading-[24px] text-[#2A1800] tracking-tight">Chip Buddy</h1>
             </a>
-            <div class="flex items-center gap-3">
+            <div class="flex items-center gap-3 relative">
                 <button class="material-symbols-outlined text-[#964B00]">notifications</button>
-                <a href="/login" class="material-symbols-outlined text-[#964B00] hover:text-[#7a3d00] transition-colors">account_circle</a>
+                <button id="profile-trigger" class="material-symbols-outlined text-[#964B00] hover:text-[#7a3d00] transition-colors" onclick="event.stopPropagation(); document.getElementById('profile-popup').classList.toggle('hidden');">account_circle</button>
+                <div id="profile-popup" class="hidden absolute right-0 top-10 w-64 bg-surface-container-low rounded-xl shadow-lg border border-outline-variant z-[60] overflow-hidden">
+                    <div class="p-4 border-b border-outline-variant flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full overflow-hidden flex items-center justify-center bg-[#F5E8DD]"><span class="material-symbols-outlined text-[24px] text-primary">account_circle</span></div>
+                        <div class="flex flex-col">
+                            <span class="font-bold text-[18px] text-on-surface">김버디</span>
+                            <span class="text-[14px] text-on-surface-variant">buddy@chipbuddy.io</span>
+                        </div>
+                    </div>
+                    <div class="p-2">
+                        <a href="/settings" class="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-surface-variant/20 rounded-lg transition-colors text-on-surface">
+                            <span class="material-symbols-outlined text-[20px]">settings</span>
+                            <span class="font-medium text-[14px]">설정</span>
+                        </a>
+                        <a href="/login" class="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-surface-variant/20 rounded-lg transition-colors text-error">
+                            <span class="material-symbols-outlined text-[20px]">logout</span>
+                            <span class="font-medium text-[14px]">로그아웃</span>
+                        </a>
+                    </div>
+                </div>
             </div>
         </header>
 
@@ -271,7 +290,7 @@
                 <span class="text-[12px] font-bold mt-0.5">이슈 분석</span>
             </a>
             <!-- 4. 설정 -->
-            <a href="/portfolio/edit" class="flex flex-col items-center justify-center text-[#8A8A8A] hover:text-[#964B00] transition-colors py-1.5 mx-2">
+            <a href="/settings" class="flex flex-col items-center justify-center text-[#8A8A8A] hover:text-[#964B00] transition-colors py-1.5 mx-2">
                 <span class="material-symbols-outlined">settings</span>
                 <span class="text-[12px] font-medium mt-0.5">설정</span>
             </a>
@@ -316,6 +335,14 @@
                 contentSam.classList.add('hidden');
             }
         }
+
+        document.addEventListener('click', (e) => {
+            const popup = document.getElementById('profile-popup');
+            const trigger = document.getElementById('profile-trigger');
+            if (popup && !popup.classList.contains('hidden') && !popup.contains(e.target) && !trigger.contains(e.target)) {
+                popup.classList.add('hidden');
+            }
+        });
     </script>
 </body>
 </html>

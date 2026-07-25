@@ -80,18 +80,22 @@ module.exports = {
         "body-md": ["Hanken Grotesk", "sans-serif"],
         "label-sm": ["Hanken Grotesk", "sans-serif"],
         "body-lg": ["Hanken Grotesk", "sans-serif"],
+        "body-sm": ["Hanken Grotesk", "sans-serif"],
         "headline-md": ["Hanken Grotesk", "sans-serif"],
         "headline-lg": ["Hanken Grotesk", "sans-serif"],
-        "label-md": ["Hanken Grotesk", "sans-serif"]
+        "label-md": ["Hanken Grotesk", "sans-serif"],
+        "title-md": ["Hanken Grotesk", "sans-serif"]
       },
       fontSize: {
         "headline-lg-mobile": ["24px", { lineHeight: "32px", letterSpacing: "-0.01em", fontWeight: "700" }],
         "body-md": ["16px", { lineHeight: "24px", fontWeight: "400" }],
         "label-sm": ["12px", { lineHeight: "16px", fontWeight: "500" }],
         "body-lg": ["18px", { lineHeight: "26px", fontWeight: "400" }],
+        "body-sm": ["14px", { lineHeight: "20px", fontWeight: "400" }],
         "headline-md": ["20px", { lineHeight: "28px", fontWeight: "600" }],
         "headline-lg": ["32px", { lineHeight: "40px", letterSpacing: "-0.02em", fontWeight: "700" }],
-        "label-md": ["14px", { lineHeight: "20px", letterSpacing: "0.05em", fontWeight: "600" }]
+        "label-md": ["14px", { lineHeight: "20px", letterSpacing: "0.05em", fontWeight: "600" }],
+        "title-md": ["20px", { lineHeight: "28px", fontWeight: "600" }]
       }
     }
   },
