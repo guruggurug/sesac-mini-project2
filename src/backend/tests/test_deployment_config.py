@@ -27,6 +27,17 @@ def test_procfile_trusts_platform_forwarded_https_headers():
     assert "--forwarded-allow-ips='*'" in procfile
 
 
+def test_railway_uses_the_repository_dockerfile():
+    config = json.loads((ROOT / "railway.json").read_text(encoding="utf-8"))
+
+    assert config["build"] == {
+        "builder": "DOCKERFILE",
+        "dockerfilePath": "Dockerfile",
+    }
+    assert config["deploy"]["healthcheckPath"] == "/health"
+    assert config["deploy"]["healthcheckTimeout"] == 300
+
+
 def test_docker_context_excludes_secrets_and_local_dependencies():
     dockerignore = (ROOT / ".dockerignore").read_text(encoding="utf-8")
 
