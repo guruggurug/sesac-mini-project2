@@ -1,4 +1,5 @@
 import os
+import sys
 
 from dotenv import load_dotenv
 
@@ -13,6 +14,9 @@ BASE_DIR = os.path.dirname(
         )
     )
 )
+
+if BASE_DIR not in sys.path:
+    sys.path.insert(0, BASE_DIR)
 
 ENV_FILE_PATH = os.path.join(BASE_DIR, ".env")
 

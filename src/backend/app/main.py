@@ -1,4 +1,19 @@
+import os
+import sys
 from contextlib import asynccontextmanager
+
+# Ensure repository root is in sys.path so 'src' and 'app' packages resolve in all environments
+BASE_DIR = os.path.dirname(
+    os.path.dirname(
+        os.path.dirname(
+            os.path.dirname(
+                os.path.dirname(os.path.abspath(__file__))
+            )
+        )
+    )
+)
+if BASE_DIR not in sys.path:
+    sys.path.insert(0, BASE_DIR)
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware

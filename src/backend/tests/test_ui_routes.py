@@ -17,8 +17,11 @@ TEMPLATE_ROOT = Path(__file__).parents[2] / "frontend" / "templates"
 @pytest.mark.parametrize(
     ("path", "screen"),
     [
-        ("/", "login"),
+        ("/", "splash"),
+        ("/splash", "splash"),
+        ("/login", "login"),
         ("/home", "home"),
+        ("/settings", "setting"),
         ("/portfolio/input", "portfolio-input"),
         ("/portfolio/edit", "portfolio-edit"),
         ("/portfolio/summary", "portfolio-summary"),
@@ -67,7 +70,8 @@ def test_unintended_ui_templates_are_absent_from_production():
 @pytest.mark.parametrize(
     "path",
     [
-        "/",
+        "/login",
+        "/settings",
         "/portfolio/input",
         "/portfolio/edit",
         "/portfolio/summary",
