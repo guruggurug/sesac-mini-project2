@@ -6,7 +6,7 @@
     <title>포트폴리오 요약 - Chip Buddy</title>
     <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=block" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', path='css/index.css') }}">
+    <link rel="stylesheet" href="/static/css/index.css">
 </head>
 <body data-ui-screen="portfolio-summary" class="bg-[#FAF8F5] text-on-surface flex justify-center items-start min-h-screen">
     {% if data_status in ["sample", "fallback"] %}<div class="fixed top-1 right-2 z-[100] rounded-full bg-[#F5E8DD] px-2 py-1 text-[10px] font-bold text-[#964B00]">{{ "샘플 데이터" if data_status == "sample" else "대체 데이터" }}</div>{% endif %}

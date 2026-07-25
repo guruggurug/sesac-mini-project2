@@ -974,3 +974,80 @@
   - Container runtime smoke testing remains blocked until Docker is available.
 - **Next recommended task**:
   - Push the commit to the remote, build the container in CI or a Docker-enabled environment, configure deployment secrets and persistent runtime storage, then run `/health` and `/market/quotes` production smoke tests.
+
+## 2026-07-25 — INT-DEPLOY-HOTFIX-09 started
+
+- **Role**: Integration
+- **Task ID**: INT-DEPLOY-HOTFIX-09
+- **Status**: in_progress
+- **Goal**: Restore production styling by preventing Railway's HTTPS pages from rendering the local Tailwind asset with an insecure HTTP URL.
+- **Observed production failure**:
+  - `GET /home` rendered the stylesheet as `http://sesac-mini-project2-production.up.railway.app/static/css/index.css`.
+  - Browsers block that URL as mixed content because the page itself is HTTPS.
+- **Allowed files**:
+  - `src/frontend/templates/`
+  - `src/backend/tests/test_ui_routes.py`
+  - `Dockerfile`
+  - `Procfile`
+  - `src/backend/tests/test_deployment_config.py`
+  - `progress/INTEGRATION.md`
+- **Validation plan**:
+  - UI route and deployment configuration tests.
+  - Full repository regression suite.
+  - Production CSS build.
+  - Browser smoke test using forwarded HTTPS headers locally, followed by a production smoke test after redeployment.
+
+## 2026-07-25 — INT-DEPLOY-HOTFIX-09 review
+
+- **Role**: Integration
+- **Task ID**: INT-DEPLOY-HOTFIX-09
+- **Status**: review
+- **Work completed**:
+  - Replaced generated absolute Tailwind stylesheet URLs with same-origin `/static/css/index.css` URLs on every production UI template.
+  - Configured Docker and Procfile Uvicorn commands to trust Railway's forwarded scheme headers.
+  - Added deployment configuration and UI-route regression checks, including the production home screen.
+- **Modified files**:
+  - `Dockerfile`
+  - `Procfile`
+  - `src/frontend/templates/diagnosis_result.html`
+  - `src/frontend/templates/home.html`
+  - `src/frontend/templates/issue_analysis.html`
+  - `src/frontend/templates/login.html`
+  - `src/frontend/templates/portfolio_edit.html`
+  - `src/frontend/templates/portfolio_input.html`
+  - `src/frontend/templates/portfolio_summary.html`
+  - `src/frontend/templates/setting.html`
+  - `src/frontend/static/css/index.css`
+  - `src/backend/tests/test_deployment_config.py`
+  - `src/backend/tests/test_ui_routes.py`
+  - `progress/INTEGRATION.md`
+- **Validation commands**:
+  - `.venv\Scripts\python.exe -m pytest -p no:cacheprovider -q src/backend/tests/test_deployment_config.py src/backend/tests/test_ui_routes.py`
+  - `.venv\Scripts\python.exe -m pytest -p no:cacheprovider -q`
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File scripts\build_frontend.ps1`
+  - `git diff --check`
+  - Browser smoke test: `http://127.0.0.1:8030/home`
+- **Validation results**:
+  - Deployment and UI regression bundle passed: `30 passed, 1 warning`.
+  - Full repository suite passed: `207 passed, 1 warning` in 619.66 seconds.
+  - Production Tailwind build passed.
+  - Local browser loaded `/static/css/index.css`, applied the expected body styles, and reported no console errors.
+  - `git diff --check` reported no whitespace errors; existing Windows line-ending notices only.
+- **Remaining**:
+  - Push the hotfix to `main`, wait for Railway redeployment, and confirm the production stylesheet resolves over HTTPS.
+- **Blockers**: None.
+- **Next recommended task**: Run the live `/home`, `/health`, and static asset smoke test after Railway finishes deploying the hotfix.
+
+## 2026-07-25 — INT-DEPLOY-HOTFIX-09 blocked
+
+- **Role**: Integration
+- **Task ID**: INT-DEPLOY-HOTFIX-09
+- **Status**: blocked
+- **Reason**: Repository rules require a pull request for `main`, and GitHub web access is unavailable from the current execution environment.
+- **Required action**: Open and merge the `feature/railway-https-styles` pull request into `main`, then allow Railway to redeploy.
+- **Owner**: Team lead or repository maintainer.
+- **Prepared commit**: `1c35244 fix(deploy): serve styles over HTTPS behind Railway`
+- **Remote branch**: `origin/feature/railway-https-styles`
+- **Post-merge validation**:
+  - Confirm `/home` references `https://sesac-mini-project2-production.up.railway.app/static/css/index.css`.
+  - Confirm the stylesheet loads and the mobile dashboard layout is restored.
