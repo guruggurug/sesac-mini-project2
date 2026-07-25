@@ -23,6 +23,35 @@
 
 ## Work Log
 
+### 2026-07-25 — DATA-B-RT-03: Reject Malformed CSV Row Width
+
+- **Role**: Data B
+- **Owner**: Data B
+- **Status**: `review`
+- **Authorization**: Team lead explicitly requested the shared CSV validator fix.
+- **Completed**:
+  - Changed the common CSV validator to reject values that `csv.DictReader` places under a `None` key when a row contains more values than its header.
+  - Added a regression test that reproduces an unquoted extra field in `sources.csv`.
+  - Preserved successful validation of the current 15-row source registry and complete Data A bundle.
+- **Modified files**:
+  - `src/backend/app/utils/csv_validator.py`
+  - `src/backend/tests/test_csv_validator.py`
+  - `progress/DATA-B.md`
+- **Validation commands**:
+  - `.venv\Scripts\python.exe -m pytest src/backend/tests/test_csv_validator.py -q`
+  - `.venv\Scripts\python.exe scripts\validate_data_a.py`
+  - `.venv\Scripts\python.exe -m pytest tests src/backend/tests -q`
+  - `.venv\Scripts\python.exe -m compileall -q src`
+  - `git diff --check`
+- **Validation results**:
+  - CSV validator tests: 7 passed.
+  - Data A bundle: PASS (9 candidates, 15 sources, 7 event sources, 6 events, 72 ESG rows).
+  - Full regression: 181 passed, 1 third-party deprecation warning.
+- **Remaining**:
+  - Integration owner reviews and merges the branch.
+- **Blockers**: none
+- **Next recommended task**: Integration review and merge.
+
 ### 2026-07-25 — DATA-B-RT-01/02: CSV Remediation Revalidation and Data B Approval
 
 - **Role**: Data B
