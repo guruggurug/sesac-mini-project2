@@ -1,3 +1,4 @@
+import logging
 import sys
 from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import HTMLResponse
@@ -13,6 +14,7 @@ from app.repositories.price_repository import PriceRepository
 from src.modeling.events import analyze_all_events
 
 router = APIRouter(tags=["Issues"])
+logger = logging.getLogger(__name__)
 
 def get_issues_page(request: Request):
     """
@@ -24,8 +26,12 @@ def get_issues_page(request: Request):
     try:
         events, event_status, event_warn = event_repo.load_data()
         price_df, price_status, price_warn = price_repo.load_data_as_df()
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"데이터 로딩 실패: {str(e)}")
+    except Exception as error:
+        logger.error("Issue page data loading failed (%s)", type(error).__name__)
+        raise HTTPException(
+            status_code=500,
+            detail="이슈 데이터를 불러오지 못했습니다.",
+        ) from error
         
     if event_status == "sample" or price_status == "sample":
         data_mode = "sample"
@@ -83,8 +89,12 @@ def get_current_issues():
     event_repo = EventRepository()
     try:
         events, data_status, warning = event_repo.load_data()
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"사건 데이터 로딩 실패: {str(e)}")
+    except Exception as error:
+        logger.error("Current issue loading failed (%s)", type(error).__name__)
+        raise HTTPException(
+            status_code=500,
+            detail="현재 이슈 데이터를 불러오지 못했습니다.",
+        ) from error
         
     response = {
         "events": events,
@@ -106,8 +116,12 @@ def get_historical_issues():
     try:
         events, event_status, event_warn = event_repo.load_data()
         price_df, price_status, price_warn = price_repo.load_data_as_df()
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"데이터 로딩 실패: {str(e)}")
+    except Exception as error:
+        logger.error("Historical issue data loading failed (%s)", type(error).__name__)
+        raise HTTPException(
+            status_code=500,
+            detail="과거 이슈 데이터를 불러오지 못했습니다.",
+        ) from error
         
     # 데이터 상태 결정
     if event_status == "sample" or price_status == "sample":
@@ -126,8 +140,12 @@ def get_historical_issues():
             window_days=10,
             filter_model_eligible_only=True
         )
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"사건 반응 분석 중 오류 발생: {str(e)}")
+    except Exception as error:
+        logger.error("Historical issue analysis failed (%s)", type(error).__name__)
+        raise HTTPException(
+            status_code=500,
+            detail="과거 사건 반응을 분석하지 못했습니다.",
+        ) from error
         
     warnings = []
     if event_warn:
@@ -138,7 +156,9 @@ def get_historical_issues():
     clean_events = []
     for evt in analyzed_events:
         if "error" in evt:
-            warnings.append(f"이벤트 {evt.get('event_id')} 분석 실패: {evt['error']}")
+            warnings.append(
+                f"이벤트 {evt.get('event_id', 'unknown')} 분석 결과를 제공할 수 없습니다."
+            )
         else:
             clean_events.append(evt)
             

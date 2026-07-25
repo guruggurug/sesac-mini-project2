@@ -1300,3 +1300,66 @@
 - **Blockers**:
   - Durable restart behavior cannot be verified until the Railway volume is mounted.
 - **Next recommended task**: Deploy this branch, configure the Railway volume, and run production latency/state-transition smoke tests.
+
+## 2026-07-26 — INT-BE-RUNTIME-14 started
+
+- **Role**: Integration
+- **Task ID**: INT-BE-RUNTIME-14
+- **Status**: in_progress
+- **Goal**: Harden the production FastAPI runtime before connecting the Data A-dependent issue publication workflow.
+- **Scope**:
+  - Remove the hard-coded session signing secret and apply secure cookie settings by environment.
+  - Replace wildcard credentialed CORS with an explicit allowlist.
+  - Prevent internal exception details, filesystem paths, and provider messages from leaking through public 5xx responses.
+  - Add production-runtime wiring tests that do not replace core services with successful fakes.
+- **Dependency boundary**:
+  - Production issue classification/publication remains blocked on the Data A complete-bundle normalizer; this task will not bypass candidate verification or change shared API/data schemas.
+- **Validation plan**:
+  - Add focused configuration, middleware, sanitized-error, and runtime wiring tests.
+  - Run backend API/contracts and the full repository regression suite.
+
+## 2026-07-26 — INT-BE-RUNTIME-14 review
+
+- **Role**: Integration
+- **Task ID**: INT-BE-RUNTIME-14
+- **Status**: review
+- **Work completed**:
+  - Replaced the public hard-coded session signing key with an environment-backed key and a per-process cryptographic fallback.
+  - Enabled secure session cookies automatically on Railway/production and retained `SameSite=Lax`.
+  - Removed wildcard credentialed CORS; production defaults to same-origin only and development uses an explicit localhost allowlist.
+  - Sanitized public market, issue, risk, and portfolio 5xx responses so internal exception text is not returned.
+  - Removed internal analysis exception text from successful warning payloads.
+  - Added runtime wiring tests for middleware options, explicit CORS behavior, production market service identity, and the intentionally unavailable Data A workflow boundary.
+- **Created files**:
+  - `src/backend/tests/test_public_error_sanitization.py`
+  - `src/backend/tests/test_runtime_wiring.py`
+- **Modified files**:
+  - `.env.example`
+  - `README.md`
+  - `src/backend/app/core/config.py`
+  - `src/backend/app/main.py`
+  - `src/backend/app/routes/issues.py`
+  - `src/backend/app/routes/market.py`
+  - `src/backend/app/routes/portfolio.py`
+  - `src/backend/app/routes/risk.py`
+  - `src/backend/tests/test_config_environment.py`
+  - `progress/INTEGRATION.md`
+- **Validation commands**:
+  - `.venv\Scripts\python.exe -m pytest -q src/backend/tests/test_config_environment.py src/backend/tests/test_runtime_wiring.py src/backend/tests/test_public_error_sanitization.py src/backend/tests/test_market_dashboard.py src/backend/tests/test_portfolio.py src/backend/tests/test_ui_routes.py`
+  - `.venv\Scripts\python.exe -m pytest -q`
+  - `rg` public exception-detail scan
+  - `git diff --check`
+  - Production `/home` and `/market/quotes` probes.
+- **Validation results**:
+  - Focused runtime/API bundle passed: `69 passed, 1 warning`.
+  - Full repository suite passed: `232 passed, 1 warning` in 225.68 seconds.
+  - No public route retains `detail=f"...{str(error)}"`-style exception leakage.
+  - Production `/home` returns `200` with the API-driven market fetch.
+  - Production `/market/quotes` still exceeded a 10-second probe, indicating the already-merged KIS snapshot deployment `53e42fc` was not yet active at verification time.
+- **Remaining**:
+  - Set a stable `SESSION_SECRET_KEY` in Railway so sessions survive deployment replacement.
+  - Confirm Railway deploys `53e42fc` or later and re-run the market latency probe.
+  - Implement a production Data A complete-bundle normalizer before replacing `UnavailableIssueSyncWorkflow`.
+- **Blockers**:
+  - Actual issue publication remains blocked on Data A candidate classification and complete-bundle normalization; runtime tests enforce that this boundary is not silently bypassed.
+- **Next recommended task**: Deploy runtime hardening, verify session/CORS behavior, then implement the approved DART candidate-to-bundle workflow.

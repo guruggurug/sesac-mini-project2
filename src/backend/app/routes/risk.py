@@ -1,3 +1,4 @@
+import logging
 import sys
 from fastapi import APIRouter, HTTPException
 from app.core.config import BASE_DIR
@@ -14,6 +15,7 @@ from src.modeling.downside import calculate_company_downside_risks
 from src.modeling.optimizer import classify_risk_level
 
 router = APIRouter(tags=["Risk"])
+logger = logging.getLogger(__name__)
 
 @router.post("/risk/esg")
 def calculate_esg_risk():
@@ -23,8 +25,12 @@ def calculate_esg_risk():
     esg_repo = ESGRepository()
     try:
         esg_data, esg_status, esg_warn = esg_repo.load_data()
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"ESG 데이터 로드 실패: {str(e)}")
+    except Exception as error:
+        logger.error("ESG risk data loading failed (%s)", type(error).__name__)
+        raise HTTPException(
+            status_code=500,
+            detail="ESG 위험 데이터를 불러오지 못했습니다.",
+        ) from error
         
     result = {}
     company_rows = {"005930": [], "000660": []}
@@ -104,8 +110,12 @@ def calculate_downside_risk():
             
         returns_df = calculate_daily_returns(pivoted_price_df)
         downside_risks = calculate_company_downside_risks(returns_df, pivoted_price_df, cvar_confidence=0.95)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"하방 위험 계산 실패: {str(e)}")
+    except Exception as error:
+        logger.error("Downside risk calculation failed (%s)", type(error).__name__)
+        raise HTTPException(
+            status_code=500,
+            detail="하방 위험을 계산하지 못했습니다.",
+        ) from error
         
     result = {}
     for ticker, metrics in downside_risks.items():

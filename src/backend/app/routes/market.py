@@ -22,6 +22,6 @@ def get_market_quotes():
             status_code=503,
             detail={
                 "code": "MARKET_QUOTES_UNAVAILABLE",
-                "message": str(error),
+                "message": "신뢰 가능한 시장 스냅샷이 아직 준비되지 않았습니다.",
             },
         ) from error

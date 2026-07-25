@@ -3,6 +3,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from app.core.templates import templates
 from typing import Optional
 
+import logging
 import sys
 from app.core.config import BASE_DIR, TURNOVER_WEIGHTS, DEFAULT_DOWNSIDE_WEIGHT, DEFAULT_ESG_WEIGHT
 if BASE_DIR not in sys.path:
@@ -28,6 +29,7 @@ from app.services.market_quotes import MarketQuoteError
 from app.services.portfolio_summary import calculate_portfolio_summary
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
 
 def get_setup_page(request: Request):
     """
@@ -185,8 +187,12 @@ def optimize_portfolio(
     try:
         esg_data, esg_status, esg_warn = esg_repo.load_data()
         price_df, price_status, price_warn = price_repo.load_data_as_df()
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"데이터 로드 중 오류 발생: {str(e)}")
+    except Exception as error:
+        logger.error("Portfolio input data loading failed (%s)", type(error).__name__)
+        raise HTTPException(
+            status_code=500,
+            detail="포트폴리오 분석 데이터를 불러오지 못했습니다.",
+        ) from error
 
     # 데이터 상태 판별
     if esg_status == "sample" or price_status == "sample":
@@ -276,7 +282,7 @@ def optimize_portfolio(
             esg_weight=DEFAULT_ESG_WEIGHT,
             knowledge_stage=session_knowledge_stage
         )
-    except Exception as e:
+    except Exception as error:
         try:
             sample_esg_data, _, _ = esg_repo.load_data()
             sample_price_df, _, _ = price_repo.load_data_as_df()
@@ -298,13 +304,18 @@ def optimize_portfolio(
                 knowledge_stage=session_knowledge_stage
             )
             opt_result["warnings"] = opt_result.get("warnings", []) + [
-                f"최적화 계산 중 오류가 발생하여 샘플 데이터로 폴백 계산되었습니다: {str(e)}"
+                "최적화 계산 오류로 검증된 대체 데이터 경로를 사용했습니다."
             ]
-        except Exception as fallback_err:
+        except Exception as fallback_error:
+            logger.error(
+                "Portfolio optimization and fallback failed (%s/%s)",
+                type(error).__name__,
+                type(fallback_error).__name__,
+            )
             raise HTTPException(
                 status_code=500,
-                detail=f"최적화 계산 실패 및 샘플 데이터 폴백 실패: {str(fallback_err)}"
-            )
+                detail="포트폴리오 최적화와 대체 계산에 실패했습니다.",
+            ) from fallback_error
 
     if warnings:
         opt_result["warnings"] = list(set(opt_result.get("warnings", []) + warnings))

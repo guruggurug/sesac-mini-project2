@@ -1,6 +1,7 @@
 import os
 import sys
 from contextlib import asynccontextmanager
+import logging
 
 # Ensure repository root is in sys.path so 'src' and 'app' packages resolve in all environments
 BASE_DIR = os.path.dirname(
@@ -23,9 +24,14 @@ from starlette.middleware.sessions import SessionMiddleware
 from app.core.config import (
     ENABLE_ISSUE_SCHEDULER,
     ENABLE_MARKET_REFRESH_ON_STARTUP,
+    CORS_ALLOWED_ORIGINS,
     FRONTEND_STATIC_DIR,
+    IS_PRODUCTION,
     KIS_APP_KEY,
     KIS_APP_SECRET,
+    SESSION_COOKIE_HTTPS_ONLY,
+    SESSION_SECRET_IS_EPHEMERAL,
+    SESSION_SECRET_KEY,
 )
 from app.core.runtime import (
     daily_issue_scheduler,
@@ -42,10 +48,16 @@ from app.routes.market import router as market_router
 from app.routes.sync import router as sync_router
 from app.routes.ui import router as ui_router
 
+logger = logging.getLogger(__name__)
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     recover_runtime_state_after_restart()
+    if IS_PRODUCTION and SESSION_SECRET_IS_EPHEMERAL:
+        logger.warning(
+            "SESSION_SECRET_KEY is not configured; sessions will reset on restart"
+        )
     if ENABLE_MARKET_REFRESH_ON_STARTUP and KIS_APP_KEY and KIS_APP_SECRET:
         market_dashboard_service.request_refresh()
     if ENABLE_ISSUE_SCHEDULER:
@@ -67,18 +79,22 @@ app = FastAPI(
 # 세션 미들웨어 설정 (암호화 쿠키 세션)
 app.add_middleware(
     SessionMiddleware,
-    secret_key="chip-buddy-secret-key-super-secure-mvp-12345",
-    session_cookie="chip_buddy_session"
+    secret_key=SESSION_SECRET_KEY,
+    session_cookie="chip_buddy_session",
+    same_site="lax",
+    https_only=SESSION_COOKIE_HTTPS_ONLY,
 )
 
-# CORS 설정
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+# Same-origin production traffic needs no CORS middleware. Explicit development
+# or integration origins can be configured without wildcard credentials.
+if CORS_ALLOWED_ORIGINS:
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=CORS_ALLOWED_ORIGINS,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
 
 # 커스텀 예외 핸들러 등록
 app.add_exception_handler(CSVValidationError, csv_validation_exception_handler)

@@ -1,4 +1,5 @@
 import os
+import secrets
 import sys
 
 from dotenv import load_dotenv
@@ -33,8 +34,37 @@ def resolve_project_path(path: str) -> str:
 
 load_project_environment()
 
+APP_ENV = os.getenv("APP_ENV", "development").strip().lower()
+IS_RAILWAY = bool(os.getenv("RAILWAY_ENVIRONMENT_ID"))
+IS_PRODUCTION = APP_ENV == "production" or IS_RAILWAY
+
 FRONTEND_STATIC_DIR = os.path.join(BASE_DIR, "src", "frontend", "static")
 FRONTEND_TEMPLATES_DIR = os.path.join(BASE_DIR, "src", "frontend", "templates")
+
+_configured_session_secret = os.getenv("SESSION_SECRET_KEY", "").strip()
+SESSION_SECRET_KEY = _configured_session_secret or secrets.token_urlsafe(48)
+SESSION_SECRET_IS_EPHEMERAL = not bool(_configured_session_secret)
+SESSION_COOKIE_HTTPS_ONLY = IS_PRODUCTION
+
+
+def parse_origin_allowlist(raw_value: str) -> list[str]:
+    return list(
+        dict.fromkeys(
+            origin.strip().rstrip("/")
+            for origin in raw_value.split(",")
+            if origin.strip()
+        )
+    )
+
+
+_default_cors_origins = (
+    ""
+    if IS_PRODUCTION
+    else "http://localhost:5173,http://127.0.0.1:5173"
+)
+CORS_ALLOWED_ORIGINS = parse_origin_allowlist(
+    os.getenv("CORS_ALLOWED_ORIGINS", _default_cors_origins)
+)
 
 # Portfolio optimization default weights and turnover profile weights
 DEFAULT_DOWNSIDE_WEIGHT = 0.7

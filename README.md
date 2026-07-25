@@ -468,6 +468,8 @@ cp .env.example .env
 ```dotenv
 APP_ENV=development
 DATA_MODE=sample
+SESSION_SECRET_KEY=
+CORS_ALLOWED_ORIGINS=http://localhost:5173,http://127.0.0.1:5173
 
 DART_API_KEY=
 NEWS_API_KEY=
@@ -484,6 +486,8 @@ FRONTEND_API_BASE_URL=http://localhost:8000
 ```
 
 > KIS 키가 없으면 외부 시장 조회를 수행하지 않습니다. 삼성전자·SK하이닉스는 검증 가격 저장소의 최신 종가를 사용하고, KOSPI·KOSDAQ은 실제값을 임의 생성하지 않습니다. 실제 API 키가 없는 경우 `DATA_MODE=sample`로 실행합니다.
+
+`SESSION_SECRET_KEY`는 운영에서 충분히 긴 임의값을 Railway Secret으로 설정합니다. 값이 없으면 알려진 고정키 대신 프로세스별 임시 키를 생성하므로 재시작 때 세션이 초기화됩니다. 운영 CORS는 기본 비활성화되며, 별도 프론트엔드 도메인이 필요한 경우에만 `CORS_ALLOWED_ORIGINS`에 쉼표로 구분한 정확한 origin을 설정합니다.
 
 `RUNTIME_STATE_DB_PATH`의 SQLite 파일에는 마지막 정상 시장 가격과 단일 활성 이슈 동기화 lock을 저장합니다. 서버 재시작 시 진행 중이던 동기화는 `failed`로 종료하고 lock을 해제하며, 마지막 정상 가격은 유지합니다.
 
