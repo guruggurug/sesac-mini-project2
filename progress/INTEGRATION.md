@@ -1051,3 +1051,56 @@
 - **Post-merge validation**:
   - Confirm `/home` references `https://sesac-mini-project2-production.up.railway.app/static/css/index.css`.
   - Confirm the stylesheet loads and the mobile dashboard layout is restored.
+
+## 2026-07-25 — INT-DEPLOY-RAILPACK-10 started
+
+- **Role**: Integration
+- **Task ID**: INT-DEPLOY-RAILPACK-10
+- **Status**: in_progress
+- **Goal**: Make new Railway services build the repository's verified multi-stage Dockerfile instead of failing during Railpack auto-detection.
+- **Observed failure**:
+  - A newly created Railway service reports `railpack process exited with an error`.
+  - The repository already has a root `Dockerfile`, but no config-as-code file explicitly selects the Dockerfile builder.
+- **Assumption**:
+  - The service is connected to the repository root and the failure summary accurately identifies Railpack as the selected builder.
+- **Allowed files**:
+  - `railway.json`
+  - `src/backend/tests/test_deployment_config.py`
+  - `progress/INTEGRATION.md`
+- **Validation plan**:
+  - Parse and assert the Railway config contract.
+  - Run deployment configuration and UI route tests.
+  - Run the full repository regression suite if focused validation passes.
+
+## 2026-07-25 — INT-DEPLOY-RAILPACK-10 review
+
+- **Role**: Integration
+- **Task ID**: INT-DEPLOY-RAILPACK-10
+- **Status**: review
+- **Work completed**:
+  - Added Railway config-as-code that explicitly selects the repository `Dockerfile` builder.
+  - Added `/health` deployment healthcheck, a 300-second startup timeout, and bounded restart settings.
+  - Added a regression test for the Railway build and healthcheck contract.
+- **Created files**:
+  - `railway.json`
+- **Modified files**:
+  - `src/backend/tests/test_deployment_config.py`
+  - `progress/INTEGRATION.md`
+- **Validation commands**:
+  - `.venv\Scripts\python.exe -m pytest -p no:cacheprovider -q src/backend/tests/test_deployment_config.py src/backend/tests/test_ui_routes.py`
+  - `.venv\Scripts\python.exe -m pytest -p no:cacheprovider -q`
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File scripts\build_frontend.ps1`
+  - `git diff --check`
+- **Validation results**:
+  - Deployment and UI route bundle passed: `31 passed, 1 warning`.
+  - Full repository suite passed: `209 passed, 1 warning` in 797.93 seconds.
+  - Production Tailwind build passed.
+  - `git diff --check` reported no whitespace errors; existing Windows line-ending notices only.
+- **Remaining**:
+  - Merge this deployment configuration into `main`.
+  - In Railway, leave Root Directory empty, remove Build/Start command overrides, and redeploy the latest `main`.
+  - Confirm the build log uses the Dockerfile instead of Railpack.
+- **Blockers**:
+  - Docker CLI is not installed locally, so the container image cannot be built in this environment.
+  - If Dockerfile mode still fails, the full build log above the final Railpack summary is required to identify the next cause.
+- **Next recommended task**: Deploy the merged config in the user's Railway project and verify `/health`, `/login`, and `/static/css/index.css`.
