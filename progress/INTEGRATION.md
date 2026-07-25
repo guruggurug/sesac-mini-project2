@@ -1037,3 +1037,17 @@
   - Push the hotfix to `main`, wait for Railway redeployment, and confirm the production stylesheet resolves over HTTPS.
 - **Blockers**: None.
 - **Next recommended task**: Run the live `/home`, `/health`, and static asset smoke test after Railway finishes deploying the hotfix.
+
+## 2026-07-25 — INT-DEPLOY-HOTFIX-09 blocked
+
+- **Role**: Integration
+- **Task ID**: INT-DEPLOY-HOTFIX-09
+- **Status**: blocked
+- **Reason**: Repository rules require a pull request for `main`, and GitHub web access is unavailable from the current execution environment.
+- **Required action**: Open and merge the `feature/railway-https-styles` pull request into `main`, then allow Railway to redeploy.
+- **Owner**: Team lead or repository maintainer.
+- **Prepared commit**: `1c35244 fix(deploy): serve styles over HTTPS behind Railway`
+- **Remote branch**: `origin/feature/railway-https-styles`
+- **Post-merge validation**:
+  - Confirm `/home` references `https://sesac-mini-project2-production.up.railway.app/static/css/index.css`.
+  - Confirm the stylesheet loads and the mobile dashboard layout is restored.
