@@ -137,6 +137,16 @@ def test_validated_optimization_rejects_missing_esg_aggregate():
         )
 
 
+def test_optimizer_rejects_legacy_reviewed_data_mode():
+    with pytest.raises(ValueError, match="지원하지 않는 data_mode"):
+        optimize_portfolio(
+            holdings=balanced_holdings(),
+            price_data=SAMPLE_CSV_PATH,
+            esg_input={"005930": 0.4, "000660": 0.5},
+            data_mode="reviewed",
+        )
+
+
 def test_optimizer_is_side_effect_free_by_default(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
 

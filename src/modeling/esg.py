@@ -54,19 +54,10 @@ def get_validated_sources(sources_path: Path) -> set:
     if not sources_path.exists():
         return set()
     df = pd.read_csv(sources_path)
-    if "validated" in df.columns:
-        validation_column = "validated"
-    elif "reviewed" in df.columns:
-        validation_column = "reviewed"
-    else:
+    if "validated" not in df.columns:
         raise ValueError("sources.csv에 validated 열이 없습니다.")
-    validated_df = df[df[validation_column].astype(str).str.lower() == "true"]
+    validated_df = df[df["validated"].astype(str).str.lower() == "true"]
     return set(validated_df["source_id"].astype(str).unique())
-
-
-def get_reviewed_sources(sources_path: Path) -> set:
-    """Backward-compatible alias for the validated-source loader."""
-    return get_validated_sources(sources_path)
 
 
 def calculate_esg_risk(

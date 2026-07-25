@@ -12,7 +12,7 @@ import yaml
 
 from src.modeling.price import validate_price_data, calculate_daily_returns
 from src.modeling.downside import calculate_cvar, calculate_company_downside_risks, filter_price_period
-from src.modeling.esg import calculate_esg_risk, load_yaml_config, get_reviewed_sources
+from src.modeling.esg import calculate_esg_risk, load_yaml_config, get_validated_sources
 
 TICKER_SAMSUNG = "005930"
 TICKER_SK = "000660"
@@ -106,7 +106,7 @@ def load_esg_scores(
             scoring_rules = load_yaml_config(config_dir / "esg_scoring_rules.yaml")
             materiality_weights = load_yaml_config(config_dir / "materiality_weights.yaml")
             event_rules = load_yaml_config(config_dir / "event_penalty_rules.yaml")
-            reviewed_sources = get_reviewed_sources(data_dir / "sources.csv")
+            validated_sources = get_validated_sources(data_dir / "sources.csv")
             
             events_path = data_dir / "events.csv"
             events_df = pd.read_csv(events_path) if events_path.exists() else pd.DataFrame()
@@ -117,7 +117,7 @@ def load_esg_scores(
                 scoring_rules=scoring_rules,
                 materiality_weights=materiality_weights,
                 event_rules=event_rules,
-                reviewed_sources=reviewed_sources
+                reviewed_sources=validated_sources
             )
             return {
                 TICKER_SAMSUNG: esg_results[TICKER_SAMSUNG]["esg_risk_score"],
@@ -238,7 +238,7 @@ def optimize_portfolio(
     """
     Run 1% grid search portfolio optimization over 20%-80% weight bounds.
     """
-    if data_mode not in {"sample", "validated", "fallback", "reviewed"}:
+    if data_mode not in {"sample", "validated", "fallback"}:
         raise ValueError(f"지원하지 않는 data_mode입니다: {data_mode}")
     # Map compatibility parameters if custom ones are None
     if custom_alpha is None and downside_weight is not None:
@@ -327,7 +327,7 @@ def optimize_portfolio(
             scoring_rules = load_yaml_config(config_dir / "esg_scoring_rules.yaml")
             materiality_weights = load_yaml_config(config_dir / "materiality_weights.yaml")
             event_rules = load_yaml_config(config_dir / "event_penalty_rules.yaml")
-            reviewed_sources = get_reviewed_sources(data_dir / "sources.csv")
+            validated_sources = get_validated_sources(data_dir / "sources.csv")
             
             # Find default events file
             events_path = data_dir / "events.csv"
@@ -339,14 +339,14 @@ def optimize_portfolio(
                 scoring_rules=scoring_rules,
                 materiality_weights=materiality_weights,
                 event_rules=event_rules,
-                reviewed_sources=reviewed_sources
+                reviewed_sources=validated_sources
             )
             
             for ticker in [TICKER_SAMSUNG, TICKER_SK]:
                 esg_scores[ticker] = esg_results[ticker]["esg_risk_score"]
                 esg_metadata[ticker] = esg_results[ticker]
         except Exception as e:
-            if data_mode in ("validated", "reviewed"):
+            if data_mode == "validated":
                 raise ValueError(f"ESG 실제 데이터 계산 중 치명적인 오류가 발생했습니다: {str(e)}")
             # Fallback for sample mode
             esg_scores = {TICKER_SAMSUNG: 0.42, TICKER_SK: 0.55}
