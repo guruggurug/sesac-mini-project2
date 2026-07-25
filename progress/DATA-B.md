@@ -11,17 +11,62 @@
 | DATA-B-05 | Real Data Integration | `done` | `src/modeling/esg.py`, `src/modeling/run_pipeline.py` | - |
 | DATA-B-06 | Sensitivity Check | `done` | `src/modeling/sensitivity.py`, `data/processed/*` | - |
 | DATA-B-07 | Recalculation with Actual Data + Teammate Constraints | `done` | `src/modeling/esg.py`, `src/modeling/optimizer.py`, `tests/test_esg.py`, `data/processed/*` | - |
-| DATA-B-RT-01 | ESG Recalculation After Eligible Event or Status Change | `blocked` | snapshot-bound 재계산 교차검토 완료 | malformed `sources.csv` 수정 필요 |
-| DATA-B-RT-02 | Optimization Recalculation and Explanation Integration | `blocked` | side-effect-free optimizer 교차검토 완료 | 실제 validated 배치 재생성 필요 |
+| DATA-B-RT-01 | ESG Recalculation After Eligible Event or Status Change | `review` | validated snapshot-bound recalculation verified | Integration review |
+| DATA-B-RT-02 | Optimization Recalculation and Explanation Integration | `review` | validated side-effect-free optimization outputs regenerated | Integration review |
 
 ## Active Blockers
 
 | Blocker ID | Related Task | Description | Owner | Required Action | Status |
 |---|---|---|---|---|---|
-| DATA-B-RT-B01 | DATA-B-RT-01, DATA-B-RT-02 | `data/processed/sources.csv`의 SRC-0011·SRC-0012 note 쉼표가 인용되지 않아 13열 스키마가 14열로 파싱되고 실제 Data B 배치가 중단됨 | Data A | 두 행의 CSV quoting을 수정하고 extra-field를 거부하는 bundle 검증을 통과시킨 뒤 Data B에 재전달 | `blocked` |
-| DATA-B-RT-B02 | DATA-B-RT-02 | 기존 `optimization_result.json`·`model_run_metadata.json`이 허용되지 않는 `data_status=reviewed` 상태로 남아 있음 | Data B | DATA-B-RT-B01 해소 후 최신 72행 ESG·6사건으로 배치를 재실행해 `validated` 산출물 발행 | `blocked` |
+| DATA-B-RT-B01 | DATA-B-RT-01, DATA-B-RT-02 | CSV field-count issue in SRC-0011 and SRC-0012 | Data A | User-provided correction passed standard CSV and Data A bundle validation | `done` |
+| DATA-B-RT-B02 | DATA-B-RT-02 | Generated outputs retained legacy `data_status=reviewed` | Data B | Pipeline rerun regenerated outputs with `data_status=validated` | `done` |
 
 ## Work Log
+
+### 2026-07-25 — DATA-B-RT-01/02: CSV Remediation Revalidation and Data B Approval
+
+- **Role**: Data B
+- **Owner**: Data B
+- **Task IDs**: `DATA-B-RT-01`, `DATA-B-RT-02`
+- **Status**: `review`
+- **Review decision**: `approved` for Integration review and merge
+- **Completed**:
+  - Revalidated the user-provided `sources.csv` correction with the standard CSV parser and the Data A bundle validator.
+  - Reran the complete Data B batch against the latest processed inputs.
+  - Regenerated ESG risk, optimization grid, recommendation, sensitivity, and model-run metadata outputs.
+  - Confirmed all model-facing output states are `validated`; legacy `reviewed` output is no longer published.
+  - Confirmed six model events are included and all have status `confirmed`.
+  - Confirmed recommended weights are Samsung Electronics 25% and SK hynix 75%, sum to 100%, and remain within the 20–80% constraint.
+  - Confirmed snapshot-bound recalculation, result-version behavior, side-effect-free optimizer behavior, and validated missing-data/error handling are acceptable from the Data B role.
+- **Modified files**:
+  - `data/processed/sources.csv` (user-provided correction; Data B validation only)
+  - `data/processed/company_esg_risks.json`
+  - `data/processed/model_run_metadata.json`
+  - `data/processed/optimization_grid_results.csv`
+  - `data/processed/optimization_result.json`
+  - `data/processed/sensitivity_results.csv`
+  - `data/processed/sensitivity_summary.json`
+  - `progress/DATA-B.md`
+- **Validation commands**:
+  - Standard-library CSV field-count check
+  - `.venv\Scripts\python.exe scripts\validate_data_a.py`
+  - `.venv\Scripts\python.exe -m src.modeling.run_pipeline`
+  - Focused Data B/backend snapshot tests
+  - `.venv\Scripts\python.exe -m pytest tests src/backend/tests -q`
+  - Deterministic rerun comparison excluding `generated_at` and `run_id`
+  - `.venv\Scripts\python.exe -m compileall -q src`
+  - `git diff --check`
+- **Validation results**:
+  - CSV structure: 15 records, 13 columns, zero malformed rows.
+  - Data A bundle: PASS (9 candidates, 15 sources, 7 event sources, 6 events, 72 ESG rows).
+  - Focused tests: 59 passed.
+  - Full regression: 180 passed, 1 third-party deprecation warning.
+  - Determinism: PASS; no semantic output differences across identical reruns.
+  - Compile and whitespace checks: PASS.
+- **Remaining**:
+  - Integration owner reviews the user-provided Data A CSV correction and regenerated Data B artifacts, then merges the branch.
+- **Blockers**: none
+- **Next recommended task**: Integration review and merge of the snapshot workflow branch.
 
 ### 2026-07-25 — DATA-B-RT-01/02: Snapshot Recalculation Cross-Review Result
 

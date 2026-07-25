@@ -1,8 +1,8 @@
 {
-  "run_id": "RUN-20260725-022733",
+  "run_id": "RUN-20260725-040240",
   "model_version": "v1.2-dynamic-esg",
-  "generated_at": "2026-07-25T02:27:33.765031+00:00",
-  "data_status": "reviewed",
+  "generated_at": "2026-07-25T04:02:40.000840+00:00",
+  "data_status": "validated",
   "input_files": {
     "esg_indicators": {
       "file": "esg_indicators.csv",
