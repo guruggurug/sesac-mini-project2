@@ -147,6 +147,12 @@ def test_real_esg_and_optimization_results_are_bound_to_active_snapshot(tmp_path
     assert stored.result["snapshot_version"] == active.version
     assert set(stored.result["esg_scores"]) == {"005930", "000660"}
     assert len(stored.result["optimization_grid"]) == 2
+    assert "event_reactions" in stored.result
+    assert "similar_event_groups" in stored.result
+    assert all(
+        group["similar_group_key"]
+        for group in stored.result["similar_event_groups"]
+    )
     with (active.root / "data/processed/events.csv").open(
         "r", encoding="utf-8-sig", newline=""
     ) as handle:

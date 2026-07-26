@@ -1,4 +1,5 @@
 from app.core.config import (
+    DART_API_KEY,
     KIS_APP_KEY,
     KIS_APP_SECRET,
     KIS_BASE_URL,
@@ -13,6 +14,11 @@ from app.core.config import (
 )
 from app.repositories.runtime_state_repository import RuntimeStateRepository
 from app.services.data_b_recalculation import DataBRecalculationAdapter
+from app.services.dart_disclosures import build_dart_collection_service
+from app.services.issue_bundle_normalizer import (
+    DailyDartIssueCollector,
+    DataAIssueBundleNormalizer,
+)
 from app.services.issue_snapshot_publisher import IssueSnapshotPublisher
 from app.services.issue_scheduler import DailyIssueScheduler
 from app.services.issue_sync_workflow import InternalIssueSyncWorkflow
@@ -58,9 +64,31 @@ data_b_recalculation_adapter = DataBRecalculationAdapter(
     runtime_state_repository,
     runtime_root=ISSUE_RUNTIME_DATA_DIR,
 )
+
+
+def build_internal_issue_sync_workflow(collector, normalizer):
+    """Assemble the shared collection-to-recalculation workflow."""
+    return InternalIssueSyncWorkflow(
+        collector,
+        normalizer,
+        issue_snapshot_publisher,
+        recalculation=data_b_recalculation_adapter,
+    )
+
+
+def build_production_issue_sync_workflow():
+    """Enable production issue sync only when the DART credential is configured."""
+    if not DART_API_KEY:
+        return UnavailableIssueSyncWorkflow()
+    return build_internal_issue_sync_workflow(
+        DailyDartIssueCollector(build_dart_collection_service()),
+        DataAIssueBundleNormalizer(runtime_root=ISSUE_RUNTIME_DATA_DIR),
+    )
+
+
 issue_sync_coordinator = IssueSyncCoordinator(
     runtime_state_repository,
-    UnavailableIssueSyncWorkflow(),
+    build_production_issue_sync_workflow(),
 )
 daily_issue_scheduler = DailyIssueScheduler(
     runtime_state_repository,
@@ -77,13 +105,3 @@ sync_status_service = SyncStatusService(
 
 def recover_runtime_state_after_restart() -> None:
     runtime_state_repository.recover_interrupted_syncs()
-
-
-def build_internal_issue_sync_workflow(collector, normalizer):
-    """Assemble the shared workflow once a complete-bundle normalizer is supplied."""
-    return InternalIssueSyncWorkflow(
-        collector,
-        normalizer,
-        issue_snapshot_publisher,
-        recalculation=data_b_recalculation_adapter,
-    )

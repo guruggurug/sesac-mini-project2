@@ -18,6 +18,70 @@
     ],
     "failure_action": "retain_rejected_candidate"
   },
+  "candidate_classification": {
+    "version": "1.0.0",
+    "unmatched_action": "reject",
+    "unmatched_reason": "no_approved_esg_event_rule_match",
+    "official_dart_status": "confirmed",
+    "rules": [
+      {
+        "rule_id": "OCCUPATIONAL_SAFETY",
+        "pattern": "중대재해\\s*발생|산업재해|업무상\\s*질병|사망\\s*사고",
+        "body_pattern": "중대재해\\s*발생|산업재해\\s*(?:발생|사고)|업무상\\s*질병.{0,80}(?:사망|발생)|사망\\s*사고",
+        "event_category": "occupational_safety",
+        "event_subcategory": "workplace_incident",
+        "linked_indicator_id": "S01"
+      },
+      {
+        "rule_id": "HAZARDOUS_CHEMICAL_RELEASE",
+        "pattern": "유해화학물질.*(?:누출|유출)|(?:누출|유출).*유해화학물질",
+        "body_pattern": "유해화학물질.{0,120}(?:누출|유출)|(?:누출|유출).{0,120}유해화학물질",
+        "event_category": "hazardous_chemicals",
+        "event_subcategory": "chemical_release",
+        "linked_indicator_id": "E05"
+      },
+      {
+        "rule_id": "PERSONAL_DATA_BREACH",
+        "pattern": "개인정보.*(?:유출|침해)|(?:유출|침해).*개인정보",
+        "body_pattern": "개인정보.{0,120}(?:유출|침해)|(?:유출|침해).{0,120}개인정보",
+        "event_category": "cybersecurity",
+        "event_subcategory": "personal_data_breach",
+        "linked_indicator_id": "S04"
+      },
+      {
+        "rule_id": "GHG_EMISSIONS",
+        "pattern": "온실가스.*(?:위반|배출)|공정가스.*(?:위반|배출)",
+        "body_pattern": "(?:온실가스|공정가스).{0,120}(?:법령\\s*위반|기준\\s*초과|행정처분|제재|사고)",
+        "event_category": "greenhouse_gas_energy",
+        "event_subcategory": "emissions",
+        "linked_indicator_id": "E01"
+      },
+      {
+        "rule_id": "WASTE_COMPLIANCE",
+        "pattern": "폐기물.*(?:위반|처분)|(?:위반|처분).*폐기물",
+        "body_pattern": "폐기물.{0,120}(?:법령\\s*위반|행정처분|제재)|(?:법령\\s*위반|행정처분|제재).{0,120}폐기물",
+        "event_category": "waste_circularity",
+        "event_subcategory": "waste_compliance",
+        "linked_indicator_id": "E03"
+      },
+      {
+        "rule_id": "FAIR_TRADE_COMPLIANCE",
+        "pattern": "불공정거래|공정거래.*(?:제재|과징금)|횡령|배임",
+        "body_pattern": "불공정거래|공정거래.{0,120}(?:제재|과징금)|횡령|배임",
+        "event_category": "fair_trade_compliance",
+        "event_subcategory": "compliance_action",
+        "linked_indicator_id": "G03"
+      },
+      {
+        "rule_id": "ACCOUNTING_DISCLOSURE",
+        "pattern": "회계처리기준.*위반|감사보고서.*정정",
+        "body_pattern": "회계처리기준.{0,120}위반|감사보고서.{0,120}정정",
+        "event_category": "accounting_disclosure",
+        "event_subcategory": "disclosure_correction",
+        "linked_indicator_id": "G02"
+      }
+    ]
+  },
   "candidate_deduplication": {
     "key_priority": [
       ["detection_source_type", "source_name", "external_id"],

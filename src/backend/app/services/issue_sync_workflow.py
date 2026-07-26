@@ -28,6 +28,7 @@ class IssueCollectionResult:
 @dataclass(frozen=True)
 class PreparedIssueBundle:
     bundle_root: Path
+    cleanup: Callable[[], None] | None = None
 
 
 @dataclass(frozen=True)
@@ -103,70 +104,75 @@ class InternalIssueSyncWorkflow:
         self._current_bundle_root = current_bundle_root
 
     async def run(self, report_stage: Callable[[str], None]) -> IssueSyncWorkflowResult:
+        prepared: PreparedIssueBundle | None = None
         try:
-            collection = self._collector.collect()
-        except Exception as error:
-            raise _stage_error("COLLECTION", error) from error
-
-        report_stage("normalizing")
-        try:
-            prepared = self._normalizer.normalize(collection)
-        except Exception as error:
-            raise _stage_error("NORMALIZATION", error) from error
-
-        report_stage("validating")
-        try:
-            validate_data_a_bundle(str(prepared.bundle_root))
-            scoring_relevant = scoring_relevant_bundle_changed(
-                self._current_bundle_root(), prepared.bundle_root
-            )
-        except Exception as error:
-            raise _stage_error("VALIDATION", error) from error
-
-        report_stage("publishing")
-        try:
-            publication = self._publisher.publish(prepared.bundle_root)
-        except Exception as error:
-            code = str(getattr(error, "code", "ISSUE_SYNC_PUBLICATION_FAILED"))
-            raise IssueSyncWorkflowError(code, "atomic snapshot publication failed") from error
-
-        recalculation_triggered = False
-        recalculated_at = None
-        if publication.snapshot_updated and scoring_relevant:
-            report_stage("recalculating")
-            if self._recalculation is None:
-                raise RecalculationUnavailable()
-            recalculation_triggered = True
             try:
-                requested_version = _required(publication.published_snapshot_version)
-                result = await self._recalculation.recalculate(
-                    snapshot_version=requested_version,
-                    published_at=_required(publication.published_at),
+                collection = self._collector.collect()
+            except Exception as error:
+                raise _stage_error("COLLECTION", error) from error
+
+            report_stage("normalizing")
+            try:
+                prepared = self._normalizer.normalize(collection)
+            except Exception as error:
+                raise _stage_error("NORMALIZATION", error) from error
+
+            report_stage("validating")
+            try:
+                validate_data_a_bundle(str(prepared.bundle_root))
+                scoring_relevant = scoring_relevant_bundle_changed(
+                    self._current_bundle_root(), prepared.bundle_root
                 )
             except Exception as error:
-                code = str(getattr(error, "code", "ISSUE_RECALCULATION_FAILED"))
-                raise IssueSyncWorkflowError(code, "snapshot recalculation failed") from error
-            if result.snapshot_version != requested_version:
-                raise IssueSyncWorkflowError(
-                    "ISSUE_RECALCULATION_VERSION_MISMATCH",
-                    "recalculation result does not match the published snapshot",
-                )
-            recalculated_at = _aware_timestamp(result.recalculated_at)
+                raise _stage_error("VALIDATION", error) from error
 
-        return IssueSyncWorkflowResult(
-            status=collection.status,
-            collected_items=collection.collected_items,
-            snapshot_updated=publication.snapshot_updated,
-            published_snapshot_version=publication.published_snapshot_version,
-            published_at=publication.published_at,
-            candidate_items=publication.candidate_items,
-            validated_items=publication.validated_items,
-            rejected_items=publication.rejected_items,
-            published_items=publication.published_items,
-            recalculation_triggered=recalculation_triggered,
-            recalculation_status=("completed" if recalculation_triggered else "not_required"),
-            recalculated_at=recalculated_at,
-        )
+            report_stage("publishing")
+            try:
+                publication = self._publisher.publish(prepared.bundle_root)
+            except Exception as error:
+                code = str(getattr(error, "code", "ISSUE_SYNC_PUBLICATION_FAILED"))
+                raise IssueSyncWorkflowError(code, "atomic snapshot publication failed") from error
+
+            recalculation_triggered = False
+            recalculated_at = None
+            if publication.snapshot_updated and scoring_relevant:
+                report_stage("recalculating")
+                if self._recalculation is None:
+                    raise RecalculationUnavailable()
+                recalculation_triggered = True
+                try:
+                    requested_version = _required(publication.published_snapshot_version)
+                    result = await self._recalculation.recalculate(
+                        snapshot_version=requested_version,
+                        published_at=_required(publication.published_at),
+                    )
+                except Exception as error:
+                    code = str(getattr(error, "code", "ISSUE_RECALCULATION_FAILED"))
+                    raise IssueSyncWorkflowError(code, "snapshot recalculation failed") from error
+                if result.snapshot_version != requested_version:
+                    raise IssueSyncWorkflowError(
+                        "ISSUE_RECALCULATION_VERSION_MISMATCH",
+                        "recalculation result does not match the published snapshot",
+                    )
+                recalculated_at = _aware_timestamp(result.recalculated_at)
+
+            return IssueSyncWorkflowResult(
+                status=collection.status,
+                collected_items=collection.collected_items,
+                snapshot_updated=publication.snapshot_updated,
+                published_snapshot_version=publication.published_snapshot_version,
+                published_at=publication.published_at,
+                candidate_items=publication.candidate_items,
+                validated_items=publication.validated_items,
+                rejected_items=publication.rejected_items,
+                published_items=publication.published_items,
+                recalculation_triggered=recalculation_triggered,
+                recalculation_status=("completed" if recalculation_triggered else "not_required"),
+                recalculated_at=recalculated_at,
+            )
+        finally:
+            if prepared is not None and prepared.cleanup is not None:
+                prepared.cleanup()
 
 
 def scoring_relevant_bundle_changed(previous_root: Path, next_root: Path) -> bool:

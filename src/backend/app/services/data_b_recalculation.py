@@ -17,10 +17,11 @@ from app.services.issue_snapshot_publisher import read_active_snapshot
 from app.services.issue_sync_workflow import RecalculationResult
 from app.utils.csv_validator import validate_data_a_bundle
 from src.modeling.esg import calculate_esg_risk, load_yaml_config
+from src.modeling.events import analyze_all_events, build_similar_event_groups
 from src.modeling.optimizer import optimize_portfolio
 
 
-MODEL_VERSION = "data-b-snapshot-v1"
+MODEL_VERSION = "data-b-snapshot-v2"
 COMPANY_IDS = ("005930", "000660")
 OPTIMIZATION_PROFILES = ("loss_minimization", "balanced", "esg_focused")
 DEFAULT_CURRENT_WEIGHT_GRID = tuple(index / 100 for index in range(101))
@@ -161,6 +162,24 @@ class DataBRecalculationAdapter:
                 "portfolio optimization grid recalculation failed",
             ) from error
 
+        try:
+            event_reactions = analyze_all_events(
+                events_input=pd.DataFrame(eligible_events),
+                price_data=price_df,
+                index_prices_input=self._index_prices_path(),
+                window_days=10,
+                filter_model_eligible_only=True,
+            )
+            similar_event_groups = build_similar_event_groups(
+                eligible_events,
+                event_reactions,
+            )
+        except Exception as error:
+            raise DataBRecalculationError(
+                "DATA_B_EVENT_REACTION_RECALCULATION_FAILED",
+                "historical event reaction recalculation failed",
+            ) from error
+
         calculated_at = _aware_datetime(self._now(), "recalculated_at")
         result = {
             "snapshot_version": snapshot_version,
@@ -175,6 +194,8 @@ class DataBRecalculationAdapter:
             "company_esg_risks": esg_result,
             "esg_scores": esg_scores,
             "optimization_grid": optimization_grid,
+            "event_reactions": event_reactions,
+            "similar_event_groups": similar_event_groups,
         }
         stored = self._state_repository.save_model_recalculation(
             snapshot_version=snapshot_version,
@@ -260,6 +281,10 @@ class DataBRecalculationAdapter:
                     }
                 )
         return scenarios
+
+    def _index_prices_path(self) -> Path | None:
+        path = Path(BASE_DIR) / "data" / "processed" / "index_prices.csv"
+        return path if path.exists() else None
 
 
 def _required_esg_scores(result: dict) -> dict[str, float]:

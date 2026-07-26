@@ -127,7 +127,7 @@ class IssueSnapshotPublisher:
         staging_root = (
             self._runtime_root
             / "staging"
-            / f"{version}.{uuid4().hex}"
+            / uuid4().hex[:12]
         )
         target_root = self._runtime_root / "snapshots" / version
         try:

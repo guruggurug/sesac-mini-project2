@@ -1363,3 +1363,53 @@
 - **Blockers**:
   - Actual issue publication remains blocked on Data A candidate classification and complete-bundle normalization; runtime tests enforce that this boundary is not silently bypassed.
 - **Next recommended task**: Deploy runtime hardening, verify session/CORS behavior, then implement the approved DART candidate-to-bundle workflow.
+
+## 2026-07-26 07:45 KST — INT-DART-BACKFILL-15 review
+
+- **Role**: Integration
+- **Task ID**: INT-DART-BACKFILL-15
+- **Status**: review
+- **Work completed**:
+  - Added an inclusive 2023-07-21-to-current Open DART backfill that splits requests into 90-day windows and follows every result page for Samsung Electronics and SK hynix.
+  - Reused the same paged list, original ZIP, deterministic ESG classification, deduplication, complete-bundle validation, atomic publication, and Data B recalculation path for backfill and daily sync.
+  - Added verified original-document caching so an interrupted backfill resumes without downloading unchanged receipt numbers again.
+  - Made the one-time backfill fail closed: any source failure prevents incomplete snapshot publication.
+  - Extended snapshot-bound Data B recalculation with event reactions and similar-event groups keyed by event category, subcategory, and linked ESG indicator.
+  - Exposed similar-event group summaries from the historical issue API.
+  - Executed the full production backfill and published snapshot `issues-93adbd383927798ff357d617`.
+- **Created files**:
+  - `scripts/backfill_dart_issues.py`
+  - `src/backend/app/services/dart_backfill.py`
+  - `src/backend/tests/test_dart_backfill.py`
+- **Modified files**:
+  - `README.md`
+  - `src/backend/app/routes/issues.py`
+  - `src/backend/app/services/dart_disclosures.py`
+  - `src/backend/app/services/data_b_recalculation.py`
+  - `src/backend/app/services/issue_bundle_normalizer.py`
+  - `src/backend/tests/test_data_b_recalculation.py`
+  - `src/backend/tests/test_issue_bundle_normalizer.py`
+  - `src/modeling/events.py`
+  - `tests/test_events.py`
+  - `progress/INTEGRATION.md`
+- **Validation commands**:
+  - Focused DART, bundle normalizer, event reaction, Data B, and issue API pytest bundle.
+  - `.venv\Scripts\python.exe scripts\backfill_dart_issues.py`
+  - `.venv\Scripts\python.exe -u scripts\backfill_dart_issues.py --execute`
+  - Active snapshot and stored model-result inspection.
+  - Full pytest suite with isolated `ISSUE_RUNTIME_DATA_DIR` and `RUNTIME_STATE_DB_PATH`.
+  - `git diff --check`
+- **Validation results**:
+  - Focused bundle passed: `59 passed, 1 warning` in 314.02 seconds.
+  - Open DART list count: 4,881 disclosures across 13 date windows.
+  - Original archive result: 4,880 ZIP files stored; one official-document response was retained as a rejected candidate.
+  - Complete bundle result: 44 validated candidates and 4,844 rejected candidates, including the seven pre-existing candidate rows.
+  - Published snapshot contains 43 normalized events; 7 are model-eligible and 36 body-only matches remain non-scoring `reported` warnings.
+  - Data B `data-b-snapshot-v2` persisted 303 optimization scenarios, 7 analyzed event reactions, and 6 similar-event groups.
+  - Full repository regression passed: `260 passed, 1 warning` in 3465.50 seconds.
+- **Remaining**:
+  - Review the 36 body-only `reported` events if additional deterministic confirmation rules are approved.
+  - Deploy code and persist `data/runtime/issues` plus the runtime state database on the Railway Volume before relying on daily production sync.
+- **Blockers**:
+  - Runtime backfill artifacts are intentionally Git-ignored; production requires a durable Railway Volume or an explicit snapshot migration.
+- **Next recommended task**: Run full regression, then deploy the shared daily/backfill pipeline with durable runtime storage.

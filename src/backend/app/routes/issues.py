@@ -11,7 +11,7 @@ if BASE_DIR not in sys.path:
 import pandas as pd
 from app.repositories.event_repository import EventRepository
 from app.repositories.price_repository import PriceRepository
-from src.modeling.events import analyze_all_events
+from src.modeling.events import analyze_all_events, build_similar_event_groups
 
 router = APIRouter(tags=["Issues"])
 logger = logging.getLogger(__name__)
@@ -164,6 +164,7 @@ def get_historical_issues():
             
     response = {
         "events": clean_events,
+        "similar_event_groups": build_similar_event_groups(events_df, analyzed_events),
         "data_status": data_mode
     }
     if warnings:

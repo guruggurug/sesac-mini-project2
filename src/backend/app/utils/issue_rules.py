@@ -78,6 +78,22 @@ def source_dedup_key(
     return tuple(str(source.get(field) or "") for field in fields)
 
 
+def candidate_classification_rule(
+    text: str,
+    rules: dict[str, Any] | None = None,
+    *,
+    pattern_field: str = "pattern",
+) -> dict[str, Any] | None:
+    """Return the first approved deterministic candidate classification rule."""
+    if pattern_field not in {"pattern", "body_pattern"}:
+        raise ValueError("unsupported candidate classification pattern field")
+    rules = rules or load_issue_rules()
+    for rule in rules["candidate_classification"]["rules"]:
+        if re.search(str(rule[pattern_field]), str(text), flags=re.IGNORECASE):
+            return rule
+    return None
+
+
 def _event_text(event: dict[str, Any], fields: list[str]) -> set[str]:
     joined = " ".join(str(event.get(field) or "") for field in fields).lower()
     return {token for token in re.findall(r"[0-9a-z가-힣]+", joined) if token}

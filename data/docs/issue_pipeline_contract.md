@@ -71,3 +71,31 @@ processed 사건은 다음을 모두 만족할 때만 발행한다.
 7. candidate→event→event-source→source 및 ESG→source 교차 참조 통과
 8. `reported` 사건은 경고 표시는 가능하나 ESG 점수 계산에서는 제외
 9. `confirmed` 또는 `resolved` 사건만 모델 재계산 요청 가능
+
+## 6. Production complete-bundle normalizer
+
+- 운영 분류 규칙은 `issue-pipeline-rules.json`의 `candidate_classification`을 단일 원본으로 사용한다. Python 코드에 별도의 ESG 분류 키워드를 하드코딩하지 않는다.
+- Open DART 후보 중 승인된 정규식 규칙과 일치하고 유효한 접수번호·공식 URL·raw 응답 SHA-256을 가진 후보만 `validated` 사건으로 변환한다.
+- Open DART 목록 후보는 공식 `GET /api/document.xml`로 접수번호별 원문 ZIP을 추가 수집한다. 목록 제목만으로 사건을 확정하지 않으며, 원문 저장·안전 추출·본문 근거 확인을 먼저 통과해야 한다.
+- 원문 ZIP은 `raw/dart/documents/<date>/`에 먼저 저장하고 SHA-256을 source evidence로 사용한다. ZIP member를 파일시스템에 직접 풀지 않으며 path traversal, 암호화 member, 파일 수 500개 초과, 압축 해제 총량 100 MiB 초과를 거절한다.
+- XML·HTML·TXT에서 추출한 전체 텍스트는 최대 5,000,000자로 제한한다. candidate에는 승인된 `body_pattern` 주변의 근거 구간만 최대 2,000자로 저장한다.
+- 제목과 본문이 같은 규칙으로 일치한 DART 법정공시는 `confirmed` 후보가 될 수 있다. 제목은 일반적이지만 본문에서만 탐지된 경우에는 `reported` 경고로 발행하며 `authority_confirmed=false`로 모델 재계산에서 제외한다.
+- 본문에 승인된 사건 패턴이 없으면 `dart_document_no_approved_esg_event_match`로 거절한다. `산업재해율` 같은 단순 지표명은 본문 사건으로 분류하지 않도록 제목 패턴과 더 엄격한 `body_pattern`을 분리한다.
+- 개별 원문 부재(`013`, `014`)는 해당 후보를 거절한다. 인증·네트워크·호출 제한·서버 장애는 회사 batch 실패로 전달하여 불완전한 rejected snapshot을 발행하지 않고 마지막 정상 데이터를 유지한다.
+- 승인 규칙과 일치하지 않는 일반 공시는 `rejected`와 `no_approved_esg_event_rule_match` 사유로 보존한다. 임의로 `other` 사건을 만들지 않는다.
+- 공식 확인 근거가 없는 뉴스 후보는 `official_confirmation_required`로 거절하며 모델 입력에 포함하지 않는다.
+- 새 사건은 DART 공시일을 `official_disclosure_date`로 사용하고, 상세 발생일이나 해결일을 추측하지 않는다. 이후 공식 상태 변경 공시가 들어오면 같은 중복·병합 규칙으로 재평가한다.
+- normalizer는 현재 활성 스냅샷을 직접 수정하지 않는다. 별도의 임시 complete bundle을 만들고 전체 검증 후 publisher에 전달하며, 성공·실패와 관계없이 임시 bundle을 정리한다.
+- 한 회사의 DART 수집만 실패하고 다른 회사의 수집이 성공하면 `partial_success`로 정상 후보를 처리한다. 양사 모두 실패하면 발행하지 않고 기존 활성 스냅샷을 유지한다.
+- 현재 운영 runtime에 실제 provider가 연결된 범위는 Open DART다.
+
+## 7. 뉴스 collector 경계
+
+- 뉴스 계층은 특정 API에 종속되지 않는 `NewsProvider` 계약을 사용한다. provider adapter는 로컬 보존이 허용된 응답 메타데이터만 `NewsRawPage.payload`로 반환해야 한다.
+- provider 응답은 정규화보다 먼저 `raw/news/<provider>/<date>/`에 저장한다. 정규화 또는 provider 범위 검증이 실패해도 raw 근거는 남기며 active snapshot은 변경하지 않는다.
+- provider 결과의 회사·검색어·시작일·종료일은 요청과 정확히 같아야 한다. 다르면 candidate를 만들지 않는다.
+- 유효한 기사 URL은 host를 `source_name`으로 사용하고 추적 파라미터를 제거한 canonical URL을 계산한다. 기사 ID, canonical URL, company/content hash 순서로 중복을 판정한다.
+- 형식이 유효한 새 뉴스는 먼저 `pending` candidate가 된다. malformed 또는 같은 batch 안의 중복 기사는 `rejected`와 구체적인 사유로 보존한다.
+- complete-bundle normalizer에서 ESG 분류 규칙과 일치하더라도 뉴스만으로는 사건을 확정하지 않는다. 공식 근거가 없으면 `official_confirmation_required`로 거절한다.
+- 향후 DART·정부기관·기업 공식 발표가 같은 사건을 확인하면 뉴스는 `detection` 출처로 연결할 수 있다. 뉴스 원문만으로 `confirmed`, severity 또는 Data B 재계산을 만들 수 없다.
+- production 뉴스 제공자, 검색어, 호출 제한과 원문 보존 범위는 별도 승인 후 adapter로 연결한다. provider-neutral collector 기반 구현 자체는 외부 뉴스 API를 호출하지 않는다.

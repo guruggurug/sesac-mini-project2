@@ -495,7 +495,11 @@ FRONTEND_API_BASE_URL=http://localhost:8000
 
 Railway에서는 Volume을 `/app/data/runtime`에 마운트하고 `RUNTIME_STATE_DB_PATH=/app/data/runtime/state.db`로 설정해야 마지막 정상 시장 가격이 재배포 후에도 유지됩니다. 현재 Docker 이미지는 비루트 사용자로 실행되므로 Railway의 root 소유 Volume에 쓸 수 있도록 서비스 변수 `RAILWAY_RUN_UID=0`도 설정합니다. Volume이 없으면 컨테이너 교체 시 SQLite 스냅샷이 사라지며, 최초 KIS 갱신 전까지 지수 데이터가 준비되지 않을 수 있습니다.
 
-이슈 scheduler는 `ENABLE_ISSUE_SCHEDULER=true`일 때만 서울 시간 `ISSUE_SYNC_HOUR_KST`:`ISSUE_SYNC_MINUTE_KST`에 실행됩니다. 실제 수집·검증·원자적 발행 workflow가 연결되기 전에는 활성화하지 않습니다.
+이슈 scheduler는 `ENABLE_ISSUE_SCHEDULER=true`일 때만 서울 시간 `ISSUE_SYNC_HOUR_KST`:`ISSUE_SYNC_MINUTE_KST`에 실행됩니다. `DART_API_KEY`가 설정되면 Open DART 목록 수집 → 접수번호별 공식 원문 ZIP 저장·본문 추출 → Data A complete-bundle 정규화 → 전체 계약 검증 → 원자적 스냅샷 발행 → 필요 시 Data B 재계산 workflow가 연결됩니다. 키가 없으면 동기화 workflow는 명시적으로 unavailable 상태를 반환하며, 기존 정상 스냅샷을 변경하지 않습니다. 원문 API 계약은 [Open DART 공시서류원본파일 개발가이드](https://opendart.fss.or.kr/guide/detail.do?apiGrpCd=DS001&apiId=2019003)를 따릅니다.
+
+2023-07-21 이후 전체 백필은 `.venv\Scripts\python.exe -u scripts\backfill_dart_issues.py --execute`로 실행합니다. 90일 단위·100건 페이지 단위로 두 회사를 모두 순회하고, 원문 ZIP 캐시를 재사용하므로 중단 후 같은 명령으로 재개할 수 있습니다. 하나라도 수집 실패가 있으면 새 스냅샷을 게시하지 않습니다. 백필과 일일 수집은 동일한 원문 분류·중복 제거·검증·게시 경로를 사용하며, 게시 후 Data B 결과에는 사건별 1·3·5일 반응과 `event_category`·`event_subcategory`·`linked_indicator_id` 기준 유사 사건 그룹 통계가 함께 저장됩니다.
+
+뉴스 수집은 provider-neutral raw→candidate 기반과 공식 확인 안전 게이트까지 구현되어 있습니다. 아직 특정 production 뉴스 API adapter는 선택·연결하지 않았으므로 `NEWS_API_KEY`만 설정해도 외부 뉴스 호출은 시작되지 않습니다. 제공자 이용약관, 검색어, 호출 제한, 보존 가능한 필드를 승인한 뒤 adapter를 연결해야 합니다. 뉴스만으로는 `confirmed` 사건이나 모델 재계산을 생성하지 않습니다.
 
 ---
 

@@ -15,6 +15,12 @@ COMPANY_NAME_MAP = {
     "000660": "SK하이닉스",
 }
 
+SIMILARITY_FIELDS = (
+    "event_category",
+    "event_subcategory",
+    "linked_indicator_id",
+)
+
 
 def find_reaction_start_date(
     event_date_str: str,
@@ -152,8 +158,100 @@ def analyze_single_event_reaction(
         "benchmark_name": benchmark_name,
         "status": str(event.get("status", "confirmed")),
         "summary": str(event.get("summary", "")),
+        "event_category": str(event.get("event_category", "")),
+        "event_subcategory": str(event.get("event_subcategory", "")),
+        "linked_indicator_id": str(event.get("linked_indicator_id", "")),
+        "similar_group_key": similar_event_group_key(event),
         "chart_data": chart_data,
     }
+
+
+def similar_event_group_key(event: Dict[str, Any]) -> str:
+    """Return the deterministic ESG classification key used for peer comparison."""
+    values = [str(event.get(field, "") or "").strip() for field in SIMILARITY_FIELDS]
+    return "|".join(values)
+
+
+def build_similar_event_groups(
+    events_input: Union[List[Dict[str, Any]], pd.DataFrame],
+    reactions: List[Dict[str, Any]],
+) -> List[Dict[str, Any]]:
+    """Aggregate historical reactions for events in the same ESG classification."""
+    if isinstance(events_input, pd.DataFrame):
+        events = events_input.to_dict(orient="records")
+    else:
+        events = [dict(event) for event in events_input]
+
+    reactions_by_id = {
+        str(reaction.get("event_id", "")): reaction
+        for reaction in reactions
+        if reaction.get("analyzed", True) is not False and "error" not in reaction
+    }
+    grouped: Dict[str, List[Dict[str, Any]]] = {}
+    for event in events:
+        key = similar_event_group_key(event)
+        if not key.replace("|", ""):
+            continue
+        grouped.setdefault(key, []).append(event)
+
+    result = []
+    for key in sorted(grouped):
+        group_events = sorted(
+            grouped[key],
+            key=lambda row: (
+                str(row.get("market_event_date") or row.get("event_date") or ""),
+                str(row.get("event_id") or ""),
+            ),
+        )
+        group_reactions = [
+            reactions_by_id[str(event.get("event_id", ""))]
+            for event in group_events
+            if str(event.get("event_id", "")) in reactions_by_id
+        ]
+        first = group_events[0]
+        result.append(
+            {
+                "similar_group_key": key,
+                "event_category": str(first.get("event_category", "")),
+                "event_subcategory": str(first.get("event_subcategory", "")),
+                "linked_indicator_id": str(first.get("linked_indicator_id", "")),
+                "event_ids": [
+                    str(event.get("event_id", "")) for event in group_events
+                ],
+                "event_count": len(group_events),
+                "analyzed_event_count": len(group_reactions),
+                "average_return_1d": _mean_reaction(group_reactions, "return_1d"),
+                "average_return_3d": _mean_reaction(group_reactions, "return_3d"),
+                "average_return_5d": _mean_reaction(group_reactions, "return_5d"),
+                "average_abnormal_return_5d": _mean_reaction(
+                    group_reactions, "abnormal_return_5d"
+                ),
+                "worst_event_relative_return": _minimum_reaction(
+                    group_reactions, "event_relative_min_return"
+                ),
+            }
+        )
+    return result
+
+
+def _mean_reaction(reactions: List[Dict[str, Any]], field: str) -> Optional[float]:
+    values = [
+        float(reaction[field])
+        for reaction in reactions
+        if reaction.get(field) is not None
+    ]
+    return round(float(np.mean(values)), 4) if values else None
+
+
+def _minimum_reaction(
+    reactions: List[Dict[str, Any]], field: str
+) -> Optional[float]:
+    values = [
+        float(reaction[field])
+        for reaction in reactions
+        if reaction.get(field) is not None
+    ]
+    return round(min(values), 4) if values else None
 
 
 def analyze_all_events(

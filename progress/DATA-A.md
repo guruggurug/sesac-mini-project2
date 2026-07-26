@@ -9,8 +9,8 @@
 | DATA-A-03 | ESG Value Review | `done` | `data/processed/esg_indicators.csv` (72행: available 54, unavailable 18) | 없음 |
 | DATA-A-04 | Event Dataset | `done` | `data/processed/events.csv` (공식 확인 confirmed 사건 3건) | 없음 |
 | DATA-A-05 | Final Data Quality Review | `done` | `validate_data_a_bundle()` 및 계약 테스트 통과 | 없음 |
-| DATA-A-RT-01 | Daily Disclosure and News Source·Classification·Deduplication Rules | `review` | candidate/source 계약, 중복·severity 자동 결정 규칙 | 공유 스키마 교차 검토 필요 |
-| DATA-A-RT-02 | Candidate Data Quality and Event Status Validation | `review` | candidate 6건, source 6건, event-source 4건, processed event 3건 통합 검증 | 실제 일일 수집기 연동 필요 |
+| DATA-A-RT-01 | Daily Disclosure and News Source·Classification·Deduplication Rules | `review` | DART 원문 ZIP/XML 본문 수집·안전 추출·본문 기반 경고 분류 및 실 API smoke 완료 | Backend/Data B 교차 검토와 production 뉴스 provider 승인 필요 |
+| DATA-A-RT-02 | Candidate Data Quality and Event Status Validation | `review` | candidate 분류·중복·출처 SHA-256·상태·원자적 발행 통합 검증 | Backend/Data B 교차 검토 필요 |
 | DATA-A-RT-FINAL-02 | final audit remediation (S02/S05 split, event deduplication gate, EVT-0001 date, scripts restore) | `review` | scripts/validate_data_a.py, data/processed/*, data/docs/*, etc. | 없음 |
 | DATA-A-06 | ESG Indicator Re-validation (원문 재대조, 전임 산출물 전면 폐기) | `done` | `data/processed/esg_indicators.csv`(64행), `data/processed/sources.csv`(10건), `data/docs/data_quality_report.md`, `data/docs/indicator_comparability.csv`, `data/docs/data_dictionary.md` | 없음 — `validate_data_a_bundle()` 전체 통과(main 최신 검증 로직 기준으로 재확인) |
 | DATA-A-07 | EDA 수행 및 데이터분석 정의서 작성 (모델링 A 역할 요구사항) | `done` | `notebooks/eda_analysis.ipynb`, `notebooks/charts/*.png`, 지침 폴더 `데이터분석 정의서.docx`("2. EDA 명세서" 섹션) | Modeling B 결과 교차검수·최종 발표 준비는 후속 작업으로 남음 |
@@ -542,3 +542,250 @@
 - **Remaining**: 없음 — G01~G03 12개 지표 전부 양사 확보, 발견된 중대재해 3건(EVT-0006/0007/0008) 전부 반영 완료
 - **Blockers**: 없음
 - **Next task**: 이번 라운드 전체(G03 교체+EVT-0006/0007/0008+G02+문서 갱신)를 새 브랜치로 커밋·푸시하고 PR 링크 제공, 사용자 병합 대기
+
+### 2026-07-26 05:44 — DATA-A-RT-01/02: Production Complete-Bundle Normalizer 착수
+
+- **Role**: Data A
+- **Owner**: Data A
+- **Status**: `in_progress`
+- **Goal**:
+  - Open DART 수집 결과를 현재 정상 Data A 스냅샷과 병합해 완전한 candidate/source/event-source/event/ESG bundle로 만드는 운영용 normalizer 구현
+  - 확정 근거가 부족한 후보는 모델 입력에 포함하지 않고 결정적 규칙으로 `reported`, `pending` 또는 `rejected` 상태 보존
+  - 완성된 bundle이 `validate_data_a_bundle()`을 통과한 경우에만 원자적 발행 워크플로로 전달
+- **Allowed files**:
+  - `src/backend/app/services/`
+  - `src/backend/app/core/runtime.py`
+  - `src/backend/tests/`
+  - `data/docs/issue_pipeline_contract.md`
+  - `progress/DATA-A.md`
+  - `ROADMAP.md`의 해당 Data A 체크박스
+- **Do not modify**:
+  - 공유 데이터/API 스키마
+  - 기존 `data/processed/` 및 `data/candidate/` 기준 데이터
+  - 다른 역할의 progress 파일과 루트 `PROGRESS.md`
+- **Validation plan**:
+  - production normalizer 단위 테스트
+  - issue workflow·snapshot publisher·runtime wiring 회귀 테스트
+  - `python scripts/validate_data_a.py`
+  - 전체 backend/model 회귀 테스트 및 `git diff --check`
+- **Shared rule proposal**:
+  - `schemas/data/issue-pipeline-rules.json`에 `candidate_classification` 규칙을 추가하고 대응 스키마를 먼저 갱신한다.
+  - 영향 역할은 Data A(규칙 소유), Backend(normalizer/runtime 소비), Data B(`confirmed|resolved` 사건 재계산 소비)다.
+  - 코드 하드코딩 대신 버전 관리되는 JSON 규칙을 단일 원본으로 사용하며 기존 API·CSV 필드는 변경하지 않는다.
+  - 구현·계약 테스트 후 Backend/Data B 교차 검토 전까지 상태를 `review`로 유지한다.
+- **Blockers**: 없음
+- **Next task**: complete-bundle normalizer와 DART 일일 collector adapter 구현
+
+### 2026-07-26 05:58 — DATA-A-RT-01/02: Production Complete-Bundle Normalizer 구현 완료
+
+- **Role**: Data A
+- **Owner**: Data A
+- **Status**: `review`
+- **Completed**:
+  - `DailyDartIssueCollector` 구현: 서울 날짜 기준 1일 lookback, 양사 독립 수집, 한 회사 실패 시 `partial_success`, 양사 실패 시 발행 중단
+  - `DataAIssueBundleNormalizer` 구현: 활성 정상 bundle 복사, candidate 중복 제거, 승인 규칙 분류, source/event/event-source 생성, raw SHA-256 확인, 전체 bundle 검증
+  - 자동 분류 규칙을 `issue-pipeline-rules.json`의 `candidate_classification`으로 이동하고 대응 JSON Schema를 먼저 갱신
+  - 승인 규칙 미일치 일반 공시는 `rejected/no_approved_esg_event_rule_match`, 공식 확인 없는 뉴스는 `rejected/official_confirmation_required`로 보존
+  - Open DART 접수번호·공식 URL·sanitized raw 응답 hash가 모두 유효한 후보만 `validated/confirmed` 사건으로 변환
+  - 기존 후보·사건·출처는 결정적 키로 중복 처리하며 기존 활성 스냅샷과 checked-in processed 데이터는 직접 수정하지 않음
+  - prepared bundle cleanup을 workflow 성공·실패 공통 `finally` 경로에 연결
+  - `DART_API_KEY`가 있을 때만 production workflow를 coordinator에 연결하고, 키가 없으면 명시적 unavailable 유지
+  - Windows 긴 경로에서도 raw evidence를 원자적으로 복사하도록 publisher staging 디렉터리 이름 단축
+  - production normalizer → 전체 검증 → 원자적 발행 → Data B 재계산 통합 테스트 추가
+- **Unexpected findings and fixes**:
+  - 사건 스키마가 `EVT-` 뒤 정확히 4자리만 허용함을 테스트에서 확인하여 다음 순번 ID 생성으로 교정
+  - 실제 raw 파일명이 긴 경우 pytest 임시 경로에서 publisher staging 경로가 Windows 한도를 넘는 문제를 확인하여 짧은 임시 staging ID로 교정
+  - 코드 내 분류 키워드가 규칙 단일 원본 원칙과 충돌하는 점을 최종 검토에서 발견하여 JSON 규칙으로 이전
+- **Created files**:
+  - `src/backend/app/services/issue_bundle_normalizer.py`
+  - `src/backend/tests/test_issue_bundle_normalizer.py`
+- **Modified files**:
+  - `schemas/data/issue-pipeline-rules.json`
+  - `schemas/data/issue-pipeline-rules.schema.json`
+  - `src/backend/app/core/runtime.py`
+  - `src/backend/app/services/issue_sync_workflow.py`
+  - `src/backend/app/services/issue_snapshot_publisher.py`
+  - `src/backend/tests/test_runtime_wiring.py`
+  - `data/docs/issue_pipeline_contract.md`
+  - `README.md`
+  - `ROADMAP.md`
+  - `progress/DATA-A.md`
+- **Validation commands**:
+  - `.venv\Scripts\python.exe scripts\validate_data_a.py`
+  - `.venv\Scripts\python.exe -m pytest -p no:cacheprovider -q src/backend/tests/test_issue_bundle_normalizer.py src/backend/tests/test_issue_pipeline_contracts.py --disable-warnings`
+  - `.venv\Scripts\python.exe -m pytest -p no:cacheprovider -q tests src/backend/tests --disable-warnings`
+  - `.venv\Scripts\python.exe -m compileall -q src/backend/app src/modeling`
+  - `git diff --check`
+- **Validation results**:
+  - Data A bundle PASS: candidate 9, source 15, event-source 7, event 6, ESG 72
+  - 신규 normalizer·규칙 계약 집중 테스트 `22 passed`
+  - 전체 회귀 `237 passed, 1 warning`
+  - `optimization_grid_results.csv` 테스트 전후 SHA-256 동일
+  - Python compile 및 whitespace 검사 통과(CRLF 변환 안내만 존재)
+- **Remaining**:
+  - Backend와 Data B가 `candidate_classification` 규칙 및 `confirmed` 사건 재계산 입력을 교차 검토
+  - 운영 배포 환경에서 실제 DART 키로 양사 1일 수집 smoke test 수행
+  - 뉴스 collector는 후속 Backend 범위이며, 추가 시 동일 candidate/공식 확인 게이트를 사용
+- **Blockers**:
+  - 코드·자동 검증 blocker는 없음
+  - 공유 규칙과 재계산 소비 경로의 역할 간 승인 전 `done` 처리 불가
+- **Next task**: Backend/Data B 교차 리뷰 후 실제 DART smoke test와 수동 `/sync/issues` 런타임 E2E 검증
+
+### 2026-07-26 — DATA-A-RT-01: DART Smoke Test 및 안전한 뉴스 Collector 기반 착수
+
+- **Role**: Data A
+- **Owner**: Data A
+- **Status**: `in_progress`
+- **Goal**:
+  - 기존 production normalizer 기준선을 실제 DART 양사 수집으로 확인
+  - 특정 뉴스 API를 아직 선택하지 않고도 사용할 수 있는 provider protocol, raw 저장, candidate 정규화·중복 제거 경계 구현
+  - 뉴스만으로는 사건을 확정하거나 모델 재계산을 유발하지 않는 안전 게이트 검증
+- **Allowed files**:
+  - `src/backend/app/services/`
+  - `src/backend/tests/`
+  - `data/docs/issue_pipeline_contract.md`
+  - `README.md`
+  - `progress/DATA-A.md`
+  - `ROADMAP.md`의 Data A 상태 노트
+- **Do not modify**:
+  - 기존 `data/processed/` 및 `data/candidate/` 기준 데이터
+  - API/CSV 공유 스키마
+  - 다른 역할 progress 및 루트 `PROGRESS.md`
+- **Validation plan**:
+  - 실제 DART 키 smoke test는 임시 디렉터리에서 실행하고 키·원문 응답을 출력하지 않음
+  - 뉴스 raw→candidate 및 중복·오류 보존 단위 테스트
+  - 뉴스 candidate→complete bundle 안전 게이트 통합 테스트
+  - 전체 회귀, Data A bundle, compile, whitespace 검사
+- **Blockers**: 실제 production 뉴스 제공자 선택은 후속 결정 사항이며 이번 작업의 provider-neutral 기반 구현을 막지 않음
+
+### 2026-07-26 06:13 — DATA-A-RT-01: DART Production Smoke 및 뉴스 Collector 안전 기반 완료
+
+- **Role**: Data A
+- **Owner**: Data A
+- **Status**: `review`
+- **Completed**:
+  - 키와 응답 본문을 출력하지 않고 임시 저장소만 사용하는 `scripts/smoke_dart_issue_collector.py` 추가
+  - 실제 Open DART 양사 1일 smoke 성공: company batch 2개, 신규 공시 0건, raw artifact 2개 검증
+  - 실제 Open DART 양사 7일 smoke 성공: candidate 102건, 모두 schema-valid `pending`, raw artifact 검증 통과
+  - 102개 실제 후보를 production complete-bundle normalizer까지 실행해 전체 bundle 검증 통과
+    - 기존 validated candidate 총계 6건 유지
+    - 기존 rejected 3건 + 신규 일반 공시 rejected 102건 = 105건
+    - 신규 사건 0건으로 오탐·모델 재계산 유발 없음 확인
+  - provider-neutral `NewsProvider`, `NewsRawPage`, `NewsCollectionService` 계약 구현
+  - 뉴스 응답을 정규화보다 먼저 raw에 원자 저장하고 이후 candidate CSV를 별도 저장
+  - 기사 날짜·URL·host·canonical URL·content hash·batch 중복 검증 구현
+  - provider가 요청과 다른 회사·검색어·기간을 반환하면 raw만 보존하고 candidate 생성을 중단
+  - malformed 기사는 구체적 rejection reason과 함께 schema-valid candidate로 보존
+  - 뉴스 candidate를 shared complete-bundle 입력으로 연결하는 `adapt_news_batch()` 추가
+  - ESG 키워드가 일치하는 뉴스도 공식 근거 없이는 `official_confirmation_required`로 거절되고 사건·source·재계산을 생성하지 않는 통합 테스트 추가
+- **Created files**:
+  - `scripts/smoke_dart_issue_collector.py`
+  - `src/backend/app/services/news_collection.py`
+  - `src/backend/tests/test_news_collection.py`
+- **Modified files**:
+  - `src/backend/app/services/issue_bundle_normalizer.py`
+  - `data/docs/issue_pipeline_contract.md`
+  - `README.md`
+  - `ROADMAP.md`
+  - `progress/DATA-A.md`
+- **Validation commands**:
+  - `.venv\Scripts\python.exe scripts\smoke_dart_issue_collector.py --lookback-days 1`
+  - `.venv\Scripts\python.exe scripts\smoke_dart_issue_collector.py --lookback-days 7`
+  - `.venv\Scripts\python.exe -m pytest -p no:cacheprovider -q src/backend/tests/test_news_collection.py src/backend/tests/test_issue_bundle_normalizer.py src/backend/tests/test_issue_pipeline_contracts.py --disable-warnings`
+  - `.venv\Scripts\python.exe scripts\validate_data_a.py`
+  - `.venv\Scripts\python.exe -m pytest -p no:cacheprovider -q tests src/backend/tests --disable-warnings`
+  - `.venv\Scripts\python.exe -m compileall -q src/backend/app src/modeling scripts\smoke_dart_issue_collector.py`
+  - `git diff --check`
+- **Validation results**:
+  - 실제 DART API 연결·양사 raw 저장·candidate 정규화·complete bundle 검증 성공
+  - 뉴스 collector 집중 테스트 `8 passed`
+  - 뉴스·normalizer·공유 규칙 집중 테스트 `29 passed`(범위 fixture 교정 전 1건 탐지 후 수정)
+  - Data A 기준 bundle PASS: candidate 9, source 15, event-source 7, event 6, ESG 72
+  - 전체 회귀 `245 passed, 1 warning`
+  - `optimization_grid_results.csv` 테스트 전후 SHA-256 동일
+  - Python compile 및 whitespace 검사 통과(CRLF 변환 안내만 존재)
+- **Remaining**:
+  - Backend가 뉴스 collector adapter를 scheduler/manual workflow에 연결하는 방식 검토
+  - Data B가 뉴스-only candidate가 재계산 입력에서 제외되는지 교차 승인
+  - production 뉴스 제공자, 검색어, 호출 제한, 보존 가능 필드와 이용약관 승인
+  - 제공자 승인 후 실제 API adapter 및 DART+뉴스 runtime E2E 추가
+- **Blockers**:
+  - provider-neutral 구현과 자동 검증 blocker는 없음
+  - 실제 뉴스 호출은 제공자와 데이터 보존 정책 승인 전 연결하지 않음
+- **Next task**: Backend/Data B 교차 리뷰 후 production 뉴스 provider 결정 및 adapter 구현
+
+### 2026-07-26 06:24 — DATA-A-RT-01: DART 공시 원문 본문 수집 확장 착수
+
+- **Role**: Data A
+- **Owner**: Data A
+- **Status**: `in_progress`
+- **Reason**: 실제 DART 7일 후보 102건이 목록 제목·메타데이터만으로 모두 비사건 처리되어 본문 내 ESG 사건 누락 가능성을 확인
+- **Official API contract**:
+  - Open DART `GET /api/document.xml`
+  - 입력: API 인증키, 14자리 접수번호
+  - 출력: ZIP binary 원문 또는 오류 XML
+- **Goal**:
+  - 원문 ZIP을 candidate 변환 전에 raw에 저장하고 SHA-256 보존
+  - ZIP path traversal·암호화·과도한 파일 수/압축 해제 크기를 차단
+  - XML/HTML 본문을 텍스트로 변환하고 승인 분류 규칙 주변의 근거 구간만 candidate에 보존
+  - 제목 일치 사건은 기존 confirmed 정책을 유지하되, 본문에서만 탐지한 사건은 `reported` 경고로 제한하여 Data B 재계산에서 제외
+- **Do not modify**:
+  - checked-in `data/processed/`와 `data/candidate/`
+  - API/CSV 필드 계약
+  - 다른 역할 progress 및 루트 `PROGRESS.md`
+- **Validation plan**:
+  - ZIP/XML 정상·오류·zip-slip·zip-bomb 단위 테스트
+  - raw 저장 선행과 parser 실패 rejected 보존 테스트
+  - body-only 사건이 reported이고 재계산 비대상인지 통합 테스트
+  - 기존 공식 DART 접수번호 1건 실제 원문 smoke
+  - 전체 회귀와 Data A bundle 불변 검증
+
+### 2026-07-26 — DATA-A-RT-01: DART 공시 원문 본문 수집·분류 검증 완료
+
+- **Role**: Data A
+- **Owner**: Data A
+- **Status**: `review`
+- **Completed**:
+  - Open DART `document.xml`에서 접수번호별 공식 원문 ZIP을 가져와 raw evidence로 먼저 보존하고 SHA-256을 기록하도록 구현.
+  - ZIP을 파일시스템에 풀지 않고 XML/HTML/TXT 본문만 안전하게 추출하며 경로 탈출, 암호화 파일, 파일 수·압축 해제 크기·본문 길이 초과를 차단.
+  - 제목용 `pattern`과 더 엄격한 본문용 `body_pattern`을 분리해 단순 지표명(`산업재해율`)이 사건으로 오인되지 않도록 보강.
+  - 제목과 본문이 같은 ESG 사건 규칙에 일치하면 기존 `confirmed` 경로를 유지하고, 본문에서만 발견된 사건은 `reported`·비점수 경고로 제한.
+  - 원문 미존재는 해당 candidate만 rejected로 보존하고, 인증·네트워크·호출 제한 등 시스템 오류는 회사 단위 발행을 중단해 last-known-good snapshot을 보호.
+  - 실제 DART 접수번호 `20260626801398` 원문 smoke에서 ZIP 1,475 bytes, 본문 328자 추출, `OCCUPATIONAL_SAFETY` 분류 및 raw hash 검증 성공.
+  - 최근 7일 운영 smoke에서 후보 102건의 공식 원문 ZIP 102개를 모두 저장·본문 추출했으며, 승인된 ESG 사건 본문 패턴 일치 0건과 신규 사건 0건을 확인.
+- **Created files**:
+  - `src/backend/tests/test_dart_documents.py`
+- **Modified files**:
+  - `src/backend/app/services/dart_disclosures.py`
+  - `src/backend/app/services/issue_bundle_normalizer.py`
+  - `src/backend/app/utils/issue_rules.py`
+  - `schemas/data/issue-pipeline-rules.json`
+  - `schemas/data/issue-pipeline-rules.schema.json`
+  - `scripts/smoke_dart_issue_collector.py`
+  - `data/docs/issue_pipeline_contract.md`
+  - `README.md`
+  - `ROADMAP.md`
+  - `progress/DATA-A.md`
+- **Validation commands**:
+  - `.venv\Scripts\python.exe scripts\smoke_dart_issue_collector.py --document-receipt 20260626801398`
+  - `.venv\Scripts\python.exe scripts\smoke_dart_issue_collector.py --lookback-days 7`
+  - `.venv\Scripts\python.exe -m pytest -p no:cacheprovider -q src/backend/tests/test_dart_documents.py src/backend/tests/test_dart_disclosures.py src/backend/tests/test_issue_bundle_normalizer.py src/backend/tests/test_issue_pipeline_contracts.py --disable-warnings`
+  - `.venv\Scripts\python.exe scripts\validate_data_a.py`
+  - `.venv\Scripts\python.exe -m pytest -p no:cacheprovider -q tests src/backend/tests --disable-warnings`
+  - `.venv\Scripts\python.exe -m compileall -q src/backend/app src/modeling scripts\smoke_dart_issue_collector.py`
+  - `git diff --check`
+- **Validation results**:
+  - 실제 DART 원문 ZIP 저장·해시·본문 추출·분류 smoke 성공.
+  - 최근 7일 DART: collected 102, document artifacts 102/102 valid, pending 0, rejected 102, added events 0.
+  - 원문 수집·안전 추출·본문 분류 집중 테스트 포함 관련 테스트 `44 passed`.
+  - Data A 기준 bundle PASS: candidate 9, source 15, event-source 7, event 6, ESG 72.
+  - 전체 회귀 `256 passed, 1 warning`.
+  - `optimization_grid_results.csv` 테스트 전후 SHA-256 동일.
+  - Python compile 및 whitespace 검사 통과(CRLF 변환 안내만 존재).
+- **Remaining**:
+  - Backend/Data B가 `reported` 본문-only 경고의 API 노출과 점수 제외를 교차 검토.
+  - production 뉴스 provider 선정·승인 후 동일 candidate/공식 확인 gate에 연결.
+- **Blockers**:
+  - 구현·자동 검증 blocker는 없음.
+  - 공유 분류 규칙과 모델 소비 경로 교차 승인 전에는 `done` 처리 불가.
+- **Next task**: Backend/Data B 교차 검토 후 DART+뉴스 runtime E2E를 수행하고 production 뉴스 provider를 결정.

@@ -10,6 +10,7 @@ from src.modeling.events import (
     find_reaction_start_date,
     analyze_single_event_reaction,
     analyze_all_events,
+    build_similar_event_groups,
 )
 
 SAMPLE_PRICES_PATH = Path("data/sample/stock_prices.sample.csv")
@@ -113,3 +114,60 @@ def test_analyze_all_events_sample():
 
     assert isinstance(results, list)
     assert len(results) >= 1
+
+
+def test_similar_event_groups_compare_same_esg_classification():
+    events = [
+        {
+            "event_id": "EVT-1",
+            "event_category": "occupational_safety",
+            "event_subcategory": "workplace_incident",
+            "linked_indicator_id": "S01",
+            "event_date": "2024-01-01",
+        },
+        {
+            "event_id": "EVT-2",
+            "event_category": "occupational_safety",
+            "event_subcategory": "workplace_incident",
+            "linked_indicator_id": "S01",
+            "event_date": "2025-01-01",
+        },
+        {
+            "event_id": "EVT-3",
+            "event_category": "cybersecurity",
+            "event_subcategory": "personal_data_breach",
+            "linked_indicator_id": "S04",
+            "event_date": "2025-02-01",
+        },
+    ]
+    reactions = [
+        {
+            "event_id": "EVT-1",
+            "return_1d": -0.02,
+            "return_3d": -0.04,
+            "return_5d": -0.06,
+            "abnormal_return_5d": -0.05,
+            "event_relative_min_return": -0.08,
+        },
+        {
+            "event_id": "EVT-2",
+            "return_1d": 0.01,
+            "return_3d": -0.02,
+            "return_5d": -0.04,
+            "abnormal_return_5d": -0.03,
+            "event_relative_min_return": -0.05,
+        },
+    ]
+
+    groups = build_similar_event_groups(events, reactions)
+    safety = next(
+        group
+        for group in groups
+        if group["linked_indicator_id"] == "S01"
+    )
+
+    assert safety["event_ids"] == ["EVT-1", "EVT-2"]
+    assert safety["event_count"] == 2
+    assert safety["analyzed_event_count"] == 2
+    assert safety["average_return_5d"] == -0.05
+    assert safety["worst_event_relative_return"] == -0.08

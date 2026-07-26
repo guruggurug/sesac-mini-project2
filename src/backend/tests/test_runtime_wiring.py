@@ -9,6 +9,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from app.core.config import (
     CORS_ALLOWED_ORIGINS,
+    DART_API_KEY,
     SESSION_COOKIE_HTTPS_ONLY,
     SESSION_SECRET_KEY,
 )
@@ -19,6 +20,7 @@ from app.core.runtime import (
 )
 from app.main import app
 from app.services.sync_coordinator import UnavailableIssueSyncWorkflow
+from app.services.issue_sync_workflow import InternalIssueSyncWorkflow
 import app.routes.market as market_route
 import app.routes.portfolio as portfolio_route
 
@@ -72,8 +74,8 @@ def test_public_routes_use_the_production_market_runtime_objects():
     assert portfolio_route.market_quote_service is market_quote_service
 
 
-def test_issue_sync_runtime_remains_explicitly_unavailable_until_data_a_wiring():
-    assert isinstance(
-        issue_sync_coordinator._workflow,
-        UnavailableIssueSyncWorkflow,
+def test_issue_sync_runtime_requires_dart_configuration():
+    expected_type = (
+        InternalIssueSyncWorkflow if DART_API_KEY else UnavailableIssueSyncWorkflow
     )
+    assert isinstance(issue_sync_coordinator._workflow, expected_type)

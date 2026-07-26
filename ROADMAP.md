@@ -73,6 +73,8 @@
 - [x] FE-RT-04: Stitch Static Tailwind CSS Build
 - [ ] INT-RT-01: Market·Portfolio·Daily Sync End-to-End Test
 
+`DATA-A-RT-01/02`는 2026-07-26 production complete-bundle normalizer, JSON 분류 규칙, DART 목록·원문 ZIP/XML 본문 수집과 provider-neutral 뉴스 raw→candidate 기반을 구현했다. 실제 DART 원문 smoke에서 ZIP hash·본문 추출·산업안전 규칙 탐지가 통과했으며, body-only 탐지는 `reported` 경고로 제한한다. 현재 `review`이며 Backend·Data B 교차 검토와 production 뉴스 제공자 승인 후 체크한다.
+
 `COMMON-RT-02` 계약과 검증 예시는 `schemas/api/README.md`, `schemas/api/*summary*.schema.json`, `schemas/api/market-quotes-response.schema.json`, `schemas/api/sync-*.schema.json`, `schemas/api/examples/`에 작성되었다. 계약 테스트는 통과했지만 Data A는 `review`, Data B·Backend·Frontend는 `pending`이므로 전 역할 승인 전까지 `review`를 유지한다.
 
 Data A는 `data/docs/data_a_human_review_checklist.md`에 따라 G01~G03의 18개 `unavailable` 행과 비전공자용 상태 문구를 검토한다. 자동 스키마·상태 전이·severity 검증은 Integration이 담당하며 사람 검토 범위에 포함하지 않는다.
