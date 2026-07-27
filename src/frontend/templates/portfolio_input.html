@@ -36,7 +36,7 @@
             <div class="space-y-gutter">
                 <div class="relative">
                     <label class="block font-label-md text-label-md uppercase text-on-surface-variant mb-2" style="font-size: 12px; color: rgb(122, 117, 113); font-weight: 500;">보유 수량</label>
-                    <input form="portfolio-analysis-form" name="samsung_qty" min="0" required type="number" placeholder="0" class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-3 font-body-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all placeholder:text-outline-variant">
+                    <input form="portfolio-analysis-form" name="samsung_qty" min="0" required type="number" placeholder="0" value="{{ holdings_by_ticker['005930'].quantity if holdings_by_ticker and '005930' in holdings_by_ticker else '' }}" class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-3 font-body-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all placeholder:text-outline-variant">
                 </div>
 
                 <div class="relative">
@@ -45,7 +45,7 @@
                         <button type="button" disabled title="실시간 시세 연결 단계에서 제공됩니다." class="px-2 py-1 bg-camel-light text-primary text-[10px] rounded-lg font-bold opacity-80" style="background-color: rgb(245, 232, 221); color: rgb(150, 75, 0); cursor: not-allowed;">시세 연결 예정</button>
                     </div>
                     <div class="relative flex items-center">
-                        <input form="portfolio-analysis-form" name="samsung_price" min="0" class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-3 font-body-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all placeholder:text-outline-variant" placeholder="0" type="number">
+                        <input form="portfolio-analysis-form" name="samsung_price" min="0" class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-3 font-body-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all placeholder:text-outline-variant" placeholder="0" value="{{ holdings_by_ticker['005930'].average_price if holdings_by_ticker and '005930' in holdings_by_ticker else '' }}" type="number">
                         <span class="absolute right-4 font-body-md text-on-surface-variant">원</span>
                     </div>
                 </div>
@@ -67,7 +67,7 @@
             <div class="space-y-gutter">
                 <div class="relative">
                     <label class="block font-label-md text-label-md uppercase text-on-surface-variant mb-2" style="font-size: 12px; color: rgb(122, 117, 113); font-weight: 500;">보유 수량</label>
-                    <input form="portfolio-analysis-form" name="sk_qty" min="0" required type="number" placeholder="0" class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-3 font-body-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all placeholder:text-outline-variant">
+                    <input form="portfolio-analysis-form" name="sk_qty" min="0" required type="number" placeholder="0" value="{{ holdings_by_ticker['000660'].quantity if holdings_by_ticker and '000660' in holdings_by_ticker else '' }}" class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-3 font-body-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all placeholder:text-outline-variant">
                 </div>
 
                 <div class="relative">
@@ -76,7 +76,7 @@
                         <button type="button" disabled title="실시간 시세 연결 단계에서 제공됩니다." class="px-2 py-1 bg-camel-light text-primary text-[10px] rounded-lg font-bold opacity-80" style="background-color: rgb(245, 232, 221); color: rgb(150, 75, 0); cursor: not-allowed;">시세 연결 예정</button>
                     </div>
                     <div class="relative flex items-center">
-                        <input form="portfolio-analysis-form" name="sk_price" min="0" class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-3 font-body-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all placeholder:text-outline-variant" placeholder="0" type="number">
+                        <input form="portfolio-analysis-form" name="sk_price" min="0" class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-3 font-body-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all placeholder:text-outline-variant" placeholder="0" value="{{ holdings_by_ticker['000660'].average_price if holdings_by_ticker and '000660' in holdings_by_ticker else '' }}" type="number">
                         <span class="absolute right-4 font-body-md text-on-surface-variant">원</span>
                     </div>
                 </div>
@@ -108,8 +108,8 @@
                     <span class="font-label-sm text-label-sm font-bold">중립형</span>
                 </button>
                 <button type="button" data-risk-priority="esg_focused" class="propensity-btn flex flex-col items-center gap-2 p-3 rounded-xl border border-outline-variant bg-surface-container-lowest hover:border-primary transition-all active:scale-[0.98]">
-                    <span class="material-symbols-outlined text-error" data-icon="bolt">bolt</span>
-                    <span class="font-label-sm text-label-sm">공격형</span>
+                    <span class="material-symbols-outlined text-tertiary" data-icon="eco">eco</span>
+                    <span class="font-label-sm text-label-sm">ESG중시형</span>
                 </button>
             </div>
         </section>

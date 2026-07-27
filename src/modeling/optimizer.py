@@ -190,24 +190,24 @@ def generate_korean_explanations(
     sam_diff = recommended_weights[TICKER_SAMSUNG] - current_weights[TICKER_SAMSUNG]
 
     if abs(sam_diff) < 0.02:
-        explanations.append("현재 보유 비중이 종합 위험 관점에서 최적 수준에 근접해 유지 전략을 추천합니다.")
+        explanations.append("지금 갖고 계신 비중이 이미 위험 관리 측면에서 적당한 편이라, 그대로 유지하는 것을 추천합니다.")
     elif sam_diff > 0:
         explanations.append(
-            f"삼성전자의 가격 하방위험과 ESG 위험도가 상대적으로 우수하여 보유 비중을 {round(current_weights[TICKER_SAMSUNG]*100, 1)}%에서 {round(recommended_weights[TICKER_SAMSUNG]*100, 1)}%로 상향 조정을 추천합니다."
+            f"삼성전자가 주가 하락 위험도 낮고 ESG(환경·사회·지배구조) 관리도 상대적으로 안정적이어서, 삼성전자 비중을 {round(current_weights[TICKER_SAMSUNG]*100, 1)}%에서 {round(recommended_weights[TICKER_SAMSUNG]*100, 1)}%로 조금 늘리는 것을 추천합니다."
         )
     else:
         explanations.append(
-            f"SK하이닉스의 하방위험 대비 삼성전자 비중 과다를 조정하여, 삼성전자 추천 비중을 {round(recommended_weights[TICKER_SAMSUNG]*100, 1)}%로 비중 조정을 추천합니다."
+            f"SK하이닉스보다 삼성전자 비중이 위험 대비 다소 높은 편이라, 삼성전자 비중을 {round(recommended_weights[TICKER_SAMSUNG]*100, 1)}%로 낮추는 것을 추천합니다."
         )
 
     if risk_priority in ["loss_minimization", "conservative"]:
-        explanations.append("손실 최소화 기조에 따라 과거 가격 하방위험(CVaR 95%)을 최우선으로 반영했습니다.")
+        explanations.append("'안정형'을 선택하셨기 때문에, 과거 주가가 크게 떨어졌던 정도(하락 위험)를 가장 중요하게 반영했습니다.")
     elif risk_priority == "esg_focused":
-        explanations.append("ESG 중시 기조에 따라 기업의 ESG 관리위험도 점수에 높은 가중치를 부여했습니다.")
+        explanations.append("'ESG중시형'을 선택하셨기 때문에, 기업의 ESG(환경·사회·지배구조) 위험 점수를 더 중요하게 반영했습니다.")
     else:
-        explanations.append("가격 하방위험과 ESG 관리위험을 균형 있게 고려하여 포트폴리오 위험을 최적화했습니다.")
+        explanations.append("'중립형'을 선택하셨기 때문에, 주가 하락 위험과 ESG 위험을 비슷한 비중으로 함께 고려했습니다.")
 
-    explanations.append("과도한 매매 비용 및 리밸런싱 부담을 줄이기 위해 턴오버 페널티를 안정적으로 반영했습니다.")
+    explanations.append("너무 자주 비중을 바꾸면 거래 비용이 늘어나므로, 기존 비중에서 크게 벗어나지 않는 선에서 계산했습니다.")
 
     return explanations[:3]
 
