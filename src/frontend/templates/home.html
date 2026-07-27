@@ -23,7 +23,7 @@
         <main class="flex-1 px-4 space-y-4 mt-4 pb-24">
             <section class="bg-white rounded-xl p-5 border border-[#E5DEC9] shadow-sm">
                 <p class="font-medium text-[12px] text-[#7A7571] uppercase tracking-wider">Portfolio</p>
-                <h2 class="mt-1 font-bold text-[18px] text-[#2A1800]">내 반도체 포트폴리오</h2>
+                <h2 class="mt-1 font-bold text-[18px] text-[#2A1800]">{{ user_name + "님의 포트폴리오" if user_name else "내 반도체 포트폴리오" }}</h2>
                 <p class="mt-2 text-[14px] leading-5 text-[#564334]">보유 수량을 입력하면 현재 평가액과 위험 기반 추천 비중을 확인할 수 있어요.</p>
                 <a href="/portfolio/input" class="mt-4 inline-flex items-center gap-1 rounded-lg bg-[#964B00] px-4 py-2.5 text-[14px] font-bold text-white">
                     포트폴리오 입력

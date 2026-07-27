@@ -38,7 +38,7 @@
             </div>
 
             <section class="py-stack-lg">
-                <h2 class="font-bold text-[20px] text-[#2A1800]">나의 포트폴리오 요약</h2>
+                <h2 class="font-bold text-[20px] text-[#2A1800]">{{ user_name + "님의 포트폴리오 요약" if user_name else "나의 포트폴리오 요약" }}</h2>
                 <p id="summary-as-of" class="font-normal text-[13px] text-[#4A4746] mt-1">보유정보를 기준으로 평가합니다.</p>
             </section>
 

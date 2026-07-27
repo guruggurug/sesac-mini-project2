@@ -24,17 +24,17 @@
         </div>
 
         <!-- Form Fields Section -->
-        <form action="#" method="POST" class="flex flex-col gap-3 mt-10" onsubmit="event.preventDefault(); location.href='/home';">
-            <!-- Email Input -->
+        <form action="/login" method="POST" class="flex flex-col gap-3 mt-10">
+            <!-- Username/Email Input -->
             <div class="relative group">
                 <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[#7A7571] group-focus-within:text-primary transition-colors">mail</span>
-                <input type="email" placeholder="이메일" required class="w-full h-[64px] pl-12 pr-4 bg-white border border-[#E5DEC9] rounded-xl text-[15px] text-[#2A1800] placeholder-[#B5B0AB] focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all shadow-sm">
+                <input type="text" name="username" placeholder="이메일 또는 아이디" required class="w-full h-[64px] pl-12 pr-4 bg-white border border-[#E5DEC9] rounded-xl text-[15px] text-[#2A1800] placeholder-[#B5B0AB] focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all shadow-sm">
             </div>
 
             <!-- Password Input -->
             <div class="relative group">
                 <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[#7A7571] group-focus-within:text-primary transition-colors">lock</span>
-                <input type="password" id="password-input" placeholder="비밀번호" required class="w-full h-[64px] pl-12 pr-12 bg-white border border-[#E5DEC9] rounded-xl text-[15px] text-[#2A1800] placeholder-[#B5B0AB] focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all shadow-sm">
+                <input type="password" name="password" id="password-input" placeholder="비밀번호" required class="w-full h-[64px] pl-12 pr-12 bg-white border border-[#E5DEC9] rounded-xl text-[15px] text-[#2A1800] placeholder-[#B5B0AB] focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all shadow-sm">
                 <button type="button" onclick="togglePasswordVisibility()" id="password-toggle" class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-[#7A7571] hover:text-primary transition-colors focus:outline-none">visibility_off</button>
             </div>
 
@@ -52,6 +52,9 @@
                 </button>
             </div>
         </form>
+
+        <!-- Demo account hint (presentation convenience) -->
+        <p class="text-center text-[12px] text-[#B5A38F] mt-4">데모 계정: demo_user / demo1234</p>
 
         <!-- Footer Links -->
         <nav class="flex items-center justify-center gap-3 mt-8 text-[13px] text-[#7A7571]">
