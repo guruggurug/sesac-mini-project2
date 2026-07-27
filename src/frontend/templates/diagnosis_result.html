@@ -143,6 +143,26 @@
                         </div>
                     </div>
                 </div>
+                {% elif holdings_by_ticker %}
+                <!-- 이미 저장된 보유 종목이 있으면(예: 데모 계정), 새로 타이핑하지 않고
+                     기존 계산 로직(POST /portfolio/optimize)을 그대로 재사용해 자동으로
+                     진단을 실행한다. 가짜 결과가 아니라 실제 계산을 그대로 호출한다. -->
+                <div data-result-state="auto-calculating" class="bg-white border border-[#E5DEC9] rounded-xl p-6 shadow-sm text-center flex flex-col gap-4">
+                    <span class="material-symbols-outlined text-[#964B00] text-[40px] animate-spin">progress_activity</span>
+                    <p class="text-[13px] text-[#7A7571]">저장된 포트폴리오로 진단을 계산하고 있습니다...</p>
+                </div>
+                <form id="auto-diagnosis-form" action="/portfolio/optimize" method="POST" class="hidden">
+                    <input type="hidden" name="risk_priority" value="balanced">
+                    {% if "005930" in holdings_by_ticker %}
+                    <input type="hidden" name="samsung_qty" value="{{ holdings_by_ticker['005930'].quantity }}">
+                    <input type="hidden" name="samsung_price" value="{{ holdings_by_ticker['005930'].average_price }}">
+                    {% endif %}
+                    {% if "000660" in holdings_by_ticker %}
+                    <input type="hidden" name="sk_qty" value="{{ holdings_by_ticker['000660'].quantity }}">
+                    <input type="hidden" name="sk_price" value="{{ holdings_by_ticker['000660'].average_price }}">
+                    {% endif %}
+                </form>
+                <script>document.getElementById('auto-diagnosis-form').requestSubmit();</script>
                 {% else %}
                 <div data-result-state="empty" class="bg-white border border-[#E5DEC9] rounded-xl p-6 shadow-sm text-center flex flex-col gap-4">
                     <span class="material-symbols-outlined text-[#964B00] text-[40px]">analytics</span>

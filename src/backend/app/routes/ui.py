@@ -98,7 +98,14 @@ def portfolio_summary(request: Request):
 @router.get("/diagnosis", response_class=HTMLResponse)
 @router.get("/settings-result", response_class=HTMLResponse)
 def diagnosis_result(request: Request):
-    return _render(request, "diagnosis_result.html")
+    holdings_by_ticker = {
+        h["ticker"]: h for h in request.session.get("portfolio_holdings", [])
+    }
+    return _render(
+        request,
+        "diagnosis_result.html",
+        holdings_by_ticker=holdings_by_ticker,
+    )
 
 
 @router.get("/issue/analysis", response_class=HTMLResponse)
