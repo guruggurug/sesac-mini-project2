@@ -17,6 +17,16 @@ DEMO_HOLDINGS = [
     {"ticker": "000660", "quantity": 30, "average_price": 180000},
 ]
 
+# optimizer.py의 risk_priority 값과 화면에 보여줄 한글 라벨/아이콘을 매핑한다.
+# (portfolio_input.html의 "투자 성향 진단" 버튼과 동일한 라벨/아이콘을 사용)
+RISK_PRIORITY_DISPLAY = {
+    "conservative": {"label": "안정형", "icon": "shield"},
+    "loss_minimization": {"label": "안정형", "icon": "shield"},
+    "balanced": {"label": "중립형", "icon": "balance"},
+    "esg_focused": {"label": "ESG중시형", "icon": "eco"},
+}
+DEFAULT_RISK_PRIORITY_DISPLAY = RISK_PRIORITY_DISPLAY["balanced"]
+
 
 def _render(request: Request, template_name: str, **context):
     return templates.TemplateResponse(
@@ -57,7 +67,15 @@ def login_submit(
 
 @router.get("/home", response_class=HTMLResponse)
 def home(request: Request):
-    return _render(request, "home.html")
+    risk_priority = request.session.get("risk_priority")
+    return _render(
+        request,
+        "home.html",
+        has_holdings=bool(request.session.get("portfolio_holdings")),
+        risk_priority_display=RISK_PRIORITY_DISPLAY.get(
+            risk_priority, DEFAULT_RISK_PRIORITY_DISPLAY
+        ),
+    )
 
 
 @router.get("/settings", response_class=HTMLResponse)
@@ -105,6 +123,7 @@ def diagnosis_result(request: Request):
         request,
         "diagnosis_result.html",
         holdings_by_ticker=holdings_by_ticker,
+        session_risk_priority=request.session.get("risk_priority", "balanced"),
     )
 
 

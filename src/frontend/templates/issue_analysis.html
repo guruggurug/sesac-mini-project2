@@ -44,7 +44,7 @@
             <section class="rounded-xl border border-[#E5DEC9] bg-white p-4 shadow-sm" aria-labelledby="sync-heading">
                 <div class="flex items-start justify-between gap-3">
                     <div>
-                        <h3 id="sync-heading" class="text-[15px] font-bold text-[#2A1800]">최신 이슈 확인</h3>
+                        <h3 id="sync-heading" class="text-[15px] font-bold text-[#2A1800]">이슈 자동 수집 현황</h3>
                         <p id="sync-message" class="mt-1 text-[12px] leading-5 text-[#69635F]">최근 동기화 상태를 확인하고 있습니다.</p>
                     </div>
                     <button id="sync-button" type="button" disabled class="inline-flex shrink-0 items-center gap-1 rounded-lg bg-[#964B00] px-3 py-2 text-[12px] font-bold text-white disabled:cursor-not-allowed disabled:bg-[#C8B8AC]">
@@ -191,6 +191,32 @@
                 return `낮음 · ${numeric}/5`;
             };
 
+            const categoryLabel = (value) => ({
+                greenhouse_gas_energy: "온실가스·에너지",
+                water: "수자원",
+                hazardous_chemicals: "유해화학물질",
+                waste_circularity: "폐기물·자원순환",
+                occupational_safety: "산업안전",
+                human_capital_labor: "인적자원·노동",
+                supply_chain_human_rights: "공급망 인권",
+                product_quality: "제품 품질",
+                cybersecurity: "정보보안",
+                board_independence: "이사회 독립성",
+                accounting_disclosure: "회계·공시",
+                fair_trade_compliance: "공정거래",
+                export_control: "수출 통제",
+                technology_protection: "기술 보호",
+                other: "기타",
+            }[value] || "미분류");
+
+            const enforcementActionLabel = (value) => ({
+                no_action: "조치 없음",
+                investigation: "조사 중",
+                corrective_order: "시정 명령",
+                fine: "과징금·과태료",
+                sanctioned: "제재 조치",
+            }[value] || "확인 중");
+
             const emptyMarkup = (message) => `
                 <div class="rounded-xl border border-dashed border-[#CFC6BF] bg-white p-5 text-center">
                     <span class="material-symbols-outlined text-[#8A817B]">inventory_2</span>
@@ -209,8 +235,8 @@
                             <span class="shrink-0 rounded-full bg-[#FFF0CF] px-2 py-1 text-[10px] font-bold text-[#785500]">${escapeHtml(severityLabel(event.severity))}</span>
                         </div>
                         <dl class="mt-3 grid grid-cols-2 gap-2 text-[11px]">
-                            <div class="rounded-lg bg-[#FAF8F5] p-2"><dt class="text-[#7A7571]">분류</dt><dd class="mt-0.5 font-semibold text-[#4A4746]">${escapeHtml(event.event_category || "미분류")}</dd></div>
-                            <div class="rounded-lg bg-[#FAF8F5] p-2"><dt class="text-[#7A7571]">조치</dt><dd class="mt-0.5 font-semibold text-[#4A4746]">${escapeHtml(event.enforcement_action || "확인 중")}</dd></div>
+                            <div class="rounded-lg bg-[#FAF8F5] p-2"><dt class="text-[#7A7571]">분류</dt><dd class="mt-0.5 font-semibold text-[#4A4746]">${escapeHtml(categoryLabel(event.event_category))}</dd></div>
+                            <div class="rounded-lg bg-[#FAF8F5] p-2"><dt class="text-[#7A7571]">조치</dt><dd class="mt-0.5 font-semibold text-[#4A4746]">${escapeHtml(enforcementActionLabel(event.enforcement_action))}</dd></div>
                         </dl>
                         ${event.note ? `<details class="mt-3 rounded-lg border border-[#E5DEC9] bg-[#FAF8F5]"><summary class="cursor-pointer p-3 text-[12px] font-semibold text-[#564334]">검증 메모 보기</summary><p class="px-3 pb-3 text-[12px] leading-5 text-[#69635F]">${escapeHtml(event.note)}</p></details>` : ""}
                         ${sourceUrl ? `<a href="${escapeHtml(sourceUrl)}" target="_blank" rel="noopener noreferrer" class="mt-3 inline-flex items-center gap-1 text-[12px] font-bold text-[#964B00]">공식 출처 확인 <span class="material-symbols-outlined text-[16px]">open_in_new</span></a>` : '<p class="mt-3 text-[11px] text-[#7A7571]">공식 출처 링크 없음</p>'}
@@ -226,16 +252,84 @@
                 const min = Math.min(...values, 0);
                 const max = Math.max(...values, 0);
                 const range = Math.max(max - min, 0.001);
-                const coords = values.map((value, index) => {
-                    const x = 8 + (index / (values.length - 1)) * 304;
-                    const y = 112 - ((value - min) / range) * 92;
-                    return `${x.toFixed(1)},${y.toFixed(1)}`;
-                }).join(" ");
-                const zeroY = 112 - ((0 - min) / range) * 92;
+                // 위쪽은 "사건 발생" 라벨, 오른쪽은 세로축(%) 눈금, 아래쪽은 가로축(날짜) 자리로
+                // 남겨두고 그 안쪽(plotLeft~plotRight, plotTop~plotBottom)에만 선을 그린다.
+                const plotLeft = 8;
+                const plotRight = 270;
+                const plotTop = 26;
+                const plotBottom = 112;
+                const xyPairs = values.map((value, index) => {
+                    const x = plotLeft + (index / (values.length - 1)) * (plotRight - plotLeft);
+                    const y = plotBottom - ((value - min) / range) * (plotBottom - plotTop);
+                    return { x, y, value };
+                });
+                const coords = xyPairs.map(({ x, y }) => `${x.toFixed(1)},${y.toFixed(1)}`).join(" ");
+                const zeroY = plotBottom - ((0 - min) / range) * (plotBottom - plotTop);
+                const eventPoint = xyPairs[0];
+                let worstIndex = 0;
+                xyPairs.forEach((point, index) => {
+                    if (point.value < xyPairs[worstIndex].value) worstIndex = index;
+                });
+                const worstPoint = xyPairs[worstIndex];
+                const showWorstMarker = worstIndex !== 0;
+                const worstAnchor = worstPoint.x > plotRight - 40 ? "end" : worstPoint.x < plotLeft + 40 ? "start" : "middle";
+                const worstLabelX = worstAnchor === "end" ? worstPoint.x - 4 : worstAnchor === "start" ? worstPoint.x + 4 : worstPoint.x;
+                const worstLabelY = Math.min(worstPoint.y + 14, 122);
+
+                // 세로축(%) 눈금: 최고~최저 구간을 4단계로 나눠 값과 가로 보조선을 함께 표시한다.
+                const yTickCount = 4;
+                const yTicks = Array.from({ length: yTickCount }, (_, i) => {
+                    const value = max - (i / (yTickCount - 1)) * (max - min);
+                    const y = plotBottom - ((value - min) / range) * (plotBottom - plotTop);
+                    return { value, y };
+                });
+                const yAxisMarkup = yTicks.map(({ value, y }) => `
+                        <line x1="${plotLeft}" x2="${plotRight}" y1="${y.toFixed(1)}" y2="${y.toFixed(1)}" stroke="#EEE9E4" stroke-width="1"></line>
+                        <text x="${(plotRight + 4).toFixed(1)}" y="${(y + 3).toFixed(1)}" font-size="8" fill="#8A817B">${value > 0 ? "+" : ""}${(value * 100).toFixed(1)}%</text>`).join("");
+
+                // 가로축(날짜) 눈금: 거래일 구간을 4개 지점으로 나눠 "월.일"만 표시한다.
+                // (연도는 아래 "반응 시작일 ..." 문구와 카드 상단에 이미 나와 있어서,
+                // 눈금에 연도까지 넣으면 날짜끼리 너무 붙어 안 보이는 문제가 있었다.
+                // 연도가 바뀌는 구간만 축 위에 작게 별도 표시한다.)
+                const shortDate = (dateStr) => {
+                    const d = new Date(`${dateStr}T00:00:00`);
+                    return Number.isNaN(d.getTime()) ? dateStr : `${d.getMonth() + 1}.${d.getDate()}`;
+                };
+                const yearOf = (dateStr) => dateStr.slice(0, 4);
+
+                const xTickCount = Math.min(4, points.length);
+                const xTickIdxSet = [...new Set(
+                    Array.from({ length: xTickCount }, (_, i) =>
+                        Math.round((i / (xTickCount - 1 || 1)) * (points.length - 1))
+                    )
+                )];
+                const tickAnchor = (order) => order === 0 ? "start" : order === xTickIdxSet.length - 1 ? "end" : "middle";
+                const xAxisMarkup = xTickIdxSet.map((idx, order) => {
+                    return `<text x="${xyPairs[idx].x.toFixed(1)}" y="146" text-anchor="${tickAnchor(order)}" font-size="9" fill="#7A7571">${escapeHtml(shortDate(points[idx].date))}</text>`;
+                }).join("");
+
+                // 연도 표시는 "실제로 그 연도가 시작되는 눈금" 바로 위, 같은 정렬 기준(anchor)으로
+                // 붙인다. 날짜 눈금과 다른 anchor를 쓰면 같은 x좌표라도 화면에서는
+                // 옆으로 밀려 보여서 어느 날짜 위에 있는지 헷갈리는 문제가 있었다.
+                const tickYears = xTickIdxSet.map((idx) => yearOf(points[idx].date));
+                const yearMarkup = xTickIdxSet.map((idx, order) => {
+                    if (order > 0 && tickYears[order] === tickYears[order - 1]) return "";
+                    return `<text x="${xyPairs[idx].x.toFixed(1)}" y="136" text-anchor="${tickAnchor(order)}" font-size="8" fill="#B5AA9E">${tickYears[order]}년</text>`;
+                }).join("");
+
                 return `
-                    <svg class="mt-3 h-32 w-full" viewBox="0 0 320 128" role="img" aria-label="사건 이후 누적 수익률 선 그래프">
-                        <line x1="8" x2="312" y1="${zeroY.toFixed(1)}" y2="${zeroY.toFixed(1)}" stroke="#D8CEC7" stroke-dasharray="4 4"></line>
+                    <svg class="mt-3 h-40 w-full" viewBox="0 0 320 160" role="img" aria-label="사건 이후 누적 수익률 선 그래프">
+                        ${yAxisMarkup}
+                        <line x1="${plotLeft}" x2="${plotRight}" y1="${zeroY.toFixed(1)}" y2="${zeroY.toFixed(1)}" stroke="#D8CEC7" stroke-dasharray="4 4"></line>
                         <polyline points="${coords}" fill="none" stroke="#964B00" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></polyline>
+                        <line x1="${eventPoint.x.toFixed(1)}" y1="18" x2="${eventPoint.x.toFixed(1)}" y2="${(eventPoint.y - 6).toFixed(1)}" stroke="#D64545" stroke-width="1" stroke-dasharray="2 2"></line>
+                        <circle cx="${eventPoint.x.toFixed(1)}" cy="${eventPoint.y.toFixed(1)}" r="4.5" fill="#D64545" stroke="#FFFFFF" stroke-width="1.5"></circle>
+                        <text x="${(eventPoint.x + 4).toFixed(1)}" y="14" text-anchor="start" font-size="9" fill="#D64545" font-weight="bold">사건 발생</text>
+                        ${showWorstMarker ? `
+                        <circle cx="${worstPoint.x.toFixed(1)}" cy="${worstPoint.y.toFixed(1)}" r="4" fill="#0066A6" stroke="#FFFFFF" stroke-width="1.5"></circle>
+                        <text x="${worstLabelX.toFixed(1)}" y="${worstLabelY.toFixed(1)}" text-anchor="${worstAnchor}" font-size="9" fill="#0066A6" font-weight="bold">최저 ${(worstPoint.value * 100).toFixed(1)}%</text>` : ""}
+                        ${yearMarkup}
+                        ${xAxisMarkup}
                     </svg>`;
             };
 

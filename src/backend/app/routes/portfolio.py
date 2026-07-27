@@ -1,10 +1,11 @@
 from fastapi import APIRouter, Request, Form, HTTPException
 from fastapi.responses import HTMLResponse, RedirectResponse
 from app.core.templates import templates
-from typing import Optional
+from typing import Optional, Tuple
 
 import logging
 import sys
+from concurrent.futures import ThreadPoolExecutor
 from app.core.config import BASE_DIR, TURNOVER_WEIGHTS, DEFAULT_DOWNSIDE_WEIGHT, DEFAULT_ESG_WEIGHT
 if BASE_DIR not in sys.path:
     sys.path.insert(0, BASE_DIR)
@@ -30,6 +31,20 @@ from app.services.portfolio_summary import calculate_portfolio_summary
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
+
+
+def _get_realtime_prices_parallel() -> Tuple[float, float]:
+    """삼성전자·SK하이닉스 시세를 동시에 조회한다.
+
+    기존에는 두 종목을 하나씩 순서대로 조회했는데, 각 조회가 외부 API
+    타임아웃(최대 5초)까지 걸릴 수 있어서 최악의 경우 거의 두 배(약 10초)로
+    느려지는 문제가 있었다. 두 조회는 서로 의존관계가 없으므로 동시에
+    실행해서 전체 대기 시간을 한 종목 조회 시간 수준으로 줄인다.
+    """
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        samsung_future = executor.submit(get_realtime_price, "005930")
+        sk_future = executor.submit(get_realtime_price, "000660")
+        return samsung_future.result(), sk_future.result()
 
 def get_setup_page(request: Request):
     """
@@ -153,9 +168,8 @@ def optimize_portfolio(
     if samsung_qty < 0 or sk_qty < 0:
         raise HTTPException(status_code=400, detail="수량은 0 이상이어야 합니다.")
 
-    # 2. 실시간 주가 조회
-    realtime_sam = get_realtime_price("005930")
-    realtime_sk = get_realtime_price("000660")
+    # 2. 실시간 주가 조회 (두 종목 동시 조회로 대기 시간 단축)
+    realtime_sam, realtime_sk = _get_realtime_prices_parallel()
 
     samsung_eval = samsung_qty * realtime_sam
     sk_eval = sk_qty * realtime_sk
@@ -270,12 +284,13 @@ def optimize_portfolio(
     esg_df = pd.DataFrame(esg_data)
 
     # 7. 최적화 엔진 구동 및 폴백 처리
+    effective_risk_priority = mapped_priority or session_profile
     try:
         opt_result = run_optimize(
             holdings=holdings,
             price_data=price_df,
             esg_input=esg_df,
-            risk_priority=mapped_priority or session_profile,
+            risk_priority=effective_risk_priority,
             data_mode=data_mode,
             turnover_weight=session_turnover_weight,
             downside_weight=DEFAULT_DOWNSIDE_WEIGHT,
@@ -296,7 +311,7 @@ def optimize_portfolio(
                 holdings=holdings,
                 price_data=sample_price_df,
                 esg_input=pd.DataFrame(sample_esg_data),
-                risk_priority=mapped_priority or session_profile,
+                risk_priority=effective_risk_priority,
                 data_mode="fallback",
                 turnover_weight=session_turnover_weight,
                 downside_weight=DEFAULT_DOWNSIDE_WEIGHT,
@@ -319,6 +334,9 @@ def optimize_portfolio(
 
     if warnings:
         opt_result["warnings"] = list(set(opt_result.get("warnings", []) + warnings))
+
+    # 홈 화면 등에서 "지금 어떤 투자 성향으로 계산 중인지" 보여주기 위해 세션에 저장한다.
+    request.session["risk_priority"] = effective_risk_priority
 
     request.session["portfolio_holdings"] = [
         {
@@ -401,9 +419,8 @@ def calculate_current_portfolio(
     """
     if samsung_qty < 0 or sk_qty < 0:
         raise HTTPException(status_code=400, detail="수량은 0 이상이어야 합니다.")
-        
-    realtime_sam = get_realtime_price("005930")
-    realtime_sk = get_realtime_price("000660")
+
+    realtime_sam, realtime_sk = _get_realtime_prices_parallel()
 
     samsung_eval = samsung_qty * realtime_sam
     sk_eval = sk_qty * realtime_sk

@@ -152,7 +152,7 @@
                     <p class="text-[13px] text-[#7A7571]">저장된 포트폴리오로 진단을 계산하고 있습니다...</p>
                 </div>
                 <form id="auto-diagnosis-form" action="/portfolio/optimize" method="POST" class="hidden">
-                    <input type="hidden" name="risk_priority" value="balanced">
+                    <input type="hidden" name="risk_priority" value="{{ session_risk_priority or 'balanced' }}">
                     {% if "005930" in holdings_by_ticker %}
                     <input type="hidden" name="samsung_qty" value="{{ holdings_by_ticker['005930'].quantity }}">
                     <input type="hidden" name="samsung_price" value="{{ holdings_by_ticker['005930'].average_price }}">

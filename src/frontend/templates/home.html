@@ -24,11 +24,23 @@
             <section class="bg-white rounded-xl p-5 border border-[#E5DEC9] shadow-sm">
                 <p class="font-medium text-[12px] text-[#7A7571] uppercase tracking-wider">Portfolio</p>
                 <h2 class="mt-1 font-bold text-[18px] text-[#2A1800]">{{ user_name + "님의 포트폴리오" if user_name else "내 반도체 포트폴리오" }}</h2>
+                <div class="mt-2 inline-flex items-center gap-1 rounded-full bg-[#F5E8DD] px-2.5 py-1 text-[11px] font-bold text-[#785500]">
+                    <span class="material-symbols-outlined text-[14px]">{{ risk_priority_display.icon }}</span>
+                    투자 성향 · {{ risk_priority_display.label }}
+                </div>
+                {% if has_holdings %}
+                <p class="mt-2 text-[14px] leading-5 text-[#564334]">저장된 보유 종목을 기준으로 위험도와 추천 비중을 확인할 수 있어요.</p>
+                <a href="/diagnosis/result" class="mt-4 inline-flex items-center gap-1 rounded-lg bg-[#964B00] px-4 py-2.5 text-[14px] font-bold text-white">
+                    포트폴리오 확인
+                    <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+                </a>
+                {% else %}
                 <p class="mt-2 text-[14px] leading-5 text-[#564334]">보유 수량을 입력하면 현재 평가액과 위험 기반 추천 비중을 확인할 수 있어요.</p>
                 <a href="/portfolio/input" class="mt-4 inline-flex items-center gap-1 rounded-lg bg-[#964B00] px-4 py-2.5 text-[14px] font-bold text-white">
                     포트폴리오 입력
                     <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
                 </a>
+                {% endif %}
             </section>
 
             <section aria-labelledby="market-heading" class="space-y-3">

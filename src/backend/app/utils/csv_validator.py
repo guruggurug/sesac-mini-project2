@@ -3,6 +3,7 @@ import csv
 import hashlib
 import json
 import jsonschema
+from jsonschema.validators import validator_for
 import re
 from urllib.parse import parse_qs, urlsplit
 from app.core.config import BASE_DIR
@@ -148,7 +149,14 @@ def validate_csv_file(file_path: str, schema_type: str) -> list[dict]:
 
     # 3. 필수 컬럼 헤더 매칭 검사
     required_cols = schema.get("required", [])
-    
+
+    # jsonschema.validate()를 행마다 호출하면 매번 스키마 자체의 유효성(check_schema)까지
+    # 다시 검사해서, 행이 많을수록 (예: 주가 1454행) 실행 시간이 크게 늘어난다.
+    # 스키마는 파일 전체에서 동일하므로 Validator를 한 번만 만들어 재사용한다.
+    validator_cls = validator_for(schema)
+    validator_cls.check_schema(schema)
+    row_validator = validator_cls(schema, format_checker=FORMAT_CHECKER)
+
     parsed_rows = []
     try:
         with open(file_path, "r", encoding="utf-8-sig") as f:
@@ -188,11 +196,7 @@ def validate_csv_file(file_path: str, schema_type: str) -> list[dict]:
                 
                 try:
                     cast_row = parse_and_cast_row(clean_row, schema)
-                    jsonschema.validate(
-                        instance=cast_row,
-                        schema=schema,
-                        format_checker=FORMAT_CHECKER,
-                    )
+                    row_validator.validate(cast_row)
                     parsed_rows.append(cast_row)
                 except jsonschema.ValidationError as ve:
                     raise CSVValidationError(
@@ -312,13 +316,13 @@ def validate_candidate_rows(rows: list[dict]) -> list[dict]:
     candidate_ids: set[str] = set()
     active_dedup_keys: set[tuple[str, ...]] = set()
 
+    validator_cls = validator_for(schema)
+    validator_cls.check_schema(schema)
+    row_validator = validator_cls(schema, format_checker=FORMAT_CHECKER)
+
     for row in rows:
         try:
-            jsonschema.validate(
-                instance=row,
-                schema=schema,
-                format_checker=FORMAT_CHECKER,
-            )
+            row_validator.validate(row)
         except jsonschema.ValidationError as error:
             raise CSVValidationError(
                 code="INVALID_CANDIDATE_VALIDATION",
